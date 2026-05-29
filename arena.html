@@ -360,9 +360,7 @@
         ws = new WebSocket(url);
 
         ws.onopen = () => {
-            if (tg && tg.initData) {
-                ws.send(JSON.stringify({ initData: tg.initData }));
-            }
+            ws.send(JSON.stringify({ initData: tg?.initData || "" }));
         };
 
         ws.onmessage = ({ data }) => {
