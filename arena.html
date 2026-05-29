@@ -6,13 +6,17 @@
     <title>ArenaM — PvP</title>
     <style>
         :root {
-            --bg: var(--tg-theme-bg-color, #1a1a2e);
-            --secondary: var(--tg-theme-secondary-bg-color, #16213e);
+            --bg: var(--tg-theme-bg-color, #0f0f1a);
+            --secondary: var(--tg-theme-secondary-bg-color, #1a1a2e);
             --text: var(--tg-theme-text-color, #eaeaea);
             --hint: var(--tg-theme-hint-color, #8899aa);
             --btn: var(--tg-theme-button-color, #e94560);
             --btn-text: var(--tg-theme-button-text-color, #ffffff);
             --accent: #f5a623;
+            --green: #4caf50;
+            --orange: #ff9800;
+            --red: #f44336;
+            --bleed: #c0392b;
             --radius: 12px;
             --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
         }
@@ -28,267 +32,534 @@
             user-select: none;
             -webkit-tap-highlight-color: transparent;
         }
+
+        /* ── Overlay ── */
         #overlay {
             position: fixed; inset: 0;
-            background: rgba(0,0,0,.8);
+            background: rgba(0,0,0,.85);
             display: flex; align-items: center; justify-content: center; flex-direction: column;
-            gap: 16px; z-index: 10; backdrop-filter: blur(6px);
+            gap: 14px; z-index: 100; backdrop-filter: blur(8px);
         }
         #overlay.hidden { display: none; }
-        #overlay-title { font-size: 24px; font-weight: 900; color: var(--accent); }
-        #overlay-sub { font-size: 14px; color: var(--hint); text-align: center; padding: 0 20px; }
+        #overlay-title { font-size: 26px; font-weight: 900; color: var(--accent); }
+        #overlay-sub   { font-size: 14px; color: var(--hint); text-align: center; padding: 0 24px; line-height: 1.5; }
         #overlay-btn, #log-btn {
-            padding: 12px 24px; border: none; border-radius: var(--radius);
+            padding: 12px 28px; border: none; border-radius: var(--radius);
             background: var(--btn); color: var(--btn-text);
-            font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 8px;
+            font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 4px;
+            transition: opacity .2s;
         }
-        #arena { display: flex; flex-direction: column; height: 100%; padding: 12px; gap: 8px; }
+        #overlay-btn:disabled, #log-btn:disabled { opacity: .5; cursor: default; }
+
+        /* ── Arena layout ── */
+        #arena {
+            display: flex; flex-direction: column;
+            height: 100%; padding: 10px 10px 8px;
+            gap: 8px;
+        }
+
+        /* ── Fighter cards ── */
         .fighters { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .fighter {
             background: var(--secondary); border-radius: var(--radius); padding: 10px;
             display: flex; flex-direction: column; gap: 6px;
             border: 2px solid transparent; transition: border-color .3s;
+            position: relative; overflow: visible;  /* overflow visible for popups */
         }
-        .fighter.me { border-color: var(--btn); }
+        .fighter.me    { border-color: var(--btn); }
         .fighter.enemy { border-color: var(--hint); }
-        .fighter-name { font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        .fighter-name {
+            font-size: 13px; font-weight: 700;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
         .hp-bar-wrap { height: 10px; background: rgba(255,255,255,.1); border-radius: 5px; overflow: hidden; }
-        .hp-bar { height: 100%; border-radius: 5px; transition: width .4s ease; }
+        .hp-bar { height: 100%; border-radius: 5px; transition: width .45s ease; }
         .hp-text { font-size: 11px; color: var(--hint); }
 
-        /* Логи над кнопками */
-        #log {
-            background: var(--secondary); border-radius: var(--radius); padding: 8px 10px;
-            font-size: 12px; min-height: 70px; max-height: 130px; overflow-y: auto;
-            display: flex; flex-direction: column; gap: 3px;
+        /* ── Debuff badges ── */
+        .debuffs {
+            display: flex; flex-wrap: wrap; gap: 4px; min-height: 16px;
         }
-        .log-entry { line-height: 1.4; }
-        .log-entry.sys { color: var(--hint); font-style: italic; }
-        .log-entry.dmg { color: #ff6b6b; }
-        .log-entry.heal { color: #69f0ae; }
-        .log-entry.win { color: var(--accent); font-weight: 700; font-size: 14px; text-align: center; }
+        .debuff-badge {
+            font-size: 10px; background: rgba(192,57,43,.25);
+            border: 1px solid var(--bleed); border-radius: 4px;
+            padding: 1px 5px; color: #ff8a80;
+            animation: badge-pop .2s ease;
+        }
+        @keyframes badge-pop { from { transform: scale(.6); opacity:0 } to { transform: scale(1); opacity:1 } }
 
-        .round-info { text-align: center; font-size: 13px; color: var(--hint); font-weight: 600; }
+        /* ── Floating damage numbers ── */
+        .float-num {
+            position: absolute;
+            top: 4px; left: 50%;
+            transform: translateX(-50%);
+            font-size: 16px; font-weight: 900;
+            pointer-events: none; z-index: 20;
+            animation: float-up .9s ease forwards;
+            white-space: nowrap;
+            text-shadow: 0 1px 4px rgba(0,0,0,.8);
+        }
+        .float-num.dmg   { color: #ff5252; }
+        .float-num.crit  { color: #ff1744; font-size: 20px; }
+        .float-num.block { color: #90caf9; font-size: 13px; }
+        .float-num.vamp  { color: #69f0ae; }
+        @keyframes float-up {
+            0%   { opacity: 1; transform: translateX(-50%) translateY(0); }
+            100% { opacity: 0; transform: translateX(-50%) translateY(-48px); }
+        }
+
+        /* ── Flash animations ── */
+        @keyframes flash-red   { 0%,100%{background: var(--secondary)} 40%{background:rgba(244,67,54,.35)} }
+        @keyframes flash-green { 0%,100%{background: var(--secondary)} 40%{background:rgba(76,175,80,.35)} }
+        .flash-dmg  { animation: flash-red   .55s ease; }
+        .flash-heal { animation: flash-green .55s ease; }
+
+        /* ── Round / countdown ── */
+        .round-info { text-align: center; font-size: 12px; color: var(--hint); font-weight: 600; }
         .round-info span { color: var(--accent); }
-        #countdown { text-align: center; font-size: 24px; font-weight: 900; color: var(--btn); min-height: 32px; }
+        #countdown { text-align: center; font-size: 22px; font-weight: 900; color: var(--btn); min-height: 28px; }
 
-        #action-panel { display: flex; flex-direction: column; gap: 6px; }
-        .action-label { font-size: 11px; color: var(--hint); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 2px; }
+        /* ── Log panel ── */
+        #log-wrap {
+            background: var(--secondary); border-radius: var(--radius);
+            display: flex; flex-direction: column;
+            flex: 1 1 0; min-height: 60px; max-height: 140px;
+            overflow: hidden;
+        }
+        #log-header {
+            font-size: 10px; text-transform: uppercase; letter-spacing: .6px;
+            color: var(--hint); padding: 5px 10px 3px; border-bottom: 1px solid rgba(255,255,255,.06);
+            flex-shrink: 0;
+        }
+        #log {
+            padding: 6px 10px; font-size: 11px;
+            overflow-y: auto; flex: 1;
+            display: flex; flex-direction: column; gap: 2px;
+            /* custom scrollbar */
+            scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.1) transparent;
+        }
+        #log::-webkit-scrollbar { width: 3px; }
+        #log::-webkit-scrollbar-thumb { background: rgba(255,255,255,.15); border-radius: 3px; }
+        .log-entry { line-height: 1.45; }
+        .log-entry.sys  { color: var(--hint); font-style: italic; }
+        .log-entry.dmg  { color: #ff6b6b; }
+        .log-entry.heal { color: #69f0ae; }
+        .log-entry.win  { color: var(--accent); font-weight: 700; font-size: 13px; text-align: center; }
+        .log-entry.sep  { color: rgba(255,255,255,.2); font-size: 10px; }
+
+        /* ── Action panel ── */
+        #action-panel { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; }
+        .action-label {
+            font-size: 10px; color: var(--hint);
+            text-transform: uppercase; letter-spacing: .5px; margin-bottom: 1px;
+        }
         .zone-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
         .zone-btn {
-            display: flex; flex-direction: column; align-items: center; gap: 4px;
-            padding: 10px 4px; border: 2px solid transparent; border-radius: var(--radius);
+            display: flex; flex-direction: column; align-items: center; gap: 3px;
+            padding: 9px 4px; border: 2px solid transparent; border-radius: var(--radius);
             background: rgba(255,255,255,.05); color: var(--text);
-            font-size: 18px; cursor: pointer; transition: all .15s; font-family: var(--font);
+            font-size: 17px; cursor: pointer; transition: all .15s; font-family: var(--font);
         }
-        .zone-btn span { font-size: 10px; font-weight: 600; letter-spacing: .3px; }
+        .zone-btn span { font-size: 9px; font-weight: 600; letter-spacing: .3px; }
         .zone-btn:active { transform: scale(.93); }
         .zone-btn.selected { border-color: var(--accent); background: rgba(245,166,35,.15); }
-        .zone-btn:disabled { opacity: .4; cursor: not-allowed; transform: none; }
+        .zone-btn:disabled { opacity: .35; cursor: not-allowed; transform: none; }
         #confirm-btn {
-            padding: 14px; border: none; border-radius: var(--radius);
+            padding: 13px; border: none; border-radius: var(--radius);
             background: var(--btn); color: var(--btn-text);
-            font-size: 16px; font-weight: 700; cursor: pointer;
-            transition: opacity .2s, transform .12s; letter-spacing: .5px; margin-top: 4px;
+            font-size: 15px; font-weight: 700; cursor: pointer;
+            transition: opacity .2s, transform .12s; letter-spacing: .4px; margin-top: 2px;
         }
         #confirm-btn:disabled { opacity: .4; cursor: not-allowed; }
-        #confirm-btn:active { transform: scale(.97); }
-
-        @keyframes flash-red { 0%,100%{background:transparent} 50%{background:rgba(244,67,54,.3)} }
-        @keyframes flash-green { 0%,100%{background:transparent} 50%{background:rgba(76,175,80,.3)} }
-        .flash-dmg { animation: flash-red .5s ease; }
-        .flash-heal { animation: flash-green .5s ease; }
+        #confirm-btn:active:not(:disabled) { transform: scale(.97); }
     </style>
 </head>
 <body>
+
+<!-- ── Overlay ── -->
 <div id="overlay">
     <div id="overlay-title">⚔️ ArenaM</div>
     <div id="overlay-sub">Подключение к серверу…</div>
     <button id="overlay-btn" style="display:none" onclick="location.reload()">🔄 Переподключиться</button>
-    <button id="log-btn" style="display:none">📋 Получить логи в ЛС</button>
+    <button id="log-btn"     style="display:none">📋 Получить логи в ЛС</button>
 </div>
+
+<!-- ── Arena ── -->
 <div id="arena">
+
+    <!-- Fighters -->
     <div class="fighters">
         <div class="fighter me" id="card-me">
             <div class="fighter-name" id="name-me">Вы</div>
             <div class="hp-bar-wrap"><div class="hp-bar" id="hpbar-me" style="width:100%;background:#4caf50"></div></div>
             <div class="hp-text" id="hp-me">— / —</div>
+            <div class="debuffs" id="debuffs-me"></div>
         </div>
         <div class="fighter enemy" id="card-enemy">
             <div class="fighter-name" id="name-enemy">Соперник</div>
             <div class="hp-bar-wrap"><div class="hp-bar" id="hpbar-enemy" style="width:100%;background:#4caf50"></div></div>
             <div class="hp-text" id="hp-enemy">— / —</div>
+            <div class="debuffs" id="debuffs-enemy"></div>
         </div>
     </div>
+
+    <!-- Round / timer -->
     <div class="round-info">Раунд <span id="round-num">—</span></div>
     <div id="countdown"></div>
-    <!-- Логи теперь над кнопками -->
-    <div id="log"></div>
+
+    <!-- Log (над кнопками, фиксированной высоты) -->
+    <div id="log-wrap">
+        <div id="log-header">📜 Лог боя</div>
+        <div id="log"></div>
+    </div>
+
+    <!-- Action panel -->
     <div id="action-panel">
         <div class="action-label">⚔️ Атака</div>
         <div class="zone-row" id="atk-row">
-            <button class="zone-btn" data-zone="TOP" data-type="atk" onclick="selectZone(this)">⬆️<span>Верх</span></button>
+            <button class="zone-btn" data-zone="TOP"    data-type="atk" onclick="selectZone(this)">⬆️<span>Верх</span></button>
             <button class="zone-btn" data-zone="MIDDLE" data-type="atk" onclick="selectZone(this)">➡️<span>Середина</span></button>
             <button class="zone-btn" data-zone="BOTTOM" data-type="atk" onclick="selectZone(this)">⬇️<span>Низ</span></button>
         </div>
         <div class="action-label">🛡️ Блок</div>
         <div class="zone-row" id="blk-row">
-            <button class="zone-btn" data-zone="TOP" data-type="blk" onclick="selectZone(this)">⬆️<span>Верх</span></button>
+            <button class="zone-btn" data-zone="TOP"    data-type="blk" onclick="selectZone(this)">⬆️<span>Верх</span></button>
             <button class="zone-btn" data-zone="MIDDLE" data-type="blk" onclick="selectZone(this)">➡️<span>Середина</span></button>
             <button class="zone-btn" data-zone="BOTTOM" data-type="blk" onclick="selectZone(this)">⬇️<span>Низ</span></button>
         </div>
         <button id="confirm-btn" disabled onclick="confirmAction()">Подтвердить ход</button>
     </div>
+
 </div>
+
 <script>
-    const tg = window.Telegram?.WebApp;
-    if (tg) { tg.ready(); tg.expand(); }
+// ─── Telegram WebApp ───────────────────────────────────────────────────────
+const tg = window.Telegram?.WebApp;
+if (tg) { tg.ready(); tg.expand(); }
 
-    function getParams() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const hashParams = new URLSearchParams(window.location.hash.slice(1));
-        return {
-            battle_id: urlParams.get('battle_id') || hashParams.get('battle_id'),
-            user_id:   urlParams.get('user_id')   || hashParams.get('user_id'),
-            chat_id:   urlParams.get('chat_id')   || hashParams.get('chat_id'),
-            ws_url:    urlParams.get('ws_url')    || hashParams.get('ws_url') || 'wss://vvvty.onrender.com/ws',
-        };
-    }
-    const P = getParams();
-    const BATTLE_ID = P.battle_id || '';
-    const USER_ID = parseInt(P.user_id || '0');
-    const CHAT_ID = P.chat_id || '0';
-    const WS_URL = P.ws_url;
-    if (!BATTLE_ID || !USER_ID) {
-        document.getElementById('overlay-title').textContent = '❌ Ошибка';
-        document.getElementById('overlay-sub').textContent = 'Неверные параметры запуска';
-        document.getElementById('overlay-btn').style.display = '';
-        throw new Error('Missing parameters');
-    }
-    let ws, myAction = { atk: null, blk: null }, maxHp = {}, myId = USER_ID, enemyId = null, roundTimeout = 30, roundEndAt = 0, countdownInterval;
-    let fullLog = [];  // сохраняем все строки лога для отправки в ЛС
+// ─── Параметры из URL/hash ─────────────────────────────────────────────────
+function getParams() {
+    const u = new URLSearchParams(window.location.search);
+    const h = new URLSearchParams(window.location.hash.slice(1));
+    const get = k => u.get(k) || h.get(k);
+    return {
+        battle_id: get('battle_id'),
+        user_id:   get('user_id'),
+        chat_id:   get('chat_id'),
+        ws_url:    get('ws_url') || 'wss://vvvty.onrender.com/ws',
+    };
+}
+const P        = getParams();
+const BATTLE_ID = P.battle_id || '';
+const USER_ID   = parseInt(P.user_id || '0', 10);   // числовой тип!
+const CHAT_ID   = P.chat_id || '0';
+const WS_URL    = P.ws_url;
 
-    const $ = id => document.getElementById(id);
-    function setOverlay(title, sub, showBtn = false, showLogBtn = false) {
-        $('overlay').classList.remove('hidden');
-        $('overlay-title').textContent = title;
-        $('overlay-sub').textContent = sub;
-        $('overlay-btn').style.display = showBtn ? '' : 'none';
-        $('log-btn').style.display = showLogBtn ? '' : 'none';
-    }
-    function hideOverlay() { $('overlay').classList.add('hidden'); }
-    function addLog(text, cls = '') {
-        fullLog.push({ text, cls });
-        const el = document.createElement('div');
-        el.className = 'log-entry ' + cls;
-        el.textContent = text;
-        $('log').appendChild(el);
-        $('log').scrollTop = $('log').scrollHeight;
-    }
+if (!BATTLE_ID || !USER_ID) {
+    document.getElementById('overlay-title').textContent = '❌ Ошибка';
+    document.getElementById('overlay-sub').textContent   = 'Неверные параметры запуска';
+    document.getElementById('overlay-btn').style.display = '';
+    throw new Error('Missing parameters');
+}
 
-    function updateHP(uid, hp) {
-        const isMe = uid === myId;
-        const max = maxHp[uid] || 1;
-        const pct = Math.max(0, Math.min(100, (hp / max) * 100));
-        const bar = $(isMe ? 'hpbar-me' : 'hpbar-enemy');
-        const txt = $(isMe ? 'hp-me' : 'hp-enemy');
-        const card = $(isMe ? 'card-me' : 'card-enemy');
-        bar.style.width = pct + '%';
-        bar.style.background = pct > 50 ? '#4caf50' : pct > 25 ? '#ff9800' : '#f44336';
-        txt.textContent = `${hp} / ${max}`;
+// ─── Состояние ────────────────────────────────────────────────────────────
+let ws;
+let myAction       = { atk: null, blk: null };
+let maxHp          = {};      // uid → maxHp
+let myId           = USER_ID; // число
+let enemyId        = null;    // число
+let roundTimeout   = 30;
+let roundEndAt     = 0;
+let countdownInterval;
+
+// ─── DOM-хелперы ──────────────────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+
+function setOverlay(title, sub, showBtn = false, showLogBtn = false) {
+    $('overlay').classList.remove('hidden');
+    $('overlay-title').textContent = title;
+    $('overlay-sub').textContent   = sub;
+    $('overlay-btn').style.display = showBtn    ? '' : 'none';
+    $('log-btn').style.display     = showLogBtn ? '' : 'none';
+}
+function hideOverlay() { $('overlay').classList.add('hidden'); }
+
+function addLog(text, cls = '') {
+    const el = document.createElement('div');
+    el.className = 'log-entry ' + cls;
+    el.textContent = text;
+    $('log').appendChild(el);
+    $('log').scrollTop = $('log').scrollHeight;
+}
+
+// ─── HP-бар ───────────────────────────────────────────────────────────────
+function updateHP(uid, hp, flash = true) {
+    const isMe = (uid === myId);
+    const max  = maxHp[uid] || 1;
+    const pct  = Math.max(0, Math.min(100, (hp / max) * 100));
+    const bar  = $(isMe ? 'hpbar-me'  : 'hpbar-enemy');
+    const txt  = $(isMe ? 'hp-me'     : 'hp-enemy');
+    const card = $(isMe ? 'card-me'   : 'card-enemy');
+
+    bar.style.width      = pct + '%';
+    bar.style.background = pct > 50 ? '#4caf50' : pct > 25 ? '#ff9800' : '#f44336';
+    txt.textContent = `${hp} / ${max}`;
+
+    if (flash) {
         card.classList.remove('flash-dmg', 'flash-heal');
         void card.offsetWidth;
         card.classList.add('flash-dmg');
     }
-    function startCountdown(seconds) {
-        clearInterval(countdownInterval);
-        roundEndAt = Date.now() + seconds * 1000;
-        const el = $('countdown');
-        function tick() { const left = Math.ceil((roundEndAt - Date.now()) / 1000); if (left <= 0) { el.textContent = '⏰'; clearInterval(countdownInterval); return; } el.textContent = left; el.style.color = left <= 5 ? '#f44336' : 'var(--btn)'; }
-        tick();
-        countdownInterval = setInterval(tick, 200);
-    }
-    function stopCountdown() { clearInterval(countdownInterval); $('countdown').textContent = ''; }
-    function selectZone(btn) {
-        const type = btn.dataset.type, zone = btn.dataset.zone, row = type === 'atk' ? 'atk-row' : 'blk-row';
-        $(row).querySelectorAll('.zone-btn').forEach(b => b.classList.remove('selected'));
-        btn.classList.add('selected');
-        myAction[type] = zone;
-        $('confirm-btn').disabled = !(myAction.atk && myAction.blk);
-    }
-    function resetActions(disable = false) {
-        myAction = { atk: null, blk: null };
-        document.querySelectorAll('.zone-btn').forEach(b => { b.classList.remove('selected'); b.disabled = disable; });
-        $('confirm-btn').disabled = true;
-    }
-    function confirmAction() {
-        if (!myAction.atk || !myAction.blk || !ws || ws.readyState !== WebSocket.OPEN) return;
-        ws.send(JSON.stringify({ action: 'atk', zone: myAction.atk }));
-        ws.send(JSON.stringify({ action: 'blk', zone: myAction.blk }));
-        resetActions(true);
-        addLog('⏳ Ожидаем соперника…', 'sys');
-    }
-    function connect() {
-        const url = `${WS_URL}?battle_id=${BATTLE_ID}&user_id=${USER_ID}&chat_id=${CHAT_ID}`;
-        ws = new WebSocket(url);
-        ws.onopen = () => { ws.send(JSON.stringify({ initData: tg?.initData || "" })); };
-        ws.onmessage = ({ data }) => { try { handleMessage(JSON.parse(data)); } catch (e) { console.error('Parse error:', e); } };
-        ws.onerror = () => setOverlay('🔌 Ошибка', 'Потеряно соединение с сервером', true, false);
-        ws.onclose = (e) => { clearInterval(countdownInterval); if (e.code !== 1000) setOverlay('🔌 Отключено', `Код: ${e.code}`, true, false); };
-    }
-    function handleMessage(msg) {
-        switch (msg.type) {
-            case 'waiting': setOverlay('⏳ Ожидание', msg.message || 'Ожидаем соперника…', false, false); break;
-            case 'battle_start': {
-                hideOverlay();
-                roundTimeout = msg.round_timeout || 30;
-                const me = msg.players.find(p => p.user_id === myId);
-                const enemy = msg.players.find(p => p.user_id !== myId);   // теперь точно не я
-                if (me && enemy) {
-                    enemyId = enemy.user_id;
-                    maxHp[me.user_id] = me.max_hp;
-                    maxHp[enemy.user_id] = enemy.max_hp;
-                    $('name-me').textContent = me.name;
-                    $('name-enemy').textContent = enemy.name;
-                    updateHP(me.user_id, me.hp);
-                    updateHP(enemy.user_id, enemy.hp);
-                    $('round-num').textContent = '1';
-                    addLog('🏟️ Бой начался!', 'sys');
-                    resetActions(false);
-                    startCountdown(roundTimeout);
-                }
-                break;
-            }
-            case 'round_result': {
-                $('round-num').textContent = msg.round;
-                stopCountdown();
-                if (msg.log) msg.log.forEach(line => addLog(line, ''));
-                if (msg.hp) Object.entries(msg.hp).forEach(([uid, hp]) => updateHP(parseInt(uid), hp));
-                resetActions(false);
-                startCountdown(roundTimeout);
-                break;
-            }
-            case 'game_over': {
-                stopCountdown();
-                resetActions(true);
-                if (msg.hp) Object.entries(msg.hp).forEach(([uid, hp]) => updateHP(parseInt(uid), hp));
-                if (msg.winner_id === null) { addLog('🤝 Ничья!', 'win'); setOverlay('🤝 Ничья!', `Бой завершён на раунде ${msg.round}`, false, true); }
-                else if (msg.winner_id === myId) { addLog('🏆 Вы победили!', 'win'); setOverlay('🏆 Победа!', 'Вы одержали победу в дуэли!', false, true); }
-                else { addLog('💀 Вы проиграли', 'dmg'); setOverlay('💀 Поражение', 'Соперник оказался сильнее.', false, true); }
-                // Кнопка "Получить логи в ЛС"
-                $('log-btn').onclick = () => {
-                    tg?.sendData(JSON.stringify({ action: 'get_logs', battle_id: BATTLE_ID, user_id: USER_ID }));
-                    $('log-btn').textContent = '✅ Отправлено';
-                    $('log-btn').disabled = true;
-                };
-                setTimeout(() => tg?.close?.(), 6000);
-                break;
-            }
-            case 'error': addLog(`⚠️ ${msg.message}`, 'sys'); break;
+}
+
+// ─── Всплывающие числа ───────────────────────────────────────────────────
+/**
+ * Показывает всплывающее число над карточкой.
+ * @param {boolean} isMe  - моя карточка или врага
+ * @param {string}  text  - текст (напр. «-42», «КРИТ -80», «+15»)
+ * @param {string}  cls   - CSS-класс: 'dmg' | 'crit' | 'block' | 'vamp'
+ */
+function showFloatNum(isMe, text, cls) {
+    const card = $(isMe ? 'card-me' : 'card-enemy');
+    const el   = document.createElement('div');
+    el.className = 'float-num ' + cls;
+    el.textContent = text;
+    card.appendChild(el);
+    // Удаляем после окончания анимации
+    el.addEventListener('animationend', () => el.remove());
+}
+
+// ─── Дебаффы ──────────────────────────────────────────────────────────────
+function renderDebuffs(uid, debuffs) {
+    const isMe  = (uid === myId);
+    const wrap  = $(isMe ? 'debuffs-me' : 'debuffs-enemy');
+    wrap.innerHTML = '';
+    (debuffs || []).forEach(d => {
+        const badge = document.createElement('span');
+        badge.className   = 'debuff-badge';
+        badge.textContent = d;
+        wrap.appendChild(badge);
+    });
+}
+
+// ─── Обработка combat-данных из round_result ──────────────────────────────
+function processCombat(combat) {
+    if (!combat) return;
+
+    // Для каждого участника показываем нужные числа
+    Object.entries(combat).forEach(([uidStr, info]) => {
+        const uid  = parseInt(uidStr, 10);
+        const isMe = (uid === myId);
+
+        // Урон ПОЛУЧЕННЫЙ — показываем на карточке пострадавшего
+        if (info.dmg_taken > 0) {
+            const cls  = info.crit ? 'crit' : 'dmg';
+            const text = info.crit ? `💥 -${info.dmg_taken}` : `-${info.dmg_taken}`;
+            showFloatNum(isMe, text, cls);
         }
+
+        // Блок — небольшая пометка
+        if (info.blocked) {
+            showFloatNum(isMe, '🛡 Блок', 'block');
+        }
+
+        // Вампиризм / лечение — на карточке того, кто лечится (dmg_dealt + vampirism)
+        if (info.vampirism > 0) {
+            showFloatNum(isMe, `🧛 +${info.vampirism}`, 'vamp');
+        }
+
+        // Дебаффы — рендерим на соответствующей карточке
+        renderDebuffs(uid, info.debuffs);
+    });
+}
+
+// ─── Countdown ────────────────────────────────────────────────────────────
+function startCountdown(seconds) {
+    clearInterval(countdownInterval);
+    roundEndAt = Date.now() + seconds * 1000;
+    const el = $('countdown');
+    function tick() {
+        const left = Math.ceil((roundEndAt - Date.now()) / 1000);
+        if (left <= 0) { el.textContent = '⏰'; clearInterval(countdownInterval); return; }
+        el.textContent  = left;
+        el.style.color  = left <= 5 ? '#f44336' : 'var(--btn)';
     }
-    setOverlay('⚔️ ArenaM', 'Подключение…');
-    connect();
+    tick();
+    countdownInterval = setInterval(tick, 200);
+}
+function stopCountdown() { clearInterval(countdownInterval); $('countdown').textContent = ''; }
+
+// ─── Выбор зон ────────────────────────────────────────────────────────────
+function selectZone(btn) {
+    const type = btn.dataset.type;
+    const row  = type === 'atk' ? 'atk-row' : 'blk-row';
+    $(row).querySelectorAll('.zone-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    myAction[type] = btn.dataset.zone;
+    $('confirm-btn').disabled = !(myAction.atk && myAction.blk);
+}
+
+function resetActions(disable = false) {
+    myAction = { atk: null, blk: null };
+    document.querySelectorAll('.zone-btn').forEach(b => {
+        b.classList.remove('selected');
+        b.disabled = disable;
+    });
+    $('confirm-btn').disabled = true;
+}
+
+function confirmAction() {
+    if (!myAction.atk || !myAction.blk || !ws || ws.readyState !== WebSocket.OPEN) return;
+    ws.send(JSON.stringify({ action: 'atk', zone: myAction.atk }));
+    ws.send(JSON.stringify({ action: 'blk', zone: myAction.blk }));
+    resetActions(true);
+    addLog('⏳ Ожидаем соперника…', 'sys');
+}
+
+// ─── WebSocket ────────────────────────────────────────────────────────────
+function connect() {
+    const url = `${WS_URL}?battle_id=${BATTLE_ID}&user_id=${USER_ID}&chat_id=${CHAT_ID}`;
+    ws = new WebSocket(url);
+    ws.onopen    = () => { ws.send(JSON.stringify({ initData: tg?.initData || '' })); };
+    ws.onmessage = ({ data }) => { try { handleMessage(JSON.parse(data)); } catch (e) { console.error('Parse error', e); } };
+    ws.onerror   = ()  => setOverlay('🔌 Ошибка',    'Потеряно соединение с сервером', true, false);
+    ws.onclose   = (e) => {
+        clearInterval(countdownInterval);
+        if (e.code !== 1000) setOverlay('🔌 Отключено', `Код: ${e.code}`, true, false);
+    };
+}
+
+// ─── Главный обработчик сообщений ─────────────────────────────────────────
+function handleMessage(msg) {
+    switch (msg.type) {
+
+        case 'waiting':
+            setOverlay('⏳ Ожидание', msg.message || 'Ожидаем соперника…', false, false);
+            break;
+
+        case 'battle_start': {
+            hideOverlay();
+            roundTimeout = msg.round_timeout || 30;
+
+            // ★ FIX: player_id из сервера приходит как число — сравниваем через строгое ===
+            // Используем parseInt чтобы гарантировать числовой тип с обеих сторон.
+            const me    = msg.players.find(p => parseInt(p.user_id, 10) === myId);
+            const enemy = msg.players.find(p => parseInt(p.user_id, 10) !== myId);
+
+            if (!me || !enemy) {
+                addLog('⚠️ Не удалось определить игроков', 'sys');
+                break;
+            }
+
+            enemyId = parseInt(enemy.user_id, 10);
+
+            maxHp[myId]     = me.max_hp;
+            maxHp[enemyId]  = enemy.max_hp;
+
+            // ★ FIX: Ники из поля name
+            $('name-me').textContent    = me.name    || 'Вы';
+            $('name-enemy').textContent = enemy.name || 'Соперник';
+
+            updateHP(myId,    me.hp,    false);
+            updateHP(enemyId, enemy.hp, false);
+
+            $('round-num').textContent = '1';
+            addLog('🏟️ Бой начался! Удачи!', 'sys');
+            resetActions(false);
+            startCountdown(roundTimeout);
+            break;
+        }
+
+        case 'round_result': {
+            $('round-num').textContent = msg.round;
+            stopCountdown();
+
+            // Разделитель раундов в логе
+            addLog(`── Раунд ${msg.round} ──`, 'sep');
+
+            // Строки лога с авто-раскраской
+            if (msg.log) {
+                msg.log.forEach(line => {
+                    let cls = '';
+                    if (line.startsWith('═══')) cls = 'sep';
+                    else if (line.includes('HP:'))  cls = 'sys';
+                    else if (line.includes('+') && line.includes('HP')) cls = 'heal';
+                    else if (line.includes('урон') || line.includes('Кровотечение')) cls = 'dmg';
+                    addLog(line, cls);
+                });
+            }
+
+            // Обновляем HP
+            if (msg.hp) {
+                Object.entries(msg.hp).forEach(([uid, hp]) => updateHP(parseInt(uid, 10), hp));
+            }
+
+            // ★ NEW: Всплывающие числа + дебаффы из поля combat
+            processCombat(msg.combat);
+
+            resetActions(false);
+            startCountdown(roundTimeout);
+            break;
+        }
+
+        case 'game_over': {
+            stopCountdown();
+            resetActions(true);
+
+            // Обновляем HP если прислали
+            if (msg.hp) {
+                Object.entries(msg.hp).forEach(([uid, hp]) => updateHP(parseInt(uid, 10), hp));
+            }
+
+            const winnerId = msg.winner_id ? parseInt(msg.winner_id, 10) : null;
+
+            if (winnerId === null) {
+                addLog('🤝 Ничья!', 'win');
+                setOverlay('🤝 Ничья!', `Бой завершён после раунда ${msg.round}`, false, true);
+            } else if (winnerId === myId) {
+                addLog('🏆 Вы победили!', 'win');
+                setOverlay('🏆 Победа!', `Вы одержали победу! +${msg.stake || 0} монет`, false, true);
+            } else {
+                addLog('💀 Вы проиграли', 'dmg');
+                setOverlay('💀 Поражение', 'Соперник оказался сильнее.', false, true);
+            }
+
+            // ★ FIX: Кнопка логов — sendData через Telegram WebApp API
+            const logBtn = $('log-btn');
+            logBtn.onclick = () => {
+                if (!tg) {
+                    alert('Telegram WebApp API недоступен');
+                    return;
+                }
+                try {
+                    tg.sendData(JSON.stringify({
+                        action:    'get_logs',
+                        battle_id: BATTLE_ID,
+                        user_id:   USER_ID,
+                    }));
+                    logBtn.textContent = '✅ Отправлено в ЛС';
+                    logBtn.disabled    = true;
+                } catch (e) {
+                    console.error('sendData error:', e);
+                    logBtn.textContent = '⚠️ Ошибка отправки';
+                }
+            };
+
+            // Авто-закрытие через 8 сек
+            setTimeout(() => tg?.close?.(), 8000);
+            break;
+        }
+
+        case 'error':
+            addLog(`⚠️ ${msg.message || 'Неизвестная ошибка'}`, 'sys');
+            break;
+    }
+}
+
+// ─── Старт ────────────────────────────────────────────────────────────────
+setOverlay('⚔️ ArenaM', 'Подключение…');
+connect();
 </script>
 </body>
 </html>
