@@ -33,7 +33,6 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* ── Overlay ── */
         #overlay {
             position: fixed; inset: 0;
             background: rgba(0,0,0,.85);
@@ -43,28 +42,26 @@
         #overlay.hidden { display: none; }
         #overlay-title { font-size: 26px; font-weight: 900; color: var(--accent); }
         #overlay-sub   { font-size: 14px; color: var(--hint); text-align: center; padding: 0 24px; line-height: 1.5; }
-        #overlay-btn, #log-btn {
+        #overlay-btn {
             padding: 12px 28px; border: none; border-radius: var(--radius);
             background: var(--btn); color: var(--btn-text);
             font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 4px;
             transition: opacity .2s;
         }
-        #overlay-btn:disabled, #log-btn:disabled { opacity: .5; cursor: default; }
+        #overlay-btn:disabled { opacity: .5; cursor: default; }
 
-        /* ── Arena layout ── */
         #arena {
             display: flex; flex-direction: column;
             height: 100%; padding: 10px 10px 8px;
             gap: 8px;
         }
 
-        /* ── Fighter cards ── */
         .fighters { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .fighter {
             background: var(--secondary); border-radius: var(--radius); padding: 10px;
             display: flex; flex-direction: column; gap: 6px;
             border: 2px solid transparent; transition: border-color .3s;
-            position: relative; overflow: visible;  /* overflow visible for popups */
+            position: relative; overflow: visible;
         }
         .fighter.me    { border-color: var(--btn); }
         .fighter.enemy { border-color: var(--hint); }
@@ -77,7 +74,6 @@
         .hp-bar { height: 100%; border-radius: 5px; transition: width .45s ease; }
         .hp-text { font-size: 11px; color: var(--hint); }
 
-        /* ── Debuff badges ── */
         .debuffs {
             display: flex; flex-wrap: wrap; gap: 4px; min-height: 16px;
         }
@@ -89,7 +85,6 @@
         }
         @keyframes badge-pop { from { transform: scale(.6); opacity:0 } to { transform: scale(1); opacity:1 } }
 
-        /* ── Floating damage numbers ── */
         .float-num {
             position: absolute;
             top: 4px; left: 50%;
@@ -109,18 +104,15 @@
             100% { opacity: 0; transform: translateX(-50%) translateY(-48px); }
         }
 
-        /* ── Flash animations ── */
         @keyframes flash-red   { 0%,100%{background: var(--secondary)} 40%{background:rgba(244,67,54,.35)} }
         @keyframes flash-green { 0%,100%{background: var(--secondary)} 40%{background:rgba(76,175,80,.35)} }
         .flash-dmg  { animation: flash-red   .55s ease; }
         .flash-heal { animation: flash-green .55s ease; }
 
-        /* ── Round / countdown ── */
         .round-info { text-align: center; font-size: 12px; color: var(--hint); font-weight: 600; }
         .round-info span { color: var(--accent); }
         #countdown { text-align: center; font-size: 22px; font-weight: 900; color: var(--btn); min-height: 28px; }
 
-        /* ── Log panel ── */
         #log-wrap {
             background: var(--secondary); border-radius: var(--radius);
             display: flex; flex-direction: column;
@@ -136,7 +128,6 @@
             padding: 6px 10px; font-size: 11px;
             overflow-y: auto; flex: 1;
             display: flex; flex-direction: column; gap: 2px;
-            /* custom scrollbar */
             scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.1) transparent;
         }
         #log::-webkit-scrollbar { width: 3px; }
@@ -148,7 +139,6 @@
         .log-entry.win  { color: var(--accent); font-weight: 700; font-size: 13px; text-align: center; }
         .log-entry.sep  { color: rgba(255,255,255,.2); font-size: 10px; }
 
-        /* ── Action panel ── */
         #action-panel { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; }
         .action-label {
             font-size: 10px; color: var(--hint);
@@ -177,15 +167,14 @@
 </head>
 <body>
 
-<!-- ── Overlay ── -->
+<!-- Overlay -->
 <div id="overlay">
     <div id="overlay-title">⚔️ ArenaM</div>
     <div id="overlay-sub">Подключение к серверу…</div>
     <button id="overlay-btn" style="display:none" onclick="location.reload()">🔄 Переподключиться</button>
-    <button id="log-btn"     style="display:none">📋 Получить логи в ЛС</button>
 </div>
 
-<!-- ── Arena ── -->
+<!-- Arena -->
 <div id="arena">
 
     <!-- Fighters -->
@@ -208,7 +197,7 @@
     <div class="round-info">Раунд <span id="round-num">—</span></div>
     <div id="countdown"></div>
 
-    <!-- Log (над кнопками, фиксированной высоты) -->
+    <!-- Log (над кнопками) -->
     <div id="log-wrap">
         <div id="log-header">📜 Лог боя</div>
         <div id="log"></div>
@@ -234,11 +223,9 @@
 </div>
 
 <script>
-// ─── Telegram WebApp ───────────────────────────────────────────────────────
 const tg = window.Telegram?.WebApp;
 if (tg) { tg.ready(); tg.expand(); }
 
-// ─── Параметры из URL/hash ─────────────────────────────────────────────────
 function getParams() {
     const u = new URLSearchParams(window.location.search);
     const h = new URLSearchParams(window.location.hash.slice(1));
@@ -252,7 +239,7 @@ function getParams() {
 }
 const P        = getParams();
 const BATTLE_ID = P.battle_id || '';
-const USER_ID   = parseInt(P.user_id || '0', 10);   // числовой тип!
+const USER_ID   = parseInt(P.user_id || '0', 10);
 const CHAT_ID   = P.chat_id || '0';
 const WS_URL    = P.ws_url;
 
@@ -263,25 +250,22 @@ if (!BATTLE_ID || !USER_ID) {
     throw new Error('Missing parameters');
 }
 
-// ─── Состояние ────────────────────────────────────────────────────────────
 let ws;
 let myAction       = { atk: null, blk: null };
-let maxHp          = {};      // uid → maxHp
-let myId           = USER_ID; // число
-let enemyId        = null;    // число
+let maxHp          = {};
+let myId           = USER_ID;
+let enemyId        = null;
 let roundTimeout   = 30;
 let roundEndAt     = 0;
 let countdownInterval;
 
-// ─── DOM-хелперы ──────────────────────────────────────────────────────────
 const $ = id => document.getElementById(id);
 
-function setOverlay(title, sub, showBtn = false, showLogBtn = false) {
+function setOverlay(title, sub, showBtn = false) {
     $('overlay').classList.remove('hidden');
     $('overlay-title').textContent = title;
     $('overlay-sub').textContent   = sub;
-    $('overlay-btn').style.display = showBtn    ? '' : 'none';
-    $('log-btn').style.display     = showLogBtn ? '' : 'none';
+    $('overlay-btn').style.display = showBtn ? '' : 'none';
 }
 function hideOverlay() { $('overlay').classList.add('hidden'); }
 
@@ -293,7 +277,6 @@ function addLog(text, cls = '') {
     $('log').scrollTop = $('log').scrollHeight;
 }
 
-// ─── HP-бар ───────────────────────────────────────────────────────────────
 function updateHP(uid, hp, flash = true) {
     const isMe = (uid === myId);
     const max  = maxHp[uid] || 1;
@@ -313,24 +296,15 @@ function updateHP(uid, hp, flash = true) {
     }
 }
 
-// ─── Всплывающие числа ───────────────────────────────────────────────────
-/**
- * Показывает всплывающее число над карточкой.
- * @param {boolean} isMe  - моя карточка или врага
- * @param {string}  text  - текст (напр. «-42», «КРИТ -80», «+15»)
- * @param {string}  cls   - CSS-класс: 'dmg' | 'crit' | 'block' | 'vamp'
- */
 function showFloatNum(isMe, text, cls) {
     const card = $(isMe ? 'card-me' : 'card-enemy');
     const el   = document.createElement('div');
     el.className = 'float-num ' + cls;
     el.textContent = text;
     card.appendChild(el);
-    // Удаляем после окончания анимации
     el.addEventListener('animationend', () => el.remove());
 }
 
-// ─── Дебаффы ──────────────────────────────────────────────────────────────
 function renderDebuffs(uid, debuffs) {
     const isMe  = (uid === myId);
     const wrap  = $(isMe ? 'debuffs-me' : 'debuffs-enemy');
@@ -343,38 +317,26 @@ function renderDebuffs(uid, debuffs) {
     });
 }
 
-// ─── Обработка combat-данных из round_result ──────────────────────────────
 function processCombat(combat) {
     if (!combat) return;
-
-    // Для каждого участника показываем нужные числа
     Object.entries(combat).forEach(([uidStr, info]) => {
         const uid  = parseInt(uidStr, 10);
         const isMe = (uid === myId);
-
-        // Урон ПОЛУЧЕННЫЙ — показываем на карточке пострадавшего
         if (info.dmg_taken > 0) {
             const cls  = info.crit ? 'crit' : 'dmg';
             const text = info.crit ? `💥 -${info.dmg_taken}` : `-${info.dmg_taken}`;
             showFloatNum(isMe, text, cls);
         }
-
-        // Блок — небольшая пометка
         if (info.blocked) {
             showFloatNum(isMe, '🛡 Блок', 'block');
         }
-
-        // Вампиризм / лечение — на карточке того, кто лечится (dmg_dealt + vampirism)
         if (info.vampirism > 0) {
             showFloatNum(isMe, `🧛 +${info.vampirism}`, 'vamp');
         }
-
-        // Дебаффы — рендерим на соответствующей карточке
         renderDebuffs(uid, info.debuffs);
     });
 }
 
-// ─── Countdown ────────────────────────────────────────────────────────────
 function startCountdown(seconds) {
     clearInterval(countdownInterval);
     roundEndAt = Date.now() + seconds * 1000;
@@ -390,7 +352,6 @@ function startCountdown(seconds) {
 }
 function stopCountdown() { clearInterval(countdownInterval); $('countdown').textContent = ''; }
 
-// ─── Выбор зон ────────────────────────────────────────────────────────────
 function selectZone(btn) {
     const type = btn.dataset.type;
     const row  = type === 'atk' ? 'atk-row' : 'blk-row';
@@ -417,53 +378,40 @@ function confirmAction() {
     addLog('⏳ Ожидаем соперника…', 'sys');
 }
 
-// ─── WebSocket ────────────────────────────────────────────────────────────
 function connect() {
     const url = `${WS_URL}?battle_id=${BATTLE_ID}&user_id=${USER_ID}&chat_id=${CHAT_ID}`;
     ws = new WebSocket(url);
     ws.onopen    = () => { ws.send(JSON.stringify({ initData: tg?.initData || '' })); };
     ws.onmessage = ({ data }) => { try { handleMessage(JSON.parse(data)); } catch (e) { console.error('Parse error', e); } };
-    ws.onerror   = ()  => setOverlay('🔌 Ошибка',    'Потеряно соединение с сервером', true, false);
+    ws.onerror   = ()  => setOverlay('🔌 Ошибка',    'Потеряно соединение с сервером', true);
     ws.onclose   = (e) => {
         clearInterval(countdownInterval);
-        if (e.code !== 1000) setOverlay('🔌 Отключено', `Код: ${e.code}`, true, false);
+        if (e.code !== 1000) setOverlay('🔌 Отключено', `Код: ${e.code}`, true);
     };
 }
 
-// ─── Главный обработчик сообщений ─────────────────────────────────────────
 function handleMessage(msg) {
     switch (msg.type) {
-
         case 'waiting':
-            setOverlay('⏳ Ожидание', msg.message || 'Ожидаем соперника…', false, false);
+            setOverlay('⏳ Ожидание', msg.message || 'Ожидаем соперника…');
             break;
 
         case 'battle_start': {
             hideOverlay();
             roundTimeout = msg.round_timeout || 30;
-
-            // ★ FIX: player_id из сервера приходит как число — сравниваем через строгое ===
-            // Используем parseInt чтобы гарантировать числовой тип с обеих сторон.
             const me    = msg.players.find(p => parseInt(p.user_id, 10) === myId);
             const enemy = msg.players.find(p => parseInt(p.user_id, 10) !== myId);
-
             if (!me || !enemy) {
                 addLog('⚠️ Не удалось определить игроков', 'sys');
                 break;
             }
-
             enemyId = parseInt(enemy.user_id, 10);
-
             maxHp[myId]     = me.max_hp;
             maxHp[enemyId]  = enemy.max_hp;
-
-            // ★ FIX: Ники из поля name
             $('name-me').textContent    = me.name    || 'Вы';
             $('name-enemy').textContent = enemy.name || 'Соперник';
-
             updateHP(myId,    me.hp,    false);
             updateHP(enemyId, enemy.hp, false);
-
             $('round-num').textContent = '1';
             addLog('🏟️ Бой начался! Удачи!', 'sys');
             resetActions(false);
@@ -474,11 +422,7 @@ function handleMessage(msg) {
         case 'round_result': {
             $('round-num').textContent = msg.round;
             stopCountdown();
-
-            // Разделитель раундов в логе
             addLog(`── Раунд ${msg.round} ──`, 'sep');
-
-            // Строки лога с авто-раскраской
             if (msg.log) {
                 msg.log.forEach(line => {
                     let cls = '';
@@ -489,15 +433,10 @@ function handleMessage(msg) {
                     addLog(line, cls);
                 });
             }
-
-            // Обновляем HP
             if (msg.hp) {
                 Object.entries(msg.hp).forEach(([uid, hp]) => updateHP(parseInt(uid, 10), hp));
             }
-
-            // ★ NEW: Всплывающие числа + дебаффы из поля combat
             processCombat(msg.combat);
-
             resetActions(false);
             startCountdown(roundTimeout);
             break;
@@ -506,48 +445,21 @@ function handleMessage(msg) {
         case 'game_over': {
             stopCountdown();
             resetActions(true);
-
-            // Обновляем HP если прислали
             if (msg.hp) {
                 Object.entries(msg.hp).forEach(([uid, hp]) => updateHP(parseInt(uid, 10), hp));
             }
-
             const winnerId = msg.winner_id ? parseInt(msg.winner_id, 10) : null;
-
             if (winnerId === null) {
                 addLog('🤝 Ничья!', 'win');
-                setOverlay('🤝 Ничья!', `Бой завершён после раунда ${msg.round}`, false, true);
+                setOverlay('🤝 Ничья!', `Бой завершён после раунда ${msg.round}`);
             } else if (winnerId === myId) {
                 addLog('🏆 Вы победили!', 'win');
-                setOverlay('🏆 Победа!', `Вы одержали победу! +${msg.stake || 0} монет`, false, true);
+                setOverlay('🏆 Победа!', `Вы одержали победу!`);
             } else {
                 addLog('💀 Вы проиграли', 'dmg');
-                setOverlay('💀 Поражение', 'Соперник оказался сильнее.', false, true);
+                setOverlay('💀 Поражение', 'Соперник оказался сильнее.');
             }
-
-            // ★ FIX: Кнопка логов — sendData через Telegram WebApp API
-            const logBtn = $('log-btn');
-            logBtn.onclick = () => {
-                if (!tg) {
-                    alert('Telegram WebApp API недоступен');
-                    return;
-                }
-                try {
-                    tg.sendData(JSON.stringify({
-                        action:    'get_logs',
-                        battle_id: BATTLE_ID,
-                        user_id:   USER_ID,
-                    }));
-                    logBtn.textContent = '✅ Отправлено в ЛС';
-                    logBtn.disabled    = true;
-                } catch (e) {
-                    console.error('sendData error:', e);
-                    logBtn.textContent = '⚠️ Ошибка отправки';
-                }
-            };
-
-            // Авто-закрытие через 8 сек
-            setTimeout(() => tg?.close?.(), 8000);
+            setTimeout(() => tg?.close?.(), 6000);
             break;
         }
 
@@ -557,9 +469,8 @@ function handleMessage(msg) {
     }
 }
 
-// ─── Старт ────────────────────────────────────────────────────────────────
 setOverlay('⚔️ ArenaM', 'Подключение…');
 connect();
 </script>
 </body>
-</html>
+</html> 
