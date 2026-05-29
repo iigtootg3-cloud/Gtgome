@@ -16,7 +16,6 @@
             --radius: 12px;
             --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
         }
-
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             font-family: var(--font);
@@ -29,152 +28,71 @@
             user-select: none;
             -webkit-tap-highlight-color: transparent;
         }
-
         #overlay {
             position: fixed; inset: 0;
             background: rgba(0,0,0,.8);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            gap: 16px;
-            z-index: 10;
-            backdrop-filter: blur(6px);
+            display: flex; align-items: center; justify-content: center; flex-direction: column;
+            gap: 16px; z-index: 10; backdrop-filter: blur(6px);
         }
         #overlay.hidden { display: none; }
         #overlay-title { font-size: 24px; font-weight: 900; color: var(--accent); }
         #overlay-sub { font-size: 14px; color: var(--hint); text-align: center; padding: 0 20px; }
-        #overlay-btn {
-            padding: 12px 32px;
-            border: none;
-            border-radius: var(--radius);
-            background: var(--btn);
-            color: var(--btn-text);
-            font-size: 15px;
-            font-weight: 700;
-            cursor: pointer;
+        #overlay-btn, #log-btn {
+            padding: 12px 24px; border: none; border-radius: var(--radius);
+            background: var(--btn); color: var(--btn-text);
+            font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 8px;
         }
-
-        #arena {
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-            padding: 12px;
-            gap: 10px;
-        }
-
+        #arena { display: flex; flex-direction: column; height: 100%; padding: 12px; gap: 8px; }
         .fighters { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .fighter {
-            background: var(--secondary);
-            border-radius: var(--radius);
-            padding: 12px;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            border: 2px solid transparent;
-            transition: border-color .3s;
+            background: var(--secondary); border-radius: var(--radius); padding: 10px;
+            display: flex; flex-direction: column; gap: 6px;
+            border: 2px solid transparent; transition: border-color .3s;
         }
         .fighter.me { border-color: var(--btn); }
         .fighter.enemy { border-color: var(--hint); }
-
-        .fighter-name {
-            font-size: 14px;
-            font-weight: 700;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .hp-bar-wrap {
-            height: 10px;
-            background: rgba(255,255,255,.1);
-            border-radius: 5px;
-            overflow: hidden;
-        }
-        .hp-bar {
-            height: 100%;
-            border-radius: 5px;
-            transition: width .4s ease;
-        }
+        .fighter-name { font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .hp-bar-wrap { height: 10px; background: rgba(255,255,255,.1); border-radius: 5px; overflow: hidden; }
+        .hp-bar { height: 100%; border-radius: 5px; transition: width .4s ease; }
         .hp-text { font-size: 11px; color: var(--hint); }
 
-        .round-info { text-align: center; font-size: 13px; color: var(--hint); font-weight: 600; }
-        .round-info span { color: var(--accent); }
-
-        #countdown {
-            text-align: center;
-            font-size: 24px;
-            font-weight: 900;
-            color: var(--btn);
-            min-height: 32px;
-        }
-
-        #action-panel { display: flex; flex-direction: column; gap: 6px; }
-        .action-label {
-            font-size: 11px;
-            color: var(--hint);
-            text-transform: uppercase;
-            letter-spacing: .5px;
-            margin-bottom: 2px;
-        }
-        .zone-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
-        .zone-btn {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-            padding: 10px 4px;
-            border: 2px solid transparent;
-            border-radius: var(--radius);
-            background: rgba(255,255,255,.05);
-            color: var(--text);
-            font-size: 18px;
-            cursor: pointer;
-            transition: all .15s;
-            font-family: var(--font);
-        }
-        .zone-btn span { font-size: 10px; font-weight: 600; letter-spacing: .3px; }
-        .zone-btn:active { transform: scale(.93); }
-        .zone-btn.selected {
-            border-color: var(--accent);
-            background: rgba(245,166,35,.15);
-        }
-        .zone-btn:disabled { opacity: .4; cursor: not-allowed; transform: none; }
-
-        #confirm-btn {
-            padding: 14px;
-            border: none;
-            border-radius: var(--radius);
-            background: var(--btn);
-            color: var(--btn-text);
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: opacity .2s, transform .12s;
-            letter-spacing: .5px;
-            margin-top: 4px;
-        }
-        #confirm-btn:disabled { opacity: .4; cursor: not-allowed; }
-        #confirm-btn:active { transform: scale(.97); }
-
+        /* Логи над кнопками */
         #log {
-            flex: 1;
-            overflow-y: auto;
-            background: var(--secondary);
-            border-radius: var(--radius);
-            padding: 10px;
-            font-size: 12px;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            min-height: 60px;
-            max-height: 150px;
+            background: var(--secondary); border-radius: var(--radius); padding: 8px 10px;
+            font-size: 12px; min-height: 70px; max-height: 130px; overflow-y: auto;
+            display: flex; flex-direction: column; gap: 3px;
         }
         .log-entry { line-height: 1.4; }
         .log-entry.sys { color: var(--hint); font-style: italic; }
         .log-entry.dmg { color: #ff6b6b; }
         .log-entry.heal { color: #69f0ae; }
         .log-entry.win { color: var(--accent); font-weight: 700; font-size: 14px; text-align: center; }
+
+        .round-info { text-align: center; font-size: 13px; color: var(--hint); font-weight: 600; }
+        .round-info span { color: var(--accent); }
+        #countdown { text-align: center; font-size: 24px; font-weight: 900; color: var(--btn); min-height: 32px; }
+
+        #action-panel { display: flex; flex-direction: column; gap: 6px; }
+        .action-label { font-size: 11px; color: var(--hint); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 2px; }
+        .zone-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+        .zone-btn {
+            display: flex; flex-direction: column; align-items: center; gap: 4px;
+            padding: 10px 4px; border: 2px solid transparent; border-radius: var(--radius);
+            background: rgba(255,255,255,.05); color: var(--text);
+            font-size: 18px; cursor: pointer; transition: all .15s; font-family: var(--font);
+        }
+        .zone-btn span { font-size: 10px; font-weight: 600; letter-spacing: .3px; }
+        .zone-btn:active { transform: scale(.93); }
+        .zone-btn.selected { border-color: var(--accent); background: rgba(245,166,35,.15); }
+        .zone-btn:disabled { opacity: .4; cursor: not-allowed; transform: none; }
+        #confirm-btn {
+            padding: 14px; border: none; border-radius: var(--radius);
+            background: var(--btn); color: var(--btn-text);
+            font-size: 16px; font-weight: 700; cursor: pointer;
+            transition: opacity .2s, transform .12s; letter-spacing: .5px; margin-top: 4px;
+        }
+        #confirm-btn:disabled { opacity: .4; cursor: not-allowed; }
+        #confirm-btn:active { transform: scale(.97); }
 
         @keyframes flash-red { 0%,100%{background:transparent} 50%{background:rgba(244,67,54,.3)} }
         @keyframes flash-green { 0%,100%{background:transparent} 50%{background:rgba(76,175,80,.3)} }
@@ -183,13 +101,12 @@
     </style>
 </head>
 <body>
-
 <div id="overlay">
     <div id="overlay-title">⚔️ ArenaM</div>
     <div id="overlay-sub">Подключение к серверу…</div>
     <button id="overlay-btn" style="display:none" onclick="location.reload()">🔄 Переподключиться</button>
+    <button id="log-btn" style="display:none">📋 Получить логи в ЛС</button>
 </div>
-
 <div id="arena">
     <div class="fighters">
         <div class="fighter me" id="card-me">
@@ -203,10 +120,10 @@
             <div class="hp-text" id="hp-enemy">— / —</div>
         </div>
     </div>
-
     <div class="round-info">Раунд <span id="round-num">—</span></div>
     <div id="countdown"></div>
-
+    <!-- Логи теперь над кнопками -->
+    <div id="log"></div>
     <div id="action-panel">
         <div class="action-label">⚔️ Атака</div>
         <div class="zone-row" id="atk-row">
@@ -222,16 +139,11 @@
         </div>
         <button id="confirm-btn" disabled onclick="confirmAction()">Подтвердить ход</button>
     </div>
-
-    <div id="log"></div>
 </div>
-
 <script>
-    // ── Telegram Web App ──
     const tg = window.Telegram?.WebApp;
     if (tg) { tg.ready(); tg.expand(); }
 
-    // ── Парсинг параметров (query и hash) ──
     function getParams() {
         const urlParams = new URLSearchParams(window.location.search);
         const hashParams = new URLSearchParams(window.location.hash.slice(1));
@@ -242,41 +154,31 @@
             ws_url:    urlParams.get('ws_url')    || hashParams.get('ws_url') || 'wss://vvvty.onrender.com/ws',
         };
     }
-
-    const params = getParams();
-    const BATTLE_ID = params.battle_id || '';
-    const USER_ID = parseInt(params.user_id || '0');
-    const CHAT_ID = params.chat_id || '0';
-    const WS_URL = params.ws_url;
-
+    const P = getParams();
+    const BATTLE_ID = P.battle_id || '';
+    const USER_ID = parseInt(P.user_id || '0');
+    const CHAT_ID = P.chat_id || '0';
+    const WS_URL = P.ws_url;
     if (!BATTLE_ID || !USER_ID) {
         document.getElementById('overlay-title').textContent = '❌ Ошибка';
         document.getElementById('overlay-sub').textContent = 'Неверные параметры запуска';
         document.getElementById('overlay-btn').style.display = '';
         throw new Error('Missing parameters');
     }
-
-    // ── Состояние боя ──
-    let ws;
-    let myAction = { atk: null, blk: null };
-    let maxHp = {};
-    let myId = USER_ID;
-    let enemyId = null;
-    let roundTimeout = 30;
-    let roundEndAt = 0;
-    let countdownInterval;
+    let ws, myAction = { atk: null, blk: null }, maxHp = {}, myId = USER_ID, enemyId = null, roundTimeout = 30, roundEndAt = 0, countdownInterval;
+    let fullLog = [];  // сохраняем все строки лога для отправки в ЛС
 
     const $ = id => document.getElementById(id);
-
-    function setOverlay(title, sub, showBtn = false) {
+    function setOverlay(title, sub, showBtn = false, showLogBtn = false) {
         $('overlay').classList.remove('hidden');
         $('overlay-title').textContent = title;
         $('overlay-sub').textContent = sub;
         $('overlay-btn').style.display = showBtn ? '' : 'none';
+        $('log-btn').style.display = showLogBtn ? '' : 'none';
     }
     function hideOverlay() { $('overlay').classList.add('hidden'); }
-
-    function log(text, cls = '') {
+    function addLog(text, cls = '') {
+        fullLog.push({ text, cls });
         const el = document.createElement('div');
         el.className = 'log-entry ' + cls;
         el.textContent = text;
@@ -291,173 +193,100 @@
         const bar = $(isMe ? 'hpbar-me' : 'hpbar-enemy');
         const txt = $(isMe ? 'hp-me' : 'hp-enemy');
         const card = $(isMe ? 'card-me' : 'card-enemy');
-
         bar.style.width = pct + '%';
         bar.style.background = pct > 50 ? '#4caf50' : pct > 25 ? '#ff9800' : '#f44336';
         txt.textContent = `${hp} / ${max}`;
-
         card.classList.remove('flash-dmg', 'flash-heal');
         void card.offsetWidth;
         card.classList.add('flash-dmg');
     }
-
     function startCountdown(seconds) {
         clearInterval(countdownInterval);
         roundEndAt = Date.now() + seconds * 1000;
         const el = $('countdown');
-        function tick() {
-            const left = Math.ceil((roundEndAt - Date.now()) / 1000);
-            if (left <= 0) {
-                el.textContent = '⏰';
-                clearInterval(countdownInterval);
-                return;
-            }
-            el.textContent = left;
-            el.style.color = left <= 5 ? '#f44336' : 'var(--btn)';
-        }
+        function tick() { const left = Math.ceil((roundEndAt - Date.now()) / 1000); if (left <= 0) { el.textContent = '⏰'; clearInterval(countdownInterval); return; } el.textContent = left; el.style.color = left <= 5 ? '#f44336' : 'var(--btn)'; }
         tick();
         countdownInterval = setInterval(tick, 200);
     }
-    function stopCountdown() {
-        clearInterval(countdownInterval);
-        $('countdown').textContent = '';
-    }
-
+    function stopCountdown() { clearInterval(countdownInterval); $('countdown').textContent = ''; }
     function selectZone(btn) {
-        const type = btn.dataset.type;
-        const zone = btn.dataset.zone;
-        const row = type === 'atk' ? 'atk-row' : 'blk-row';
-
+        const type = btn.dataset.type, zone = btn.dataset.zone, row = type === 'atk' ? 'atk-row' : 'blk-row';
         $(row).querySelectorAll('.zone-btn').forEach(b => b.classList.remove('selected'));
         btn.classList.add('selected');
-
         myAction[type] = zone;
         $('confirm-btn').disabled = !(myAction.atk && myAction.blk);
     }
-
     function resetActions(disable = false) {
         myAction = { atk: null, blk: null };
-        document.querySelectorAll('.zone-btn').forEach(b => {
-            b.classList.remove('selected');
-            b.disabled = disable;
-        });
+        document.querySelectorAll('.zone-btn').forEach(b => { b.classList.remove('selected'); b.disabled = disable; });
         $('confirm-btn').disabled = true;
     }
-
     function confirmAction() {
         if (!myAction.atk || !myAction.blk || !ws || ws.readyState !== WebSocket.OPEN) return;
-
         ws.send(JSON.stringify({ action: 'atk', zone: myAction.atk }));
         ws.send(JSON.stringify({ action: 'blk', zone: myAction.blk }));
-
         resetActions(true);
-        log('⏳ Ожидаем соперника…', 'sys');
+        addLog('⏳ Ожидаем соперника…', 'sys');
     }
-
-    // ── WebSocket ──
     function connect() {
         const url = `${WS_URL}?battle_id=${BATTLE_ID}&user_id=${USER_ID}&chat_id=${CHAT_ID}`;
         ws = new WebSocket(url);
-
-        ws.onopen = () => {
-            ws.send(JSON.stringify({ initData: tg?.initData || "" }));
-        };
-
-        ws.onmessage = ({ data }) => {
-            try {
-                const msg = JSON.parse(data);
-                handleMessage(msg);
-            } catch (e) {
-                console.error('Parse error:', e);
-            }
-        };
-
-        ws.onerror = () => setOverlay('🔌 Ошибка', 'Потеряно соединение с сервером', true);
-
-        ws.onclose = (e) => {
-            clearInterval(countdownInterval);
-            if (e.code !== 1000) setOverlay('🔌 Отключено', `Код: ${e.code}`, true);
-        };
+        ws.onopen = () => { ws.send(JSON.stringify({ initData: tg?.initData || "" })); };
+        ws.onmessage = ({ data }) => { try { handleMessage(JSON.parse(data)); } catch (e) { console.error('Parse error:', e); } };
+        ws.onerror = () => setOverlay('🔌 Ошибка', 'Потеряно соединение с сервером', true, false);
+        ws.onclose = (e) => { clearInterval(countdownInterval); if (e.code !== 1000) setOverlay('🔌 Отключено', `Код: ${e.code}`, true, false); };
     }
-
     function handleMessage(msg) {
         switch (msg.type) {
-            case 'waiting':
-                setOverlay('⏳ Ожидание', msg.message || 'Ожидаем соперника…');
-                break;
-
+            case 'waiting': setOverlay('⏳ Ожидание', msg.message || 'Ожидаем соперника…', false, false); break;
             case 'battle_start': {
                 hideOverlay();
                 roundTimeout = msg.round_timeout || 30;
-                const players = msg.players;
-                const me = players.find(p => p.user_id === myId);
-                const enemy = players.find(p => p.user_id !== myId);
-
+                const me = msg.players.find(p => p.user_id === myId);
+                const enemy = msg.players.find(p => p.user_id !== myId);   // теперь точно не я
                 if (me && enemy) {
                     enemyId = enemy.user_id;
                     maxHp[me.user_id] = me.max_hp;
                     maxHp[enemy.user_id] = enemy.max_hp;
-
                     $('name-me').textContent = me.name;
                     $('name-enemy').textContent = enemy.name;
                     updateHP(me.user_id, me.hp);
                     updateHP(enemy.user_id, enemy.hp);
-
                     $('round-num').textContent = '1';
-                    log('🏟️ Бой начался!', 'sys');
+                    addLog('🏟️ Бой начался!', 'sys');
                     resetActions(false);
                     startCountdown(roundTimeout);
                 }
                 break;
             }
-
             case 'round_result': {
                 $('round-num').textContent = msg.round;
                 stopCountdown();
-
-                if (msg.log) {
-                    msg.log.forEach(line => log(line, ''));
-                }
-
-                if (msg.hp) {
-                    Object.entries(msg.hp).forEach(([uid, hp]) => updateHP(parseInt(uid), hp));
-                }
-
+                if (msg.log) msg.log.forEach(line => addLog(line, ''));
+                if (msg.hp) Object.entries(msg.hp).forEach(([uid, hp]) => updateHP(parseInt(uid), hp));
                 resetActions(false);
                 startCountdown(roundTimeout);
                 break;
             }
-
             case 'game_over': {
                 stopCountdown();
                 resetActions(true);
-
-                if (msg.hp) {
-                    Object.entries(msg.hp).forEach(([uid, hp]) => updateHP(parseInt(uid), hp));
-                }
-
-                if (msg.winner_id === null) {
-                    log('🤝 Ничья!', 'win');
-                    setOverlay('🤝 Ничья!', `Бой завершён на раунде ${msg.round}`);
-                } else if (msg.winner_id === myId) {
-                    log('🏆 Вы победили!', 'win');
-                    setOverlay('🏆 Победа!', 'Вы одержали победу в дуэли!');
-                } else {
-                    log('💀 Вы проиграли', 'dmg');
-                    setOverlay('💀 Поражение', 'Соперник оказался сильнее. Удачи в следующий раз!');
-                }
-
-                setTimeout(() => tg?.close?.(), 4000);
+                if (msg.hp) Object.entries(msg.hp).forEach(([uid, hp]) => updateHP(parseInt(uid), hp));
+                if (msg.winner_id === null) { addLog('🤝 Ничья!', 'win'); setOverlay('🤝 Ничья!', `Бой завершён на раунде ${msg.round}`, false, true); }
+                else if (msg.winner_id === myId) { addLog('🏆 Вы победили!', 'win'); setOverlay('🏆 Победа!', 'Вы одержали победу в дуэли!', false, true); }
+                else { addLog('💀 Вы проиграли', 'dmg'); setOverlay('💀 Поражение', 'Соперник оказался сильнее.', false, true); }
+                // Кнопка "Получить логи в ЛС"
+                $('log-btn').onclick = () => {
+                    tg?.sendData(JSON.stringify({ action: 'get_logs', battle_id: BATTLE_ID, user_id: USER_ID }));
+                    $('log-btn').textContent = '✅ Отправлено';
+                    $('log-btn').disabled = true;
+                };
+                setTimeout(() => tg?.close?.(), 6000);
                 break;
             }
-
-            case 'error':
-                log(`⚠️ ${msg.message}`, 'sys');
-                break;
+            case 'error': addLog(`⚠️ ${msg.message}`, 'sys'); break;
         }
     }
-
-    // ── Старт ──
     setOverlay('⚔️ ArenaM', 'Подключение…');
     connect();
 </script>
