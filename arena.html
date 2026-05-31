@@ -376,6 +376,40 @@
             height: 1px; background: rgba(255,255,255,.06);
             border-radius: 1px; margin: 1px 0;
         }
+
+        /* ================================================================
+           Исправление выхода карточки за экран на iPhone
+           ================================================================ */
+        .fighters {
+            overflow: hidden;
+        }
+        .fighter {
+            overflow: hidden;          /* обрезаем всё, что вылезло */
+            min-width: 0;              /* разрешаем гриду сжимать карточку */
+        }
+        .fighter-header {
+            overflow: hidden;
+            flex-wrap: nowrap;
+        }
+        .fighter-name {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 100%;
+        }
+        .hp-row {
+            overflow: hidden;
+        }
+        .hp-text {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        @media (max-width: 360px) {
+            .fighter-name { font-size: 12px; }
+            .hp-text { font-size: 9px; }
+            .zone-btn span { font-size: 8px; }
+        }
     </style>
 </head>
 <body>
