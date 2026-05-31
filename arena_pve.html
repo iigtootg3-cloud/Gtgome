@@ -314,7 +314,7 @@
         .log-entry.heal { color: var(--green); }
         .log-entry.win  { color: var(--gold); font-weight: 700; font-size: 13px; text-align: center; margin: 2px 0; }
         .log-entry.sep  { color: rgba(255,255,255,.15); font-size: 10px; }
-        /* [FIX 3] Разделитель нового боя */
+        /* Разделитель нового боя */
         .log-entry.new-battle-sep {
             color: var(--gold); font-size: 10px; text-align: center;
             border-top: 1px solid rgba(245,166,35,.2);
@@ -418,6 +418,40 @@
             border: 1px solid rgba(255,255,255,.15);
         }
         #finish-btn:active { transform: scale(.97); }
+
+        /* ================================================================
+           Исправление выхода карточки за экран на iPhone
+           ================================================================ */
+        .fighters {
+            overflow: hidden;
+        }
+        .fighter {
+            overflow: hidden;          /* обрезаем всё, что вылезло */
+            min-width: 0;              /* разрешаем гриду сжимать карточку */
+        }
+        .fighter-header {
+            overflow: hidden;
+            flex-wrap: nowrap;
+        }
+        .fighter-name {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 100%;
+        }
+        .hp-row {
+            overflow: hidden;
+        }
+        .hp-text {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        @media (max-width: 360px) {
+            .fighter-name { font-size: 12px; }
+            .hp-text { font-size: 9px; }
+            .zone-btn span { font-size: 8px; }
+        }
     </style>
 </head>
 <body>
@@ -548,7 +582,6 @@
     let ws;
     let myAction = { atk: null, blk: null };
     let maxHp = {};
-    // [FIX 1] Храним max_energy, полученный от сервера
     let maxEnergy = 100;
     let roundTimeout = 30;
     let roundEndAt = 0;
@@ -579,7 +612,6 @@
         $('log').scrollTop = $('log').scrollHeight;
     }
 
-    // [FIX 3] Очистка лога с разделителем нового боя
     function clearLog(addSeparator = false) {
         if (addSeparator) {
             const sep = document.createElement('div');
@@ -609,7 +641,6 @@
         }
     }
 
-    /* [FIX 1] Обновление отображения энергии с учётом max_energy */
     function updateEnergyDisplay(energyLeft, energyMax) {
         if (energyMax !== undefined) maxEnergy = energyMax;
         $('energy-display').textContent = `${energyLeft}/${maxEnergy}`;
@@ -763,39 +794,22 @@
             case 'battle_start':
                 hideOverlay();
                 roundTimeout = msg.round_timeout || 30;
-
-                // [FIX 3] Сбрасываем классы winner/loser перед новым боем
                 $('card-hero').classList.remove('winner', 'loser');
                 $('card-monster').classList.remove('winner', 'loser');
-
-                // [FIX 3] Скрываем панель post-battle
                 $('post-battle-actions').style.display = 'none';
-
-                // Обновляем имена
                 $('name-hero').textContent = msg.hero.name || 'Герой';
                 $('name-monster').textContent = msg.monster.name || 'Монстр';
-
-                // [FIX 3] Сбрасываем maxHp для нового монстра
                 maxHp['hero'] = msg.hero.max_hp;
                 maxHp['monster'] = msg.monster.max_hp;
-
-                // [FIX 3] Обновляем HP без flash (новый бой)
                 updateHP('hero', msg.hero.hp, msg.hero.max_hp, false);
                 updateHP('monster', msg.monster.hp, msg.monster.max_hp, false);
-
-                // [FIX 1] Используем max_energy из сообщения сервера
                 updateEnergyDisplay(msg.energy_left, msg.max_energy);
-
                 $('round-num').textContent = '1';
-
-                // [FIX 3] Добавляем разделитель нового боя (не для первого боя)
                 if ($('log').children.length > 0) {
                     clearLog(true);
                 } else {
                     addLog('🏟️ Охота началась!', 'sys');
                 }
-
-                // [FIX 3] Включаем кнопки зон
                 resetActions(false);
                 startCountdown(roundTimeout);
                 break;
@@ -816,7 +830,6 @@
                 updateHP('hero', msg.hero_hp, maxHp['hero']);
                 updateHP('monster', msg.monster_hp, maxHp['monster']);
                 processCombat(msg.combat);
-                // [FIX 1] Передаём max_energy из round_result
                 updateEnergyDisplay(msg.energy_left, msg.max_energy);
                 resetActions(false);
                 startCountdown(roundTimeout);
@@ -838,7 +851,6 @@
                 }
                 addLog(`⚔️ Раунд ${msg.round} завершён.`, 'sys');
                 addLog(`💎 Награда: +${msg.exp_earned} опыта, +${msg.coins_earned} монет`, 'win');
-                // [FIX 1] Передаём max_energy из game_over
                 updateEnergyDisplay(msg.energy_left, msg.max_energy);
                 showPostBattleActions(msg.can_continue, msg.total_exp, msg.total_coins);
                 break;
@@ -857,4 +869,4 @@
     connect();
 </script>
 </body>
-</html>
+    </html>
