@@ -314,7 +314,6 @@
         .log-entry.heal { color: var(--green); }
         .log-entry.win  { color: var(--gold); font-weight: 700; font-size: 13px; text-align: center; margin: 2px 0; }
         .log-entry.sep  { color: rgba(255,255,255,.15); font-size: 10px; }
-        /* Разделитель нового боя */
         .log-entry.new-battle-sep {
             color: var(--gold); font-size: 10px; text-align: center;
             border-top: 1px solid rgba(245,166,35,.2);
@@ -419,25 +418,32 @@
         }
         #finish-btn:active { transform: scale(.97); }
 
-        /* ================================================================
-           Исправление выхода карточки за экран на iPhone
-           ================================================================ */
+        /* === Исправления для iPhone + длинные имена монстров === */
         .fighters {
             overflow: hidden;
         }
         .fighter {
-            overflow: hidden;          /* обрезаем всё, что вылезло */
-            min-width: 0;              /* разрешаем гриду сжимать карточку */
+            overflow: hidden;
+            min-width: 0;
         }
         .fighter-header {
             overflow: hidden;
             flex-wrap: nowrap;
         }
-        .fighter-name {
+        /* Своё имя – обрезаем */
+        .fighter.me .fighter-name {
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
             max-width: 100%;
+        }
+        /* Имя врага/монстра – перенос строки */
+        .fighter.enemy .fighter-name {
+            overflow: visible;
+            white-space: normal;
+            word-break: break-word;
+            max-width: 100%;
+            font-size: 13px;
         }
         .hp-row {
             overflow: hidden;
@@ -449,6 +455,7 @@
         }
         @media (max-width: 360px) {
             .fighter-name { font-size: 12px; }
+            .fighter.enemy .fighter-name { font-size: 11px; }
             .hp-text { font-size: 9px; }
             .zone-btn span { font-size: 8px; }
         }
@@ -869,4 +876,4 @@
     connect();
 </script>
 </body>
-    </html>
+</html> 
