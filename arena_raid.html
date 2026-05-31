@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ArenaM — Рейд</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&display=swap');
+
+        :root {
+            --bg:       #0a0a14;
+            --panel:    #12122a;
+            --panel2:   #0f1028;
+            --text:     #eaeaea;
+            --hint:     #8899aa;
+            --btn:      #7b2fff;
+            --btn2:     #e94560;
+            --gold:     #f5a623;
+            --green:    #69f0ae;
+            --red:      #ff5252;
+            --blue:     #90caf9;
+            --purple:   #ce93d8;
+            --radius:   12px;
+            --r-sm:     7px;
+            --font:     'Rajdhani', 'Segoe UI', system-ui, sans-serif;
+            --boss-color: #7b2fff;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: var(--font);
+            background: var(--bg);
+            color: var(--text);
+            height: 100svh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Анимированный фон */
+        body::before {
+            content: '';
+            position: fixed; inset: 0; z-index: 0;
+            background:
+                radial-gradient(ellipse at 20% 20%, rgba(123,47,255,.08) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 80%, rgba(233,69,96,.06) 0%, transparent 60%),
+                linear-gradient(rgba(123,47,255,.025) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(123,47,255,.025) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
+            pointer-events: none;
+        }
+
+        /* ── OVERLAY ── */
+        #overlay {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,.9);
+            display: flex; align-items: center; justify-content: center; flex-direction: column;
+            gap: 14px; z-index: 300;
+            backdrop-filter: blur(12px);
+            transition: opacity .4s;
+        }
+        #overlay.hidden { display: none; }
+
+        #overlay-icon { font-size: 52px; animation: breathe 2.2s ease-in-out infinite; }
+        @keyframes breathe {
+            0%,100% { transform: scale(1); filter: drop-shadow(0 0 8px var(--boss-color)); }
+            50%      { transform: scale(1.1); filter: drop-shadow(0 0 20px var(--boss-color)); }
+        }
+        #overlay-title {
+            font-size: 26px; font-weight: 700; letter-spacing: 1px; text-align: center;
+            background: linear-gradient(135deg, var(--boss-color) 0%, #fff 60%, var(--boss-color) 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        #overlay-sub { font-size: 13px; color: var(--hint); text-align: center; padding: 0 24px; line-height: 1.7; }
+        #overlay-btn {
+            display: none;
+            padding: 12px 30px; border: 2px solid var(--btn); border-radius: var(--radius);
+            background: transparent; color: #fff;
+            font-family: var(--font); font-size: 14px; font-weight: 700;
+            cursor: pointer; transition: background .2s, transform .1s; margin-top: 4px;
+        }
+        #overlay-btn:hover { background: var(--btn); }
+        #overlay-btn:active { transform: scale(.96); }
+
+        .overlay-reward {
+            font-size: 18px; font-weight: 700; color: var(--gold);
+            background: rgba(245,166,35,.12); border: 1px solid rgba(245,166,35,.3);
+            border-radius: 40px; padding: 6px 20px; text-align: center;
+        }
+
+        /* ── BOSS ABILITY FLASH ── */
+        #ability-flash {
+            position: fixed; inset: 0; z-index: 200;
+            display: flex; align-items: center; justify-content: center; flex-direction: column;
+            gap: 8px;
+            background: rgba(0,0,0,.7);
+            backdrop-filter: blur(4px);
+            opacity: 0; pointer-events: none;
+            transition: opacity .25s;
+        }
+        #ability-flash.show { opacity: 1; pointer-events: all; }
+        #ability-flash-icon { font-size: 48px; }
+        #ability-flash-name { font-size: 22px; font-weight: 700; color: var(--red); }
+        #ability-flash-desc { font-size: 13px; color: var(--hint); text-align: center; padding: 0 30px; }
+
+        /* ── MAIN LAYOUT ── */
+        #arena {
+            position: relative; z-index: 1;
+            display: flex; flex-direction: column;
+            height: 100%; padding: 8px 8px 6px;
+            gap: 6px;
+        }
+
+        /* ── BOSS PANEL ── */
+        #boss-panel {
+            background: var(--panel);
+            border-radius: var(--radius);
+            border: 1.5px solid color-mix(in srgb, var(--boss-color) 40%, transparent);
+            box-shadow: 0 0 18px color-mix(in srgb, var(--boss-color) 20%, transparent);
+            padding: 10px 12px 8px;
+            position: relative;
+            overflow: hidden;
+        }
+        #boss-panel::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: linear-gradient(135deg, color-mix(in srgb, var(--boss-color) 8%, transparent), transparent 70%);
+            pointer-events: none;
+        }
+
+        .boss-header { display: flex; align-items: center; gap: 10px; }
+        #boss-img {
+            width: 48px; height: 48px; border-radius: 8px; object-fit: cover;
+            border: 1.5px solid color-mix(in srgb, var(--boss-color) 60%, transparent);
+            box-shadow: 0 0 10px color-mix(in srgb, var(--boss-color) 40%, transparent);
+            flex-shrink: 0;
+        }
+        .boss-info { flex: 1; min-width: 0; }
+        #boss-name {
+            font-size: 17px; font-weight: 700; letter-spacing: .5px;
+            color: var(--boss-color);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .boss-meta { display: flex; align-items: center; gap: 8px; margin-top: 2px; }
+        #boss-hp-text { font-size: 11px; color: var(--hint); font-weight: 600; }
+
+        .hp-bar-wrap {
+            flex: 1; height: 8px;
+            background: rgba(255,255,255,.07);
+            border-radius: 4px; overflow: hidden;
+        }
+        .hp-bar { height: 100%; border-radius: 4px; transition: width .5s cubic-bezier(.4,0,.2,1), background .4s; }
+        #boss-hp-bar { background: linear-gradient(90deg, var(--boss-color), #e94560); }
+
+        .timers-row {
+            display: flex; gap: 10px; margin-top: 8px;
+        }
+        .timer-badge {
+            flex: 1; background: rgba(255,255,255,.05);
+            border-radius: var(--r-sm); border: 1px solid rgba(255,255,255,.08);
+            padding: 4px 8px; display: flex; align-items: center; gap: 5px;
+        }
+        .timer-badge .t-icon { font-size: 13px; }
+        .timer-badge .t-label { font-size: 10px; color: var(--hint); }
+        .timer-badge .t-val { font-size: 13px; font-weight: 700; margin-left: auto; }
+        #ability-timer-val { color: var(--red); }
+        #raid-timer-val { color: var(--gold); }
+
+        /* ── MIDDLE SECTION ── */
+        #middle {
+            display: grid;
+            grid-template-columns: 1fr 140px;
+            gap: 6px;
+            flex: 1;
+            min-height: 0;
+        }
+
+        /* ── LEFT: MY CARD + LOG ── */
+        #left-col {
+            display: flex; flex-direction: column; gap: 6px;
+            min-height: 0;
+        }
+
+        /* My player card */
+        #my-card {
+            background: var(--panel);
+            border-radius: var(--radius);
+            border: 1.5px solid rgba(233,69,96,.4);
+            box-shadow: 0 0 12px rgba(233,69,96,.1);
+            padding: 8px 10px;
+        }
+        .my-header { display: flex; align-items: center; gap: 7px; margin-bottom: 5px; }
+        .my-avatar {
+            width: 28px; height: 28px; border-radius: 50%;
+            background: linear-gradient(135deg, #e94560, #6c3483);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 14px; flex-shrink: 0;
+            border: 1.5px solid rgba(255,255,255,.12);
+        }
+        #my-name { font-size: 14px; font-weight: 700; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        #my-dmg-badge {
+            font-size: 10px; font-weight: 700; color: var(--gold);
+            background: rgba(245,166,35,.14); border: 1px solid rgba(245,166,35,.3);
+            border-radius: 4px; padding: 2px 7px; flex-shrink: 0;
+        }
+        .my-hp-row { display: flex; align-items: center; gap: 6px; margin-bottom: 5px; }
+        #my-hp-bar { background: linear-gradient(90deg, #e94560, #c62828); }
+        #my-hp-text { font-size: 10px; color: var(--hint); font-weight: 600; white-space: nowrap; }
+
+        /* Zone buttons */
+        #zone-section { display: flex; flex-direction: column; gap: 4px; }
+        .zone-label { font-size: 10px; color: var(--hint); letter-spacing: .5px; font-weight: 600; }
+        .zone-row { display: flex; gap: 4px; }
+        .zone-btn {
+            flex: 1; padding: 7px 4px;
+            border: 1.5px solid rgba(255,255,255,.1);
+            border-radius: var(--r-sm);
+            background: rgba(255,255,255,.04);
+            color: var(--hint); font-family: var(--font); font-size: 12px; font-weight: 700;
+            cursor: pointer; transition: all .2s;
+            position: relative;
+        }
+        .zone-btn.atk-selected {
+            border-color: #e94560; color: #e94560;
+            background: rgba(233,69,96,.12);
+            box-shadow: 0 0 8px rgba(233,69,96,.25);
+        }
+        .zone-btn.blk-selected {
+            border-color: #90caf9; color: #90caf9;
+            background: rgba(144,202,249,.12);
+            box-shadow: 0 0 8px rgba(144,202,249,.2);
+        }
+        .zone-btn:active { transform: scale(.94); }
+
+        /* Attack button */
+        #attack-btn {
+            width: 100%; padding: 10px;
+            background: linear-gradient(135deg, var(--btn), #e94560);
+            border: none; border-radius: var(--radius);
+            color: #fff; font-family: var(--font); font-size: 15px; font-weight: 700;
+            cursor: pointer; transition: opacity .2s, transform .1s;
+            letter-spacing: .5px; margin-top: 4px;
+            position: relative; overflow: hidden;
+        }
+        #attack-btn::after {
+            content: '';
+            position: absolute; inset: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,.15), transparent);
+            transform: translateX(-100%);
+        }
+        #attack-btn.shimmer::after { animation: shimmer .5s ease; }
+        @keyframes shimmer { to { transform: translateX(100%); } }
+        #attack-btn:disabled { opacity: .45; cursor: not-allowed; }
+        #attack-btn:not(:disabled):active { transform: scale(.97); }
+
+        /* Cooldown overlay */
+        #cd-bar-wrap {
+            height: 3px; background: rgba(255,255,255,.07);
+            border-radius: 2px; overflow: hidden; margin-top: 3px;
+        }
+        #cd-bar { height: 100%; background: var(--btn); border-radius: 2px; width: 100%; transition: width .1s linear; }
+
+        /* Respawn button */
+        #respawn-btn {
+            width: 100%; padding: 10px;
+            background: transparent;
+            border: 2px solid var(--green); border-radius: var(--radius);
+            color: var(--green); font-family: var(--font); font-size: 14px; font-weight: 700;
+            cursor: pointer; transition: background .2s, transform .1s;
+            display: none;
+        }
+        #respawn-btn:hover { background: rgba(105,240,174,.12); }
+        #respawn-btn:active { transform: scale(.97); }
+
+        /* Death overlay on card */
+        #dead-overlay {
+            display: none;
+            flex-direction: column; align-items: center; justify-content: center;
+            gap: 4px;
+            background: rgba(0,0,0,.7); border-radius: var(--radius);
+            position: absolute; inset: 0; z-index: 10;
+        }
+        #dead-overlay.show { display: flex; }
+        #dead-overlay .dead-icon { font-size: 32px; }
+        #dead-overlay .dead-text { font-size: 13px; color: var(--red); font-weight: 700; }
+        #dead-overlay .dead-cd { font-size: 11px; color: var(--hint); }
+
+        /* Event log */
+        #log-panel {
+            flex: 1; min-height: 0;
+            background: var(--panel);
+            border-radius: var(--radius);
+            border: 1px solid rgba(255,255,255,.06);
+            overflow: hidden; display: flex; flex-direction: column;
+        }
+        #log-header { padding: 5px 10px; font-size: 10px; color: var(--hint); font-weight: 700; letter-spacing: .5px; border-bottom: 1px solid rgba(255,255,255,.05); }
+        #log-list {
+            flex: 1; overflow-y: auto; padding: 6px 8px;
+            display: flex; flex-direction: column; gap: 2px;
+            scroll-behavior: smooth;
+        }
+        #log-list::-webkit-scrollbar { width: 3px; }
+        #log-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,.1); border-radius: 2px; }
+        .log-line { font-size: 11px; color: var(--hint); line-height: 1.45; }
+        .log-line.attack { color: var(--text); }
+        .log-line.ability { color: var(--purple); }
+        .log-line.death { color: var(--red); }
+        .log-line.join { color: var(--green); }
+        .log-line.respawn { color: var(--gold); }
+
+        /* ── RIGHT: Players / Leaderboard ── */
+        #right-col {
+            display: flex; flex-direction: column; gap: 6px;
+            overflow: hidden;
+        }
+
+        .right-panel {
+            background: var(--panel);
+            border-radius: var(--radius);
+            border: 1px solid rgba(255,255,255,.06);
+            overflow: hidden;
+        }
+        .right-panel-header {
+            padding: 5px 8px;
+            font-size: 10px; font-weight: 700; color: var(--hint); letter-spacing: .5px;
+            border-bottom: 1px solid rgba(255,255,255,.05);
+        }
+        .right-panel-body {
+            overflow-y: auto; max-height: 120px;
+            padding: 4px;
+        }
+        .right-panel-body::-webkit-scrollbar { width: 2px; }
+        .right-panel-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,.08); border-radius: 2px; }
+
+        /* Player card in list */
+        .player-card {
+            display: flex; align-items: center; gap: 5px;
+            padding: 4px 5px; border-radius: var(--r-sm);
+            transition: background .2s;
+        }
+        .player-card:hover { background: rgba(255,255,255,.04); }
+        .player-card.dead { opacity: .45; }
+        .pc-avatar {
+            width: 20px; height: 20px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--btn), #6c3483);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 10px; flex-shrink: 0;
+        }
+        .pc-info { flex: 1; min-width: 0; }
+        .pc-name { font-size: 10px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .pc-hp-wrap { height: 3px; background: rgba(255,255,255,.07); border-radius: 2px; overflow: hidden; margin-top: 2px; }
+        .pc-hp-bar { height: 100%; background: var(--green); border-radius: 2px; transition: width .4s; }
+        .pc-dmg { font-size: 9px; color: var(--gold); font-weight: 700; flex-shrink: 0; }
+
+        /* Leaderboard */
+        .lb-item {
+            display: flex; align-items: center; gap: 5px;
+            padding: 4px 5px; border-radius: var(--r-sm);
+        }
+        .lb-rank { font-size: 11px; font-weight: 700; width: 16px; text-align: center; flex-shrink: 0; }
+        .lb-name { font-size: 10px; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .lb-dmg { font-size: 10px; color: var(--gold); font-weight: 700; flex-shrink: 0; }
+
+        /* ── BOTTOM TABS ── */
+        #tab-bar {
+            display: flex; gap: 4px;
+        }
+        .tab-btn {
+            flex: 1; padding: 6px 4px; border: 1px solid rgba(255,255,255,.08);
+            border-radius: var(--r-sm); background: rgba(255,255,255,.04);
+            color: var(--hint); font-family: var(--font); font-size: 10px; font-weight: 700;
+            cursor: pointer; transition: all .2s; text-align: center;
+        }
+        .tab-btn.active { border-color: var(--btn); color: var(--btn); background: rgba(123,47,255,.12); }
+
+        /* ── FLOATERS: damage numbers ── */
+        .dmg-float {
+            position: fixed; font-weight: 700; font-size: 16px; pointer-events: none; z-index: 500;
+            animation: float-up .9s ease forwards;
+        }
+        @keyframes float-up {
+            0%   { opacity: 1; transform: translateY(0) scale(1); }
+            80%  { opacity: 1; }
+            100% { opacity: 0; transform: translateY(-50px) scale(.7); }
+        }
+
+        /* ── RAID OVER SCREEN ── */
+        #raid-over-panel {
+            display: none; flex-direction: column; align-items: center; gap: 10px;
+            padding: 10px;
+        }
+        #raid-over-panel.show { display: flex; }
+        .lb-full-item {
+            display: flex; align-items: center; gap: 8px;
+            padding: 6px 10px; border-radius: var(--r-sm);
+            background: rgba(255,255,255,.04); width: 100%;
+        }
+        .lb-full-rank { font-size: 18px; width: 24px; text-align: center; }
+        .lb-full-name { flex: 1; font-size: 13px; font-weight: 700; }
+        .lb-full-info { font-size: 11px; color: var(--hint); text-align: right; }
+
+        .dots::after {
+            content: ''; display: inline-block;
+            animation: dots 1.5s infinite;
+        }
+        @keyframes dots { 0%{content:''} 33%{content:'.'} 66%{content:'..'} 100%{content:'...'} }
+    </style>
+</head>
+<body>
+
+<!-- ── OVERLAY (connecting) ── -->
+<div id="overlay">
+    <div id="overlay-icon">🌑</div>
+    <div id="overlay-title">Рейд</div>
+    <div id="overlay-sub">Подключение к серверу<span class="dots"></span></div>
+    <button id="overlay-btn" onclick="reconnect()">🔄 Переподключиться</button>
+</div>
+
+<!-- ── BOSS ABILITY FLASH ── -->
+<div id="ability-flash">
+    <div id="ability-flash-icon">🌀</div>
+    <div id="ability-flash-name">Способность</div>
+    <div id="ability-flash-desc"></div>
+</div>
+
+<!-- ── MAIN ARENA ── -->
+<div id="arena">
+
+    <!-- BOSS PANEL -->
+    <div id="boss-panel">
+        <div class="boss-header">
+            <!-- Замените src на реальный URL изображения босса -->
+            <img id="boss-img" src="" alt="Boss" onerror="this.style.display='none'">
+            <div class="boss-info">
+                <div id="boss-name">—</div>
+                <div class="boss-meta">
+                    <div class="hp-bar-wrap" style="flex:1">
+                        <div class="hp-bar" id="boss-hp-bar" style="width:100%"></div>
+                    </div>
+                    <span id="boss-hp-text">—/—</span>
+                </div>
+            </div>
+        </div>
+        <div class="timers-row">
+            <div class="timer-badge">
+                <span class="t-icon">🌀</span>
+                <span class="t-label">Способность</span>
+                <span class="t-val" id="ability-timer-val">—</span>
+            </div>
+            <div class="timer-badge">
+                <span class="t-icon">⏰</span>
+                <span class="t-label">Рейд</span>
+                <span class="t-val" id="raid-timer-val">—</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- MIDDLE -->
+    <div id="middle">
+
+        <!-- LEFT COL -->
+        <div id="left-col">
+
+            <!-- My card -->
+            <div id="my-card" style="position:relative">
+                <div id="dead-overlay">
+                    <div class="dead-icon">💀</div>
+                    <div class="dead-text">Вы пали в бою</div>
+                    <div class="dead-cd" id="respawn-cd-text">Возрождение через 30 сек</div>
+                </div>
+                <div class="my-header">
+                    <div class="my-avatar">⚔️</div>
+                    <div id="my-name">Герой</div>
+                    <div id="my-dmg-badge">0 урона</div>
+                </div>
+                <div class="my-hp-row">
+                    <div class="hp-bar-wrap" style="flex:1">
+                        <div class="hp-bar" id="my-hp-bar" style="width:100%"></div>
+                    </div>
+                    <span id="my-hp-text">—/—</span>
+                </div>
+
+                <!-- Zone selector -->
+                <div id="zone-section">
+                    <div class="zone-label">⚔️ АТАКА</div>
+                    <div class="zone-row" id="atk-row">
+                        <button class="zone-btn" onclick="selectZone('atk','TOP')">▲ Верх</button>
+                        <button class="zone-btn" onclick="selectZone('atk','MIDDLE')">■ Центр</button>
+                        <button class="zone-btn" onclick="selectZone('atk','BOTTOM')">▼ Низ</button>
+                    </div>
+                    <div class="zone-label" style="margin-top:4px">🛡️ БЛОК</div>
+                    <div class="zone-row" id="blk-row">
+                        <button class="zone-btn" onclick="selectZone('blk','TOP')">▲ Верх</button>
+                        <button class="zone-btn" onclick="selectZone('blk','MIDDLE')">■ Центр</button>
+                        <button class="zone-btn" onclick="selectZone('blk','BOTTOM')">▼ Низ</button>
+                    </div>
+                </div>
+
+                <button id="attack-btn" onclick="sendAttack()" disabled>⚔️ Атаковать</button>
+                <div id="cd-bar-wrap"><div id="cd-bar"></div></div>
+                <button id="respawn-btn" onclick="sendRespawn()">✨ Возродиться</button>
+            </div>
+
+            <!-- Event log -->
+            <div id="log-panel">
+                <div id="log-header">📋 ЛОГ РЕЙДА</div>
+                <div id="log-list"></div>
+            </div>
+        </div>
+
+        <!-- RIGHT COL -->
+        <div id="right-col">
+
+            <!-- Leaderboard -->
+            <div class="right-panel">
+                <div class="right-panel-header">🏆 ТОП-5</div>
+                <div class="right-panel-body" id="leaderboard-list"></div>
+            </div>
+
+            <!-- Players -->
+            <div class="right-panel" style="flex:1">
+                <div class="right-panel-header">👥 УЧАСТНИКИ</div>
+                <div class="right-panel-body" id="players-list" style="max-height:none;height:100%"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB BAR -->
+    <div id="tab-bar">
+        <button class="tab-btn active" onclick="showTab('battle')">⚔️ Бой</button>
+        <button class="tab-btn" onclick="showTab('players')">👥 Бойцы</button>
+        <button class="tab-btn" onclick="showTab('log')">📋 Лог</button>
+    </div>
+</div>
+
+<script>
+// ──────────────────────────────────────────────────────────
+// ПАРАМЕТРЫ ИЗ URL
+// ──────────────────────────────────────────────────────────
+const params = new URLSearchParams(location.search);
+const MODE       = params.get('mode')      || 'raid';
+const BATTLE_ID  = params.get('battle_id') || '';
+const USER_ID    = params.get('user_id')   || '';
+const CHAT_ID    = params.get('chat_id')   || '0';
+const WS_URL_BASE = params.get('ws_url')   || 'wss://vvvty.onrender.com/ws';
+
+// Плейсхолдеры изображений боссов (замените на реальные URL)
+const BOSS_IMAGES = {
+    1: 'https://via.placeholder.com/48x48/7b2fff/ffffff?text=VOID',
+    2: 'https://via.placeholder.com/48x48/4a90d9/ffffff?text=MOON',
+    3: 'https://via.placeholder.com/48x48/f5c518/000000?text=WAR',
+};
+
+// ──────────────────────────────────────────────────────────
+// СОСТОЯНИЕ
+// ──────────────────────────────────────────────────────────
+let ws = null;
+let connected = false;
+let myId = parseInt(USER_ID) || 0;
+
+let bossHp = 0, bossMaxHp = 1;
+let myHp = 0, myMaxHp = 1;
+let myAlive = true;
+let myTotalDmg = 0;
+let attackCooldown = 7;
+let cdTimer = null;
+let cdRemaining = 0;
+let nextAbilityIn = 25;
+let raidTimeLeft = 10800;
+let atkZone = null, blkZone = null;
+let respawnWait = 30;
+let respawnCdTimer = null;
+let raidFinished = false;
+let bossColor = '#7b2fff';
+let bossImgUrl = '';
+
+// UI intervals
+let timerInterval = null;
+
+// ──────────────────────────────────────────────────────────
+// WEBSOCKET
+// ──────────────────────────────────────────────────────────
+function buildWsUrl() {
+    const sep = WS_URL_BASE.includes('?') ? '&' : '?';
+    return `${WS_URL_BASE}${sep}mode=${MODE}&battle_id=${BATTLE_ID}&user_id=${USER_ID}&chat_id=${CHAT_ID}`;
+}
+
+function connect() {
+    showOverlay('🌑', 'Рейд', 'Подключение к серверу<span class="dots"></span>', false);
+    ws = new WebSocket(buildWsUrl());
+
+    ws.onopen = () => {
+        ws.send(JSON.stringify({ type: 'auth', user_id: USER_ID }));
+    };
+
+    ws.onmessage = e => {
+        try { handleMessage(JSON.parse(e.data)); } catch(err) { console.error(err); }
+    };
+
+    ws.onclose = ev => {
+        connected = false;
+        if (!raidFinished) {
+            showOverlay('📡', 'Соединение прервано', 'Нажмите кнопку для переподключения', true);
+        }
+    };
+
+    ws.onerror = () => {
+        showOverlay('⚠️', 'Ошибка', 'Не удалось подключиться к серверу', true);
+    };
+}
+
+function reconnect() {
+    if (ws) { try { ws.close(); } catch(e) {} }
+    setTimeout(connect, 300);
+}
+
+// ──────────────────────────────────────────────────────────
+// MESSAGE HANDLER
+// ──────────────────────────────────────────────────────────
+function handleMessage(msg) {
+    switch (msg.type) {
+        case 'raid_state':       onRaidState(msg); break;
+        case 'raid_update':      onRaidUpdate(msg); break;
+        case 'raid_attack_result': onAttackResult(msg); break;
+        case 'player_joined':    onPlayerJoined(msg); break;
+        case 'player_dead':      onPlayerDead(msg); break;
+        case 'raid_respawn':     onRespawn(msg); break;
+        case 'boss_ability':     onBossAbility(msg); break;
+        case 'raid_over':        onRaidOver(msg); break;
+        case 'raid_pong':        break;
+        case 'error':
+            addLog('⚠️ ' + (msg.message || ''), 'death');
+            break;
+    }
+}
+
+// ──────────────────────────────────────────────────────────
+// RAID STATE (initial)
+// ──────────────────────────────────────────────────────────
+function onRaidState(msg) {
+    connected = true;
+    hideOverlay();
+
+    const boss = msg.boss;
+    bossHp = boss.hp;
+    bossMaxHp = boss.max_hp;
+    bossColor = boss.color || '#7b2fff';
+    document.documentElement.style.setProperty('--boss-color', bossColor);
+
+    el('boss-name').textContent = boss.name;
+
+    // Картинка босса
+    const bossIdNum = msg.boss?.boss_id;
+    const imgSrc = BOSS_IMAGES[bossIdNum] || '';
+    const bossImg = el('boss-img');
+    if (imgSrc) { bossImg.src = imgSrc; bossImg.style.display = ''; }
+    else { bossImg.style.display = 'none'; }
+
+    updateBossHp(bossHp, bossMaxHp);
+
+    const me = msg.my_player;
+    myHp = me.hp; myMaxHp = me.max_hp; myAlive = me.alive;
+    myTotalDmg = me.damage_dealt || 0;
+    updateMyCard();
+
+    if (!myAlive) {
+        showDeadState(me.respawn_in || 30);
+    } else {
+        startCooldownBar(msg.attack_cooldown || 0);
+    }
+
+    renderPlayers(msg.players || []);
+    renderLeaderboard(msg.leaderboard || []);
+
+    nextAbilityIn = msg.next_ability_in || 25;
+    raidTimeLeft = msg.time_left || 10800;
+
+    if (msg.log) msg.log.forEach(l => addLog(l, classifyLog(l)));
+
+    startTimerLoop();
+    if (raidFinished) onRaidOver({ killed: false }); // восстановление финала
+}
+
+// ──────────────────────────────────────────────────────────
+// RAID UPDATE (broadcast)
+// ──────────────────────────────────────────────────────────
+function onRaidUpdate(msg) {
+    bossHp = msg.boss_hp;
+    bossMaxHp = msg.boss_max_hp;
+    updateBossHp(bossHp, bossMaxHp);
+
+    if (msg.players) renderPlayers(msg.players);
+    if (msg.leaderboard) renderLeaderboard(msg.leaderboard);
+    if (msg.log) msg.log.forEach(l => addLog(l, classifyLog(l)));
+
+    // Floating damage number from attacker
+    if (msg.attacker && msg.attacker.dmg) {
+        spawnFloat(`-${fmt(msg.attacker.dmg)}`, '#ff5252', 'boss-hp-bar');
+    }
+}
+
+// ──────────────────────────────────────────────────────────
+// ATTACK RESULT (personal)
+// ──────────────────────────────────────────────────────────
+function onAttackResult(msg) {
+    myHp = msg.my_hp; myMaxHp = msg.my_max_hp; myAlive = msg.alive;
+    myTotalDmg = msg.total_damage || myTotalDmg;
+    bossHp = msg.boss_hp; bossMaxHp = msg.boss_max_hp;
+
+    updateBossHp(bossHp, bossMaxHp);
+    updateMyCard();
+
+    if (msg.crit) addLog(`💥 КРИТ! ${fmt(msg.dmg_to_boss)} урона боссу!`, 'attack');
+    if (msg.vamp) addLog(`🧛 Вампиризм: +${msg.vamp} HP`, '');
+    if (msg.bleed) addLog(`🩸 Кровотечение: -${msg.bleed} HP`, 'death');
+
+    spawnFloat(`-${fmt(msg.dmg_to_boss)}`, '#ff5252', 'boss-hp-bar');
+    if (msg.dmg_to_player) spawnFloat(`-${fmt(msg.dmg_to_player)}`, '#e94560', 'my-hp-bar');
+    if (msg.vamp) spawnFloat(`+${msg.vamp}`, '#69f0ae', 'my-hp-bar');
+
+    startCooldownBar(msg.attack_cooldown || 7);
+
+    if (!myAlive) {
+        showDeadState(msg.respawn_in || 30);
+    }
+}
+
+// ──────────────────────────────────────────────────────────
+// PLAYER JOINED
+// ──────────────────────────────────────────────────────────
+function onPlayerJoined(msg) {
+    addLog(`⚔️ ${msg.name} вступил в рейд!`, 'join');
+    if (msg.players) renderPlayers(msg.players);
+}
+
+// ──────────────────────────────────────────────────────────
+// PLAYER DEAD
+// ──────────────────────────────────────────────────────────
+function onPlayerDead(msg) {
+    myAlive = false;
+    myHp = 0;
+    updateMyCard();
+    showDeadState(msg.respawn_in || 30);
+}
+
+// ──────────────────────────────────────────────────────────
+// RESPAWN
+// ──────────────────────────────────────────────────────────
+function onRespawn(msg) {
+    myAlive = true;
+    myHp = msg.hp; myMaxHp = msg.max_hp;
+    updateMyCard();
+    hideDeadState();
+    addLog('✨ Вы возродились!', 'respawn');
+    startCooldownBar(msg.attack_cooldown || 7);
+}
+
+// ──────────────────────────────────────────────────────────
+// BOSS ABILITY
+// ──────────────────────────────────────────────────────────
+function onBossAbility(msg) {
+    const ab = msg.ability;
+    showAbilityFlash(ab.icon, ab.name, ab.desc);
+
+    bossHp = msg.boss_hp; bossMaxHp = msg.boss_max_hp;
+    updateBossHp(bossHp, bossMaxHp);
+
+    if (msg.players) renderPlayers(msg.players);
+    if (msg.log) msg.log.forEach(l => addLog(l, 'ability'));
+    nextAbilityIn = msg.next_ability_in || 25;
+}
+
+// ──────────────────────────────────────────────────────────
+// RAID OVER
+// ──────────────────────────────────────────────────────────
+function onRaidOver(msg) {
+    raidFinished = true;
+    clearInterval(timerInterval);
+
+    const overlay = el('overlay');
+    overlay.classList.remove('hidden');
+
+    const lb = msg.leaderboard || [];
+    const killed = msg.killed;
+
+    let html = '';
+    if (killed) {
+        html = `
+            <div id="overlay-icon">🏆</div>
+            <div id="overlay-title">${msg.boss_name || 'Босс'} ПОВЕРЖЕН!</div>
+            <div id="overlay-sub">Мир спасён!</div>
+        `;
+    } else {
+        html = `
+            <div id="overlay-icon">🌑</div>
+            <div id="overlay-title">Рейд провален</div>
+            <div id="overlay-sub">Мир поработил <b>${msg.boss_name || 'Босс'}</b></div>
+        `;
+    }
+
+    html += '<div style="width:100%;padding:0 16px;max-height:40vh;overflow-y:auto;">';
+    lb.slice(0, 10).forEach((p, i) => {
+        const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i+1}.`;
+        const reward = p.reward || {};
+        const lastHit = reward.last_hit ? ' 🗡️' : '';
+        html += `
+            <div class="lb-full-item">
+                <div class="lb-full-rank">${medal}</div>
+                <div class="lb-full-name">${p.name}${lastHit}</div>
+                <div class="lb-full-info">${fmt(p.damage)} урона<br>+${reward.exp||0} опыта, +${reward.coins||0} 💰</div>
+            </div>`;
+    });
+    html += '</div>';
+
+    overlay.innerHTML = html;
+}
+
+// ──────────────────────────────────────────────────────────
+// ATTACK / RESPAWN ACTIONS
+// ──────────────────────────────────────────────────────────
+function selectZone(type, zone) {
+    if (!myAlive || raidFinished) return;
+    if (type === 'atk') {
+        atkZone = zone;
+        document.querySelectorAll('#atk-row .zone-btn').forEach(b => b.classList.remove('atk-selected'));
+        event.currentTarget.classList.add('atk-selected');
+    } else {
+        blkZone = zone;
+        document.querySelectorAll('#blk-row .zone-btn').forEach(b => b.classList.remove('blk-selected'));
+        event.currentTarget.classList.add('blk-selected');
+    }
+    updateAttackBtn();
+}
+
+function updateAttackBtn() {
+    const btn = el('attack-btn');
+    const ready = myAlive && atkZone && blkZone && cdRemaining <= 0 && !raidFinished;
+    btn.disabled = !ready;
+    if (cdRemaining > 0) {
+        btn.textContent = `⏳ Кулдаун ${cdRemaining.toFixed(1)}с`;
+    } else if (!atkZone || !blkZone) {
+        btn.textContent = '⚔️ Выберите зоны';
+    } else {
+        btn.textContent = '⚔️ Атаковать!';
+    }
+}
+
+function sendAttack() {
+    if (!myAlive || !atkZone || !blkZone || cdRemaining > 0 || raidFinished) return;
+    ws.send(JSON.stringify({
+        action: 'raid_attack',
+        atk_zone: atkZone,
+        blk_zone: blkZone,
+    }));
+    // Оптимистично сбрасываем
+    atkZone = null; blkZone = null;
+    document.querySelectorAll('.zone-btn').forEach(b => {
+        b.classList.remove('atk-selected', 'blk-selected');
+    });
+    el('attack-btn').classList.add('shimmer');
+    setTimeout(() => el('attack-btn').classList.remove('shimmer'), 600);
+    updateAttackBtn();
+}
+
+function sendRespawn() {
+    if (myAlive || raidFinished) return;
+    ws.send(JSON.stringify({ action: 'raid_respawn' }));
+}
+
+// ──────────────────────────────────────────────────────────
+// COOLDOWN BAR
+// ──────────────────────────────────────────────────────────
+function startCooldownBar(seconds) {
+    cdRemaining = seconds;
+    if (cdTimer) clearInterval(cdTimer);
+    if (seconds <= 0) {
+        el('cd-bar').style.width = '0%';
+        updateAttackBtn();
+        return;
+    }
+    const total = seconds;
+    el('attack-btn').disabled = true;
+    cdTimer = setInterval(() => {
+        cdRemaining = Math.max(0, cdRemaining - 0.1);
+        el('cd-bar').style.width = ((cdRemaining / total) * 100) + '%';
+        updateAttackBtn();
+        if (cdRemaining <= 0) clearInterval(cdTimer);
+    }, 100);
+}
+
+// ──────────────────────────────────────────────────────────
+// DEAD STATE / RESPAWN UI
+// ──────────────────────────────────────────────────────────
+function showDeadState(waitSec) {
+    el('dead-overlay').classList.add('show');
+    el('respawn-btn').style.display = 'none';
+    el('attack-btn').style.display = 'none';
+
+    respawnWait = waitSec;
+    if (respawnCdTimer) clearInterval(respawnCdTimer);
+    respawnCdTimer = setInterval(() => {
+        respawnWait = Math.max(0, respawnWait - 1);
+        el('respawn-cd-text').textContent = respawnWait > 0
+            ? `Возрождение через ${respawnWait} сек`
+            : 'Возрождение доступно!';
+        if (respawnWait <= 0) {
+            clearInterval(respawnCdTimer);
+            el('respawn-btn').style.display = 'block';
+        }
+    }, 1000);
+}
+
+function hideDeadState() {
+    el('dead-overlay').classList.remove('show');
+    el('respawn-btn').style.display = 'none';
+    el('attack-btn').style.display = 'block';
+    if (respawnCdTimer) clearInterval(respawnCdTimer);
+}
+
+// ──────────────────────────────────────────────────────────
+// RENDER
+// ──────────────────────────────────────────────────────────
+function updateBossHp(hp, maxHp) {
+    const pct = Math.max(0, Math.min(100, hp / maxHp * 100));
+    el('boss-hp-bar').style.width = pct + '%';
+    el('boss-hp-text').textContent = `${fmt(hp)}/${fmt(maxHp)}`;
+    // Цвет
+    const color = pct > 50 ? '#7b2fff'
+                : pct > 25 ? '#ff9800'
+                : '#e94560';
+    el('boss-hp-bar').style.background = `linear-gradient(90deg, ${color}, #e94560)`;
+}
+
+function updateMyCard() {
+    const pct = Math.max(0, Math.min(100, myHp / myMaxHp * 100));
+    el('my-hp-bar').style.width = pct + '%';
+    el('my-hp-text').textContent = `${myHp}/${myMaxHp}`;
+    const color = pct > 50 ? '#69f0ae' : pct > 25 ? '#ff9800' : '#ff5252';
+    el('my-hp-bar').style.background = `linear-gradient(90deg, ${color}, #c62828)`;
+    el('my-dmg-badge').textContent = `${fmt(myTotalDmg)} урона`;
+}
+
+function renderPlayers(players) {
+    const list = el('players-list');
+    list.innerHTML = '';
+    players.forEach(p => {
+        const isMe = p.user_id == myId;
+        const pct = Math.max(0, Math.min(100, p.hp / p.max_hp * 100));
+        const div = document.createElement('div');
+        div.className = 'player-card' + (p.alive ? '' : ' dead');
+        div.innerHTML = `
+            <div class="pc-avatar">${isMe ? '⚔️' : '👤'}</div>
+            <div class="pc-info">
+                <div class="pc-name">${p.name}${p.alive ? '' : ' 💀'}</div>
+                <div class="pc-hp-wrap"><div class="pc-hp-bar" style="width:${pct}%;background:${pct>50?'#69f0ae':pct>25?'#ff9800':'#ff5252'}"></div></div>
+            </div>
+            <div class="pc-dmg">${fmt(p.damage)}</div>
+        `;
+        list.appendChild(div);
+    });
+}
+
+function renderLeaderboard(lb) {
+    const list = el('leaderboard-list');
+    list.innerHTML = '';
+    lb.forEach((p, i) => {
+        const medal = i===0?'🥇':i===1?'🥈':i===2?'🥉':`${i+1}.`;
+        const div = document.createElement('div');
+        div.className = 'lb-item';
+        div.innerHTML = `
+            <div class="lb-rank">${medal}</div>
+            <div class="lb-name">${p.name}</div>
+            <div class="lb-dmg">${fmt(p.damage)}</div>
+        `;
+        list.appendChild(div);
+    });
+}
+
+// ──────────────────────────────────────────────────────────
+// LOG
+// ──────────────────────────────────────────────────────────
+function classifyLog(line) {
+    if (line.includes('⚔️') || line.includes('атак')) return 'attack';
+    if (line.includes('💀') || line.includes('пал')) return 'death';
+    if (line.includes('вступил') || line.includes('подключ')) return 'join';
+    if (line.includes('✨') || line.includes('возрод')) return 'respawn';
+    if (line.match(/[🌀⚫🖤🌙🌟💫⚡🌪️🛡️]/u)) return 'ability';
+    return '';
+}
+
+function addLog(text, cls) {
+    const list = el('log-list');
+    const div = document.createElement('div');
+    div.className = 'log-line ' + (cls || '');
+    div.textContent = text;
+    list.appendChild(div);
+    // Авто-скролл
+    if (list.children.length > 200) list.removeChild(list.children[0]);
+    list.scrollTop = list.scrollHeight;
+}
+
+// ──────────────────────────────────────────────────────────
+// TIMERS
+// ──────────────────────────────────────────────────────────
+function startTimerLoop() {
+    if (timerInterval) clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+        nextAbilityIn = Math.max(0, nextAbilityIn - 1);
+        raidTimeLeft = Math.max(0, raidTimeLeft - 1);
+        el('ability-timer-val').textContent = fmtTime(nextAbilityIn);
+        el('raid-timer-val').textContent = fmtTime(raidTimeLeft);
+
+        // Ping каждые 30 сек чтобы не разорвало соединение
+        if (raidTimeLeft % 30 === 0 && ws && ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({ action: 'raid_ping' }));
+        }
+    }, 1000);
+}
+
+function fmtTime(sec) {
+    const h = Math.floor(sec / 3600);
+    const m = Math.floor((sec % 3600) / 60);
+    const s = sec % 60;
+    if (h > 0) return `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+
+// ──────────────────────────────────────────────────────────
+// ABILITY FLASH
+// ──────────────────────────────────────────────────────────
+function showAbilityFlash(icon, name, desc) {
+    el('ability-flash-icon').textContent = icon;
+    el('ability-flash-name').textContent = name;
+    el('ability-flash-desc').textContent = desc;
+    el('ability-flash').classList.add('show');
+    setTimeout(() => el('ability-flash').classList.remove('show'), 2200);
+}
+
+// ──────────────────────────────────────────────────────────
+// OVERLAY
+// ──────────────────────────────────────────────────────────
+function showOverlay(icon, title, sub, showBtn) {
+    const o = el('overlay');
+    o.classList.remove('hidden');
+    o.innerHTML = `
+        <div id="overlay-icon">${icon}</div>
+        <div id="overlay-title">${title}</div>
+        <div id="overlay-sub">${sub}</div>
+        ${showBtn ? '<button id="overlay-btn" onclick="reconnect()" style="display:block">🔄 Переподключиться</button>' : ''}
+    `;
+}
+
+function hideOverlay() {
+    el('overlay').classList.add('hidden');
+}
+
+// ──────────────────────────────────────────────────────────
+// FLOATING DMG NUMBERS
+// ──────────────────────────────────────────────────────────
+function spawnFloat(text, color, anchorId) {
+    const anchor = el(anchorId);
+    if (!anchor) return;
+    const rect = anchor.getBoundingClientRect();
+    const div = document.createElement('div');
+    div.className = 'dmg-float';
+    div.textContent = text;
+    div.style.color = color;
+    div.style.left = (rect.left + Math.random() * rect.width * .5) + 'px';
+    div.style.top = (rect.top - 10) + 'px';
+    document.body.appendChild(div);
+    setTimeout(() => div.remove(), 1000);
+}
+
+// ──────────────────────────────────────────────────────────
+// TAB SWITCHING
+// ──────────────────────────────────────────────────────────
+function showTab(tab) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+    // На маленьких экранах переключаем видимость
+    const middle = el('middle');
+    if (tab === 'battle') {
+        el('left-col').style.display = 'flex';
+        el('right-col').style.display = 'flex';
+        el('log-panel').style.display = 'flex';
+    } else if (tab === 'players') {
+        el('left-col').style.display = 'none';
+        el('right-col').style.display = 'flex';
+        el('log-panel').style.display = 'none';
+    } else if (tab === 'log') {
+        el('left-col').style.display = 'none';
+        el('right-col').style.display = 'none';
+        // Показываем лог на полный экран
+        el('log-panel').style.display = 'flex';
+    }
+}
+
+// ──────────────────────────────────────────────────────────
+// HELPERS
+// ──────────────────────────────────────────────────────────
+function el(id) { return document.getElementById(id); }
+function fmt(n) {
+    n = parseInt(n) || 0;
+    if (n >= 1000000) return (n/1000000).toFixed(1) + 'M';
+    if (n >= 1000) return (n/1000).toFixed(1) + 'K';
+    return String(n);
+}
+
+// ──────────────────────────────────────────────────────────
+// INIT
+// ──────────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+    if (!BATTLE_ID || !USER_ID) {
+        showOverlay('⚠️', 'Ошибка', 'Некорректные параметры запуска', false);
+        return;
+    }
+    connect();
+});
+
+// Telegram Web App закрытие
+window.addEventListener('beforeunload', () => {
+    if (ws) try { ws.close(); } catch(e) {}
+});
+</script>
+</body>
+</html>
