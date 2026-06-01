@@ -720,7 +720,10 @@ function onAttackResult(msg) {
     updateBossHp(bossHp, bossMaxHp);
     updateMyCard();
 
-    if (msg.crit) addLog(`💥 КРИТ! ${fmt(msg.dmg_to_boss)} урона боссу!`, 'attack');
+    // Логируем полную атаку (своя строка из сервера не приходит в attack_result — добавляем вручную)
+    let atkLine = `⚔️ Вы: -${fmt(msg.dmg_to_boss)} HP боссу${msg.crit ? ' 💥КРИТ!' : ''}`;
+    if (msg.dmg_to_player) atkLine += ` | Босс: -${fmt(msg.dmg_to_player)}${msg.blocked ? ' (блок)' : ''}`;
+    addLog(atkLine, 'attack');
     if (msg.vamp) addLog(`🧛 Вампиризм: +${msg.vamp} HP`, '');
     if (msg.bleed) addLog(`🩸 Кровотечение: -${msg.bleed} HP`, 'death');
 
@@ -731,7 +734,9 @@ function onAttackResult(msg) {
     startCooldownBar(msg.attack_cooldown || 7);
 
     if (!myAlive) {
-        showDeadState(msg.respawn_in || 30);
+        const cdSec = msg.rejoin_cooldown > 0 ? Math.ceil(msg.rejoin_cooldown / 60) + ' мин' : '20 мин';
+        addLog(`💀 Вы пали в бою! Повторный вход через ${cdSec}`, 'death');
+        showDeadState(msg.rejoin_cooldown || 1200);
     }
 }
 
