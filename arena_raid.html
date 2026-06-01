@@ -653,8 +653,7 @@ function onRaidState(msg) {
     el('boss-name').textContent = boss.name;
 
     // Картинка босса
-    const bossIdNum = msg.boss?.boss_id;
-    const imgSrc = BOSS_IMAGES[bossIdNum] || '';
+    const imgSrc = msg.boss.image || '';
     const bossImg = el('boss-img');
     if (imgSrc) { bossImg.src = imgSrc; bossImg.style.display = ''; }
     else { bossImg.style.display = 'none'; }
