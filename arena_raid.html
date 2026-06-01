@@ -693,7 +693,15 @@ function onRaidUpdate(msg) {
 
     if (msg.players) renderPlayers(msg.players);
     if (msg.leaderboard) renderLeaderboard(msg.leaderboard);
-    if (msg.log) msg.log.forEach(l => addLog(l, classifyLog(l)));
+    // Логи добавляем только если они есть (сервер уже не шлёт их атакующему)
+    if (msg.log && msg.log.length > 0) {
+        msg.log.forEach(l => { if (l) addLog(l, classifyLog(l)); });
+    }
+
+    // Синхронизируем таймер способности если сервер прислал
+    if (msg.next_ability_in !== undefined) {
+        nextAbilityIn = msg.next_ability_in;
+    }
 
     // Floating damage number from attacker
     if (msg.attacker && msg.attacker.dmg) {
@@ -768,8 +776,9 @@ function onBossAbility(msg) {
     updateBossHp(bossHp, bossMaxHp);
 
     if (msg.players) renderPlayers(msg.players);
-    if (msg.log) msg.log.forEach(l => addLog(l, 'ability'));
-    nextAbilityIn = msg.next_ability_in || 25;
+    if (msg.log) msg.log.forEach(l => { if (l) addLog(l, 'ability'); });
+    // Синхронизируем таймер от сервера
+    nextAbilityIn = msg.next_ability_in !== undefined ? msg.next_ability_in : 25;
 }
 
 // ──────────────────────────────────────────────────────────
@@ -1125,4 +1134,4 @@ window.addEventListener('beforeunload', () => {
 });
 </script>
 </body>
-</html>
+</html> 
