@@ -457,6 +457,15 @@
 </div>
 
 <div id="arena">
+    <!-- Кнопка сворачивания -->
+    <div style="display:flex; justify-content:flex-end; margin-bottom:2px;">
+        <button onclick="minimizeGame()" style="
+            background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.15);
+            border-radius: 6px; color: var(--hint); font-size: 18px; padding: 4px 10px;
+            cursor:pointer; line-height:1;
+        ">↕️</button>
+    </div>
+
     <div class="energy-row">
         <span>⚡ Энергия</span>
         <span id="energy-display">—/—</span>
@@ -511,12 +520,6 @@
     </div>
 
     <div id="action-panel">
-        <button id="chat-btn" onclick="goToChat()" style="
-            padding: 8px; border: 1px solid rgba(255,255,255,.2); border-radius: var(--r-sm);
-            background: rgba(255,255,255,.06); color: var(--hint);
-            font-family: var(--font); font-size: 13px; font-weight: 700;
-            cursor: pointer; letter-spacing: .5px; margin-bottom: 6px;
-        ">📱 Чат</button>
         <div class="action-label">⚔️ Зона атаки</div>
         <div class="zone-row" id="atk-row">
             <button class="zone-btn" data-zone="TOP"    data-type="atk" onclick="selectZone(this)">⬆️<span>Верх</span></button>
@@ -748,11 +751,11 @@
         }
     }
 
-    function goToChat() {
+    function minimizeGame() {
         if (tg && tg.close) {
             tg.close();
         } else {
-            alert('Выйдите из игры, чтобы открыть чат');
+            alert('Используйте свайп вниз для сворачивания');
         }
     }
 
@@ -857,4 +860,4 @@
     connect();
 </script>
 </body>
-                </html>
+</html> 
