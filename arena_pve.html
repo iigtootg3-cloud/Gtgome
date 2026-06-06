@@ -52,6 +52,7 @@
             pointer-events: none;
         }
 
+        /* Overlay */
         #overlay {
             position: fixed; inset: 0;
             background: rgba(0,0,0,.88);
@@ -118,6 +119,7 @@
             75%  { content: '...'; }
         }
 
+        /* Arena layout */
         #arena {
             position: relative; z-index: 1;
             display: flex; flex-direction: column;
@@ -125,6 +127,7 @@
             gap: 7px;
         }
 
+        /* Fighters */
         .fighters { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
         .fighter {
@@ -178,6 +181,7 @@
         .fighter.me    .fighter-tag { background: rgba(233,69,96,.2); color: var(--btn); border: 1px solid rgba(233,69,96,.3); }
         .fighter.enemy .fighter-tag { background: rgba(136,153,170,.1); color: var(--hint); border: 1px solid rgba(136,153,170,.2); }
 
+        /* HP Bar */
         .hp-row { display: flex; align-items: center; gap: 6px; }
         .hp-bar-wrap {
             flex: 1; height: 8px;
@@ -187,6 +191,7 @@
         .hp-bar { height: 100%; border-radius: 4px; transition: width .4s cubic-bezier(.4,0,.2,1), background .4s; }
         .hp-text { font-size: 10px; color: var(--hint); font-weight: 600; flex-shrink: 0; white-space: nowrap; }
 
+        /* Debuffs */
         .debuffs { display: flex; flex-wrap: wrap; gap: 4px; min-height: 14px; }
         .debuff-badge {
             font-size: 9px; font-weight: 600; letter-spacing: .3px;
@@ -200,6 +205,7 @@
             to   { transform: scale(1)  rotate(0deg);  opacity:1; }
         }
 
+        /* Float numbers */
         .float-num {
             position: absolute;
             top: 2px; left: 50%;
@@ -234,6 +240,7 @@
             100% { opacity: 0; transform: translateX(-50%) translateY(-68px) scale(.9); }
         }
 
+        /* Flash */
         @keyframes flash-red {
             0%,100% { background: var(--panel); }
             20%,60% { background: rgba(255,82,82,.28); }
@@ -245,6 +252,7 @@
         .flash-dmg  { animation: flash-red   .6s ease; }
         .flash-heal { animation: flash-green .6s ease; }
 
+        /* Round / countdown */
         .round-row {
             display: flex; align-items: center; justify-content: center; gap: 12px;
         }
@@ -278,6 +286,7 @@
         .countdown-ring svg { transform: rotate(-90deg); }
         .countdown-ring circle { transition: stroke-dashoffset .25s linear; }
 
+        /* Log */
         #log-wrap {
             background: var(--panel); border-radius: var(--radius);
             display: flex; flex-direction: column;
@@ -312,6 +321,7 @@
             padding: 2px 0; margin: 4px 0; letter-spacing: 1px;
         }
 
+        /* Action panel */
         #action-panel { display: flex; flex-direction: column; gap: 5px; flex-shrink: 0; }
 
         .action-label {
@@ -373,6 +383,7 @@
             border-radius: 1px; margin: 1px 0;
         }
 
+        /* Energy display */
         .energy-row {
             display: flex; justify-content: space-between; align-items: center;
             padding: 4px 8px;
@@ -382,6 +393,7 @@
         }
         .energy-row span:last-child { font-weight: 700; }
 
+        /* Post-battle buttons */
         #post-battle-actions {
             display: none;
             flex-direction: column;
@@ -406,6 +418,7 @@
         }
         #finish-btn:active { transform: scale(.97); }
 
+        /* === Исправления для iPhone + длинные имена монстров === */
         .fighters {
             overflow: hidden;
         }
@@ -417,12 +430,14 @@
             overflow: hidden;
             flex-wrap: nowrap;
         }
+        /* Своё имя – обрезаем */
         .fighter.me .fighter-name {
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
             max-width: 100%;
         }
+        /* Имя врага/монстра – перенос строки */
         .fighter.enemy .fighter-name {
             overflow: visible;
             white-space: normal;
@@ -448,6 +463,7 @@
 </head>
 <body>
 
+<!-- Overlay -->
 <div id="overlay">
     <div id="overlay-icon">⚔️</div>
     <div id="overlay-title">ArenaM</div>
@@ -456,21 +472,16 @@
     <button id="overlay-btn" onclick="location.reload()">🔄 Переподключиться</button>
 </div>
 
+<!-- Arena -->
 <div id="arena">
-    <!-- Кнопка сворачивания -->
-    <div style="display:flex; justify-content:flex-end; margin-bottom:2px;">
-        <button onclick="minimizeGame()" style="
-            background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.15);
-            border-radius: 6px; color: var(--hint); font-size: 18px; padding: 4px 10px;
-            cursor:pointer; line-height:1;
-        ">↕️</button>
-    </div>
 
+    <!-- Energy indicator -->
     <div class="energy-row">
         <span>⚡ Энергия</span>
         <span id="energy-display">—/—</span>
     </div>
 
+    <!-- Fighters -->
     <div class="fighters">
         <div class="fighter me" id="card-hero">
             <div class="fighter-header">
@@ -499,6 +510,7 @@
         </div>
     </div>
 
+    <!-- Round / Timer -->
     <div class="round-row">
         <div class="round-info">Раунд <span id="round-num">—</span></div>
         <div id="countdown-wrap">
@@ -514,32 +526,36 @@
         </div>
     </div>
 
+    <!-- Log -->
     <div id="log-wrap">
         <div id="log-header">📜 Лог боя</div>
         <div id="log"></div>
     </div>
 
+    <!-- Action Panel -->
     <div id="action-panel">
         <div class="action-label">⚔️ Зона атаки</div>
         <div class="zone-row" id="atk-row">
-            <button class="zone-btn" data-zone="TOP"    data-type="atk" onclick="selectZone(this)">⬆️<span>Верх</span></button>
-            <button class="zone-btn" data-zone="MIDDLE" data-type="atk" onclick="selectZone(this)">➡️<span>Центр</span></button>
-            <button class="zone-btn" data-zone="BOTTOM" data-type="atk" onclick="selectZone(this)">⬇️<span>Низ</span></button>
+            <button class="zone-btn" data-zone="TOP"    data-type="atk" onclick="selectZone('atk','TOP',this)">⬆️<span>Верх</span></button>
+            <button class="zone-btn" data-zone="MIDDLE" data-type="atk" onclick="selectZone('atk','MIDDLE',this)">➡️<span>Центр</span></button>
+            <button class="zone-btn" data-zone="BOTTOM" data-type="atk" onclick="selectZone('atk','BOTTOM',this)">⬇️<span>Низ</span></button>
         </div>
         <div class="section-sep"></div>
         <div class="action-label">🛡️ Зона блока</div>
         <div class="zone-row" id="blk-row">
-            <button class="zone-btn" data-zone="TOP"    data-type="blk" onclick="selectZone(this)">⬆️<span>Верх</span></button>
-            <button class="zone-btn" data-zone="MIDDLE" data-type="blk" onclick="selectZone(this)">➡️<span>Центр</span></button>
-            <button class="zone-btn" data-zone="BOTTOM" data-type="blk" onclick="selectZone(this)">⬇️<span>Низ</span></button>
+            <button class="zone-btn" data-zone="TOP"    data-type="blk" onclick="selectZone('blk','TOP',this)">⬆️<span>Верх</span></button>
+            <button class="zone-btn" data-zone="MIDDLE" data-type="blk" onclick="selectZone('blk','MIDDLE',this)">➡️<span>Центр</span></button>
+            <button class="zone-btn" data-zone="BOTTOM" data-type="blk" onclick="selectZone('blk','BOTTOM',this)">⬇️<span>Низ</span></button>
         </div>
         <button id="confirm-btn" disabled onclick="confirmAction()">Подтвердить ход</button>
 
+        <!-- Post-battle actions -->
         <div id="post-battle-actions">
             <button id="continue-btn" onclick="continueHunt()">⚔️ Продолжить охоту (10⚡)</button>
             <button id="finish-btn" onclick="finishHunt()">🏕️ Завершить охоту</button>
         </div>
     </div>
+
 </div>
 
 <script>
@@ -581,6 +597,7 @@
 
     const $ = id => document.getElementById(id);
 
+    /* Overlay */
     function setOverlay(title, sub, showBtn = false, mode = '') {
         const ov = $('overlay');
         ov.className = mode ? `${mode}` : '';
@@ -593,6 +610,7 @@
 
     function hideOverlay() { $('overlay').classList.add('hidden'); }
 
+    /* Log */
     function addLog(text, cls = '') {
         const el = document.createElement('div');
         el.className = 'log-entry ' + cls;
@@ -613,6 +631,7 @@
         }
     }
 
+    /* HP Update */
     function updateHP(unit, hp, max, flash = true) {
         const isHero = unit === 'hero';
         const bar = $(isHero ? 'hpbar-hero' : 'hpbar-monster');
@@ -634,6 +653,7 @@
         $('energy-display').textContent = `${energyLeft}/${maxEnergy}`;
     }
 
+    /* Float numbers */
     function showFloatNum(isHero, text, cls) {
         const card = $(isHero ? 'card-hero' : 'card-monster');
         const el = document.createElement('div');
@@ -671,6 +691,7 @@
         });
     }
 
+    /* Countdown */
     function startCountdown(seconds) {
         clearInterval(countdownInterval);
         roundEndAt = Date.now() + seconds * 1000;
@@ -700,12 +721,12 @@
         if (arc) arc.style.strokeDashoffset = '0';
     }
 
-    function selectZone(btn) {
-        const type = btn.dataset.type;
+    /* Zone selection */
+    function selectZone(type, zone, btn) {
         const rowId = type === 'atk' ? 'atk-row' : 'blk-row';
         document.querySelectorAll(`#${rowId} .zone-btn`).forEach(b => b.classList.remove('selected'));
         btn.classList.add('selected');
-        myAction[type] = btn.dataset.zone;
+        myAction[type] = zone;
         $('confirm-btn').disabled = !(myAction.atk && myAction.blk);
     }
 
@@ -729,6 +750,7 @@
         addLog('⏳ Ход отправлен, ждём…', 'sys');
     }
 
+    /* Post-battle */
     function continueHunt() {
         if (!ws || ws.readyState !== WebSocket.OPEN) return;
         ws.send(JSON.stringify({ action: 'next_battle' }));
@@ -751,14 +773,7 @@
         }
     }
 
-    function minimizeGame() {
-        if (tg && tg.close) {
-            tg.close();
-        } else {
-            alert('Используйте свайп вниз для сворачивания');
-        }
-    }
-
+    /* WebSocket */
     function connect() {
         const url = `${WS_URL}?mode=pve&battle_id=${BATTLE_ID}&user_id=${USER_ID}&chat_id=${CHAT_ID}`;
         ws = new WebSocket(url);
