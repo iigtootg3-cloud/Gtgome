@@ -570,6 +570,9 @@
     let countdownInterval;
     let ringTotal = 87.96;
 
+    // Защита от двойного завершения охоты
+    let finishHuntSent = false;
+
     const $ = id => document.getElementById(id);
 
     function setOverlay(title, sub, showBtn = false, mode = '') {
@@ -721,14 +724,17 @@
 
     function continueHunt() {
         if (!ws || ws.readyState !== WebSocket.OPEN) return;
-        ws.send(JSON.stringify({ action: 'next_battle' }));
+        // Мгновенно скрываем кнопки, чтобы избежать повторных нажатий
         $('post-battle-actions').style.display = 'none';
+        ws.send(JSON.stringify({ action: 'next_battle' }));
     }
 
     function finishHunt() {
+        if (finishHuntSent) return;                         // ← блокировка
         if (!ws || ws.readyState !== WebSocket.OPEN) return;
-        ws.send(JSON.stringify({ action: 'finish_hunt' }));
+        finishHuntSent = true;
         $('post-battle-actions').style.display = 'none';
+        ws.send(JSON.stringify({ action: 'finish_hunt' }));
     }
 
     function showPostBattleActions(canContinue, totalExp, totalCoins) {
@@ -767,6 +773,7 @@
             case 'battle_start':
                 hideOverlay();
                 roundTimeout = msg.round_timeout || 30;
+                finishHuntSent = false;   // сбрасываем блокировку при новом бое
                 $('card-hero').classList.remove('winner', 'loser');
                 $('card-monster').classList.remove('winner', 'loser');
                 $('post-battle-actions').style.display = 'none';
@@ -832,18 +839,19 @@
                 setOverlay('🏕️ Охота завершена', 'Возвращайтесь с новыми силами!', true);
                 break;
 
-            // ===== НОВЫЙ БЛОК ДЛЯ ПЕРЕПОДКЛЮЧЕНИЯ =====
+            // ===== НОВЫЙ ОБРАБОТЧИК reconnect_state (PvE + PvP) =====
             case 'reconnect_state':
                 hideOverlay();
                 roundTimeout = msg.round_timeout || 30;
+                finishHuntSent = false;
                 $('card-hero').classList.remove('winner', 'loser');
                 $('card-monster').classList.remove('winner', 'loser');
                 $('post-battle-actions').style.display = 'none';
 
-                const r_players = msg.players;
-                if (r_players) {
-                    const me = r_players.find(p => p.user_id == USER_ID);
-                    const enemy = r_players.find(p => p.user_id != USER_ID);
+                // Формат PvP (players)
+                if (msg.players) {
+                    const me = msg.players.find(p => p.user_id == USER_ID);
+                    const enemy = msg.players.find(p => p.user_id != USER_ID);
                     if (me) {
                         $('name-hero').textContent = me.name || 'Герой';
                         maxHp['hero'] = me.max_hp;
@@ -855,10 +863,20 @@
                         updateHP('monster', enemy.hp, enemy.max_hp, false);
                     }
                 }
+                // Формат PvE (hero / monster)
+                else if (msg.hero && msg.monster) {
+                    $('name-hero').textContent = msg.hero.name || 'Герой';
+                    maxHp['hero'] = msg.hero.max_hp;
+                    updateHP('hero', msg.hero.hp, msg.hero.max_hp, false);
+
+                    $('name-monster').textContent = msg.monster.name || 'Монстр';
+                    maxHp['monster'] = msg.monster.max_hp;
+                    updateHP('monster', msg.monster.hp, msg.monster.max_hp, false);
+                }
 
                 $('round-num').textContent = msg.turn || '1';
 
-                // восстанавливаем лог
+                // Лог
                 if (msg.log) {
                     $('log').innerHTML = '';
                     msg.log.forEach(line => {
@@ -871,7 +889,7 @@
                     });
                 }
 
-                // восстанавливаем выбранные зоны
+                // Зоны
                 const my_zones = msg.my_zones;
                 if (my_zones) {
                     if (my_zones.atk) {
@@ -890,7 +908,6 @@
                 updateEnergyDisplay(msg.energy_left, msg.max_energy);
                 startCountdown(roundTimeout);
                 break;
-            // ===========================================
 
             case 'error':
                 addLog(`⚠️ ${msg.message || 'Ошибка'}`, 'sys');
