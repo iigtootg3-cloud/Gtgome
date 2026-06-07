@@ -832,6 +832,66 @@
                 setOverlay('🏕️ Охота завершена', 'Возвращайтесь с новыми силами!', true);
                 break;
 
+            // ===== НОВЫЙ БЛОК ДЛЯ ПЕРЕПОДКЛЮЧЕНИЯ =====
+            case 'reconnect_state':
+                hideOverlay();
+                roundTimeout = msg.round_timeout || 30;
+                $('card-hero').classList.remove('winner', 'loser');
+                $('card-monster').classList.remove('winner', 'loser');
+                $('post-battle-actions').style.display = 'none';
+
+                const r_players = msg.players;
+                if (r_players) {
+                    const me = r_players.find(p => p.user_id == USER_ID);
+                    const enemy = r_players.find(p => p.user_id != USER_ID);
+                    if (me) {
+                        $('name-hero').textContent = me.name || 'Герой';
+                        maxHp['hero'] = me.max_hp;
+                        updateHP('hero', me.hp, me.max_hp, false);
+                    }
+                    if (enemy) {
+                        $('name-monster').textContent = enemy.name || 'Монстр';
+                        maxHp['monster'] = enemy.max_hp;
+                        updateHP('monster', enemy.hp, enemy.max_hp, false);
+                    }
+                }
+
+                $('round-num').textContent = msg.turn || '1';
+
+                // восстанавливаем лог
+                if (msg.log) {
+                    $('log').innerHTML = '';
+                    msg.log.forEach(line => {
+                        let cls = '';
+                        if (line.startsWith('═══')) cls = 'sep';
+                        else if (line.includes('HP:')) cls = 'sys';
+                        else if (line.includes('+') && line.includes('HP')) cls = 'heal';
+                        else if (line.includes('урон') || line.includes('Кровотечение')) cls = 'dmg';
+                        addLog(line, cls);
+                    });
+                }
+
+                // восстанавливаем выбранные зоны
+                const my_zones = msg.my_zones;
+                if (my_zones) {
+                    if (my_zones.atk) {
+                        myAction.atk = my_zones.atk;
+                        const atkBtn = document.querySelector(`#atk-row .zone-btn[data-zone="${my_zones.atk}"]`);
+                        if (atkBtn) atkBtn.classList.add('selected');
+                    }
+                    if (my_zones.blk) {
+                        myAction.blk = my_zones.blk;
+                        const blkBtn = document.querySelector(`#blk-row .zone-btn[data-zone="${my_zones.blk}"]`);
+                        if (blkBtn) blkBtn.classList.add('selected');
+                    }
+                }
+                $('confirm-btn').disabled = !(myAction.atk && myAction.blk);
+
+                updateEnergyDisplay(msg.energy_left, msg.max_energy);
+                startCountdown(roundTimeout);
+                break;
+            // ===========================================
+
             case 'error':
                 addLog(`⚠️ ${msg.message || 'Ошибка'}`, 'sys');
                 break;
@@ -842,4 +902,4 @@
     connect();
 </script>
 </body>
-</html>
+</html> 
