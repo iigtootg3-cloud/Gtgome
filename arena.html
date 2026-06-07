@@ -377,15 +377,12 @@
             border-radius: 1px; margin: 1px 0;
         }
 
-        /* ================================================================
-           Исправление выхода карточки за экран на iPhone
-           ================================================================ */
         .fighters {
             overflow: hidden;
         }
         .fighter {
-            overflow: hidden;          /* обрезаем всё, что вылезло */
-            min-width: 0;              /* разрешаем гриду сжимать карточку */
+            overflow: hidden;
+            min-width: 0;
         }
         .fighter-header {
             overflow: hidden;
@@ -481,16 +478,16 @@
     <div id="action-panel">
         <div class="action-label">⚔️ Зона атаки</div>
         <div class="zone-row" id="atk-row">
-            <button class="zone-btn" data-zone="TOP"    data-type="atk" onclick="selectZone(this)">⬆️<span>Верх</span></button>
-            <button class="zone-btn" data-zone="MIDDLE" data-type="atk" onclick="selectZone(this)">➡️<span>Центр</span></button>
-            <button class="zone-btn" data-zone="BOTTOM" data-type="atk" onclick="selectZone(this)">⬇️<span>Низ</span></button>
+            <button class="zone-btn" data-zone="TOP"    data-type="atk" onclick="selectZone('atk','TOP',this)">⬆️<span>Верх</span></button>
+            <button class="zone-btn" data-zone="MIDDLE" data-type="atk" onclick="selectZone('atk','MIDDLE',this)">➡️<span>Центр</span></button>
+            <button class="zone-btn" data-zone="BOTTOM" data-type="atk" onclick="selectZone('atk','BOTTOM',this)">⬇️<span>Низ</span></button>
         </div>
         <div class="section-sep"></div>
         <div class="action-label">🛡️ Зона блока</div>
         <div class="zone-row" id="blk-row">
-            <button class="zone-btn" data-zone="TOP"    data-type="blk" onclick="selectZone(this)">⬆️<span>Верх</span></button>
-            <button class="zone-btn" data-zone="MIDDLE" data-type="blk" onclick="selectZone(this)">➡️<span>Центр</span></button>
-            <button class="zone-btn" data-zone="BOTTOM" data-type="blk" onclick="selectZone(this)">⬇️<span>Низ</span></button>
+            <button class="zone-btn" data-zone="TOP"    data-type="blk" onclick="selectZone('blk','TOP',this)">⬆️<span>Верх</span></button>
+            <button class="zone-btn" data-zone="MIDDLE" data-type="blk" onclick="selectZone('blk','MIDDLE',this)">➡️<span>Центр</span></button>
+            <button class="zone-btn" data-zone="BOTTOM" data-type="blk" onclick="selectZone('blk','BOTTOM',this)">⬇️<span>Низ</span></button>
         </div>
         <button id="confirm-btn" disabled onclick="confirmAction()">Подтвердить ход</button>
     </div>
@@ -651,12 +648,11 @@
         if (arc) arc.style.strokeDashoffset = '0';
     }
 
-    function selectZone(btn) {
-        const type = btn.dataset.type;
-        const row  = type === 'atk' ? 'atk-row' : 'blk-row';
-        $(row).querySelectorAll('.zone-btn').forEach(b => b.classList.remove('selected'));
+    function selectZone(type, zone, btn) {
+        const rowId = type === 'atk' ? 'atk-row' : 'blk-row';
+        document.querySelectorAll(`#${rowId} .zone-btn`).forEach(b => b.classList.remove('selected'));
         btn.classList.add('selected');
-        myAction[type] = btn.dataset.zone;
+        myAction[type] = zone;
         $('confirm-btn').disabled = !(myAction.atk && myAction.blk);
     }
 
@@ -718,6 +714,62 @@
                 startCountdown(roundTimeout);
                 break;
             }
+            case 'reconnect_state': {
+                // восстановление после переподключения
+                hideOverlay();
+                roundTimeout = msg.round_timeout || 30;
+                $('card-me').classList.remove('winner', 'loser');
+                $('card-enemy').classList.remove('winner', 'loser');
+
+                const players = msg.players;
+                if (players) {
+                    const me = players.find(p => p.user_id == USER_ID);
+                    const enemy = players.find(p => p.user_id != USER_ID);
+                    if (me) {
+                        $('name-me').textContent = me.name || 'Вы';
+                        maxHp[USER_ID] = me.max_hp;
+                        updateHP(USER_ID, me.hp, false);
+                    }
+                    if (enemy) {
+                        enemyId = parseInt(enemy.user_id);
+                        $('name-enemy').textContent = enemy.name || 'Соперник';
+                        maxHp[enemyId] = enemy.max_hp;
+                        updateHP(enemyId, enemy.hp, false);
+                    }
+                }
+
+                $('round-num').textContent = msg.turn || '1';
+
+                if (msg.log) {
+                    $('log').innerHTML = '';
+                    msg.log.forEach(line => {
+                        let cls = '';
+                        if (line.startsWith('═══')) cls = 'sep';
+                        else if (line.includes('HP:')) cls = 'sys';
+                        else if (line.includes('+') && line.includes('HP')) cls = 'heal';
+                        else if (line.includes('урон') || line.includes('Кровотечение')) cls = 'dmg';
+                        addLog(line, cls);
+                    });
+                }
+
+                const zones = msg.my_zones;
+                if (zones) {
+                    if (zones.atk) {
+                        myAction.atk = zones.atk;
+                        const atkBtn = document.querySelector(`#atk-row .zone-btn[data-zone="${zones.atk}"]`);
+                        if (atkBtn) atkBtn.classList.add('selected');
+                    }
+                    if (zones.blk) {
+                        myAction.blk = zones.blk;
+                        const blkBtn = document.querySelector(`#blk-row .zone-btn[data-zone="${zones.blk}"]`);
+                        if (blkBtn) blkBtn.classList.add('selected');
+                    }
+                }
+                $('confirm-btn').disabled = !(myAction.atk && myAction.blk);
+
+                startCountdown(roundTimeout);
+                break;
+            }
             case 'round_result': {
                 $('round-num').textContent = msg.round;
                 stopCountdown();
@@ -774,4 +826,4 @@
     connect();
 </script>
 </body>
-</html> 
+</html>
