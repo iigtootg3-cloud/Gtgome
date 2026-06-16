@@ -723,7 +723,6 @@ function init() {
   const params = new URLSearchParams(window.location.search);
   userId = parseInt(params.get('user_id') || '0');
 
-  // Read Telegram WebApp theme
   if (window.Telegram?.WebApp) {
     window.Telegram.WebApp.ready();
     window.Telegram.WebApp.expand();
@@ -733,6 +732,19 @@ function init() {
   setupModal();
   setupFilters();
   connectWS();
+
+  // Авто-открытие обмена при наличии partner_id в URL (команда "обмен @username")
+  const partnerId = parseInt(params.get('partner_id') || '0');
+  if (partnerId && partnerId !== userId) {
+    // Даём время на загрузку дубликатов
+    setTimeout(() => {
+      if (state.duplicates.length > 0) {
+        openNewOfferModalWithPartner(partnerId);
+      } else {
+        toast('У вас нет дубликатов для обмена', 'error');
+      }
+    }, 800);
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -740,7 +752,6 @@ function init() {
 ═══════════════════════════════════════════════════════════ */
 function getWSUrl() {
   const proto = location.protocol === 'https:' ? 'wss' : 'ws';
-  const params = new URLSearchParams(window.location.search);
   return `${proto}://${location.host}/ws/market?user_id=${userId}&mode=market`;
 }
 
@@ -760,7 +771,6 @@ function connectWS() {
     clearTimeout(reconnectTimer);
     ws.send(JSON.stringify({ action: 'auth', user_id: userId }));
     startPing();
-    // Load initial data for visible tab
     loadCurrentTab();
   };
 
@@ -949,10 +959,8 @@ function setupFilters() {
 function renderMarket() {
   let lots = [...state.marketLots];
 
-  // Filter
   if (state.marketFilter !== 'all') lots = lots.filter(l => l.rarity === state.marketFilter);
 
-  // Sort
   switch(state.marketSort) {
     case 'price_asc':  lots.sort((a,b) => a.price - b.price); break;
     case 'price_desc': lots.sort((a,b) => b.price - a.price); break;
@@ -1249,7 +1257,6 @@ function openSellDupModal(heroId, heroName, rarity, maxQty) {
 /* ── Generic Sell Modal (from my-lots tab) ─────────────── */
 function openSellModal() {
   if (!state.duplicates.length) {
-    // load and then open
     send({ action: 'duplicates_list' });
     toast('Загружаем дубликаты…', 'info');
     return;
@@ -1350,6 +1357,62 @@ function openNewOfferModal() {
   };
 }
 
+/* ── Open exchange modal with pre-filled partner_id (вызывается из чата) ── */
+function openNewOfferModalWithPartner(partnerId) {
+  if (!state.duplicates.length) {
+    send({ action: 'duplicates_list' });
+    toast('Загрузка дубликатов...', 'info');
+    return;
+  }
+  const dupOpts = state.duplicates.filter(d=>!d.locked).map(d =>
+    `<option value="${d.hero_id}">${RARITY_ICON[d.rarity]} ${d.hero_name} ×${d.quantity}</option>`
+  ).join('');
+
+  openModal(`
+    <div class="modal-title">
+      🤝 Обмен с пользователем #${partnerId}
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="field-group">
+      <label class="field-label">Ваш партнёр</label>
+      <input type="text" class="field-input" value="ID: ${partnerId}" readonly/>
+    </div>
+    <div class="field-group">
+      <label class="field-label">Вы предлагаете (дубликат)</label>
+      <select class="field-input" id="ex-give-hero">${dupOpts}</select>
+    </div>
+    <div class="field-group">
+      <label class="field-label">Количество</label>
+      <input type="number" class="field-input" id="ex-give-qty" min="1" value="1"/>
+    </div>
+    <div class="field-group">
+      <label class="field-label">Хотите получить (ID героя)</label>
+      <input type="number" class="field-input" id="ex-want-hero" placeholder="ID героя"/>
+    </div>
+    <div class="field-group">
+      <label class="field-label">Количество</label>
+      <input type="number" class="field-input" id="ex-want-qty" min="1" value="1"/>
+    </div>
+    <div class="util-notice">Партнёр должен принять и подтвердить обмен. Дубликаты будут заблокированы до завершения.</div>
+    <button class="zone-btn lg" id="ex-submit">✅ Отправить предложение</button>
+  `);
+  document.getElementById('ex-submit').onclick = () => {
+    const giveHeroId = parseInt(document.getElementById('ex-give-hero').value);
+    const giveQty    = parseInt(document.getElementById('ex-give-qty').value);
+    const wantHeroId = parseInt(document.getElementById('ex-want-hero').value);
+    const wantQty    = parseInt(document.getElementById('ex-want-qty').value);
+    if (!giveHeroId || !giveQty || giveQty < 1) { toast('Укажите что отдаёте', 'error'); return; }
+    if (!wantHeroId || !wantQty || wantQty < 1) { toast('Укажите что хотите', 'error'); return; }
+    send({
+      action: 'exchange_offer',
+      partner_id: partnerId,
+      give: [{ item_type: 'duplicate', item_id: giveHeroId, quantity: giveQty }],
+      want: [{ item_type: 'duplicate', item_id: wantHeroId, quantity: wantQty }],
+    });
+    document.getElementById('ex-submit').disabled = true;
+  };
+}
+
 /* ═══════════════════════════════════════════════════════════
    ACTIONS
 ═══════════════════════════════════════════════════════════ */
@@ -1388,4 +1451,4 @@ function toast(msg, type='info') {
 document.addEventListener('DOMContentLoaded', init);
 </script>
 </body>
-</html>
+  </html>
