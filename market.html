@@ -751,8 +751,8 @@ function init() {
    WebSocket
 ═══════════════════════════════════════════════════════════ */
 function getWSUrl() {
-  const proto = location.protocol === 'https:' ? 'wss' : 'ws';
-  return `${proto}://${location.host}/ws/market?user_id=${userId}&mode=market`;
+    // Жёстко задаём адрес WebSocket-сервера
+    return 'wss://vvvty.onrender.com/ws/market?user_id=' + userId + '&mode=market';
 }
 
 function connectWS() {
