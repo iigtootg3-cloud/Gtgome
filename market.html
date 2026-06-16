@@ -769,10 +769,11 @@ function connectWS() {
   ws.onopen = () => {
     setConnDot(true);
     clearTimeout(reconnectTimer);
-    ws.send(JSON.stringify({ action: 'auth', user_id: userId }));
+    const initData = window.Telegram?.WebApp?.initData || '';
+    ws.send(JSON.stringify({ action: 'auth', init_data: initData, user_id: userId }));
     startPing();
     loadCurrentTab();
-  };
+};
 
   ws.onmessage = (ev) => {
     try { handleMessage(JSON.parse(ev.data)); }
