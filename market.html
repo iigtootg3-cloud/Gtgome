@@ -706,6 +706,8 @@ let state = {
   lastRoomData: null
 };
 
+let lockCountdownTimer = null;  // для таймера в комнате
+
 /* ═══════════════════════════════════════════════════════════
    INIT
 ═══════════════════════════════════════════════════════════ */
@@ -762,6 +764,10 @@ function connectWS() {
     ws.send(JSON.stringify({ action: 'auth', init_data: initData, user_id: userId }));
     startPing();
     loadCurrentTab();
+    // Если была открыта комната — перезапросим её состояние
+    if (state.currentExchangeId) {
+      send({ action: 'get_exchange_room', exchange_id: state.currentExchangeId });
+    }
   };
 
   ws.onmessage = (ev) => {
@@ -843,7 +849,7 @@ function handleMessage(msg) {
     case 'exchange_room_updated':
       state.lastRoomData = msg;
       if (msg.exchange_id === state.currentExchangeId) {
-        updateExchangeRoom(msg);
+        renderExchangeRoom(msg);
       }
       break;
 
@@ -893,7 +899,10 @@ function handleMessage(msg) {
       break;
 
     case 'exchange_updated':
-      toast(msg.message || 'Обмен обновлён', 'info');
+      // toast убран, чтобы не мешать комнате; можно оставить только для важных
+      if (msg.message && msg.message.includes('обмен')) {
+        toast(msg.message, 'info');
+      }
       send({ action: 'exchange_offers' });
       break;
 
@@ -962,7 +971,7 @@ function setupFilters() {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   RENDER: MARKET (иконка редкости вместо меча)
+   RENDER: MARKET
 ═══════════════════════════════════════════════════════════ */
 function renderMarket() {
   let lots = [...state.marketLots];
@@ -1086,15 +1095,15 @@ function renderOfferList(elId, offers, isIncoming) {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   КОМНАТА ОБМЕНА (полностью переработана)
+   КОМНАТА ОБМЕНА (ПОЛНОСТЬЮ ПЕРЕРАБОТАНА — двусторонняя готовность + таймер)
 ═══════════════════════════════════════════════════════════ */
 function openExchangeRoom(exchangeId) {
   state.currentExchangeId = exchangeId;
   send({ action: 'get_exchange_room', exchange_id: exchangeId });
-  openModal(`<div class="modal-title">🤝 Комната обмена #${exchangeId} <button class="modal-close" onclick="closeModal()">✕</button></div><div id="exchange-room-content"><p>Загрузка...</p></div>`);
+  openModal(`<div class="modal-title">🤝 Комната обмена #${exchangeId} <button class="modal-close" onclick="closeModal()">✕</button></div><div id="exchange-room-content"><div class="loading-wrap"><div class="spinner"></div><p>Загрузка...</p></div></div>`);
 }
 
-function updateExchangeRoom(msg) {
+function renderExchangeRoom(msg) {
   const content = document.getElementById('exchange-room-content');
   if (!content) return;
 
@@ -1103,32 +1112,59 @@ function updateExchangeRoom(msg) {
     return `${icon} ${esc(i.name)} ×${i.quantity}`;
   };
 
-  const myItems = (msg.my_offer||[]).map(formatItem).join(', ') || '—';
-  const theirItems = (msg.partner_offer||[]).map(formatItem).join(', ') || '—';
+  const myList = (msg.my_offer || []).map(formatItem).join(', ') || '—';
+  const theirList = (msg.partner_offer || []).map(formatItem).join(', ') || '—';
   const isLocked = msg.phase === 'locked';
-  const myConfirmed = msg.my_confirmed;
 
-  let html = `
+  let actionsHtml = '';
+  if (msg.phase === 'negotiation') {
+    actionsHtml = `
+      <button class="zone-btn sm info" onclick="editMyOffer(${msg.exchange_id})">✏️ Изменить мою часть</button>
+      <button class="zone-btn lg success" onclick="setReady(${msg.exchange_id}, true)">✅ Готов к обмену</button>
+      <div class="util-notice">${msg.partner_ready ? '🟢 Партнёр готов — нажмите «Готов», чтобы заблокировать сделку.' : '⚪ Партнёр ещё не готов.'}</div>`;
+  } else if (msg.phase === 'locked') {
+    const remaining = msg.timer_expires ? Math.max(0, Math.round((new Date(msg.timer_expires) - Date.now()) / 1000)) : 0;
+    actionsHtml = `
+      <div class="util-notice" id="lock-countdown">🔒 Сделка заблокирована. Подтверждение доступно через <b id="lock-seconds">${remaining}</b> сек.</div>
+      <button class="zone-btn lg success" id="confirm-btn-room" onclick="confirmExchange(${msg.exchange_id})" ${remaining > 0 ? 'disabled' : ''}>🤝 Обменяться</button>
+      <button class="zone-btn sm danger" onclick="setReady(${msg.exchange_id}, false)">↩️ Отменить готовность</button>`;
+    startLockCountdown(remaining);
+  }
+
+  content.innerHTML = `
     <div class="offer-card">
-      <div class="offer-header">
-        <div>Моё предложение</div>
-        <span class="offer-status ${isLocked?'locked':'negotiation'}">${isLocked?'🔒 Заблокировано':'✏️ Можно менять'}</span>
-      </div>
-      <div class="offer-items">${myItems}</div>
-      ${!isLocked ? `<button class="zone-btn sm info" onclick="editMyOffer(${msg.exchange_id})">✏️ Изменить</button>` : ''}
+      <div class="offer-header"><div>Вы отдаёте</div></div>
+      <div class="offer-items">${myList}</div>
+      <div class="confirm-row"><span>Ваши монеты</span><span class="val">${msg.my_coins || 0} 💸</span></div>
     </div>
     <div class="offer-card">
-      <div class="offer-header"><div>Предложение партнёра</div></div>
-      <div class="offer-items">${theirItems}</div>
+      <div class="offer-header"><div>Вы получаете</div></div>
+      <div class="offer-items">${theirList}</div>
+      <div class="confirm-row"><span>Монеты партнёра</span><span class="val">${msg.partner_coins || 0} 💸</span></div>
     </div>
-    <div class="confirm-row"><span>Монеты (от меня)</span><span class="val">${msg.coin_offer_from_creator||0} 💸</span></div>
-    <div class="confirm-row"><span>Монеты (от партнёра)</span><span class="val">${msg.coin_offer_from_partner||0} 💸</span></div>
-    <div class="offer-actions">
-      ${!isLocked ? `<button class="zone-btn lg success" onclick="lockExchange(${msg.exchange_id})">🔒 Заблокировать и подтвердить</button>` : ''}
-      ${isLocked && !myConfirmed ? `<button class="zone-btn lg success" onclick="confirmExchange(${msg.exchange_id})">✅ Подтвердить обмен</button>` : ''}
-      <button class="zone-btn danger sm" onclick="cancelExchange(${msg.exchange_id})">❌ Отменить</button>
+    <div class="offer-actions">${actionsHtml}
+      <button class="zone-btn danger sm" onclick="cancelExchange(${msg.exchange_id})">❌ Отменить сделку</button>
     </div>`;
-  content.innerHTML = html;
+}
+
+function startLockCountdown(seconds) {
+  clearInterval(lockCountdownTimer);
+  if (seconds <= 0) return;
+  let left = seconds;
+  lockCountdownTimer = setInterval(() => {
+    left -= 1;
+    const el = document.getElementById('lock-seconds');
+    if (el) el.textContent = Math.max(0, left);
+    if (left <= 0) {
+      clearInterval(lockCountdownTimer);
+      const confirmBtn = document.getElementById('confirm-btn-room');
+      if (confirmBtn) confirmBtn.removeAttribute('disabled');
+    }
+  }, 1000);
+}
+
+function setReady(exchangeId, ready) {
+  send({ action: ready ? 'exchange_ready' : 'exchange_unready', exchange_id: exchangeId });
 }
 
 /* ── Редактирование своего предложения (с монетами) ── */
@@ -1150,7 +1186,7 @@ function editMyOffer(exchangeId) {
       `<option value="${b.box_id}" data-type="box">📦 Бокс #${b.box_id} ×${b.amount}</option>`
     ).join('');
 
-    const currentCoins = state.lastRoomData ? (state.lastRoomData.coin_offer_from_creator || 0) : 0;
+    const currentCoins = state.lastRoomData ? (state.lastRoomData.my_coins || 0) : 0;
 
     openModal(`
       <div class="modal-title">✏️ Изменить предложение <button class="modal-close" onclick="closeModal()">✕</button></div>
@@ -1328,6 +1364,9 @@ function openModal(html) {
 }
 function closeModal() {
   document.getElementById('modal-overlay').classList.remove('open');
+  // сброс комнаты при закрытии
+  state.currentExchangeId = null;
+  clearInterval(lockCountdownTimer);
 }
 
 /* ── Buy Modal ─────────────────────────────────────────── */
@@ -1618,15 +1657,6 @@ function openNewOfferModal(partnerId = null) {
   };
 }
 
-function openNewOfferModalWithPartner(partnerId) {
-  openNewOfferModal(partnerId);
-}
-
-function modifyOffer(offerId) {
-  toast('Редактирование обмена...', 'info');
-  send({ action: 'exchange_offers' });
-}
-
 /* ═══════════════════════════════════════════════════════════
    БАНК РЫНКА
 ═══════════════════════════════════════════════════════════ */
@@ -1648,8 +1678,6 @@ function showBankModal() {
 ═══════════════════════════════════════════════════════════ */
 function cancelLot(lotId)    { if(confirm('Снять лот с продажи?')) send({ action:'cancel_lot', lot_id:lotId }); }
 function acceptOffer(offerId) { send({ action:'exchange_accept',   offer_id:offerId }); }
-function cancelOffer(offerId) { send({ action:'cancel_lot',        offer_id:offerId, is_offer:true }); }
-function confirmOffer(offerId){ send({ action:'exchange_confirm',  offer_id:offerId }); }
 
 /* ═══════════════════════════════════════════════════════════
    UTILS
@@ -1681,4 +1709,4 @@ function toast(msg, type='info') {
 document.addEventListener('DOMContentLoaded', init);
 </script>
 </body>
-</html> 
+</html>
