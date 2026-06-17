@@ -565,6 +565,7 @@ select.field-input option { background: var(--bg2); }
   <div id="header">
     <div id="conn-dot"></div>
     <div id="header-title">🏰 Рынок ArenaM</div>
+    <button class="zone-btn sm" id="btn-bank" style="margin-right:8px">🏦</button>
     <div id="user-coins">… 🌟</div>
   </div>
 
@@ -715,7 +716,8 @@ let state = {
   marketFilter: 'all',
   marketSort:   'price_asc',
   userHeroes:   [],
-  userBoxes:    []
+  userBoxes:    [],
+  bankBalance: 0
 };
 
 /* ═══════════════════════════════════════════════════════════
@@ -734,6 +736,8 @@ function init() {
   setupModal();
   setupFilters();
   connectWS();
+
+  document.getElementById('btn-bank').addEventListener('click', showBankModal);
 
   const partnerId = parseInt(params.get('partner_id') || '0');
   if (partnerId && partnerId !== userId) {
@@ -856,6 +860,10 @@ function handleMessage(msg) {
       state.userBoxes = msg.boxes || [];
       break;
 
+    case 'bank_balance':
+      state.bankBalance = msg.balance || 0;
+      break;
+
     case 'lot_created':
       toast(`✅ Лот выставлен: ${msg.hero_name} ×${msg.quantity}`, 'success');
       closeModal();
@@ -943,6 +951,7 @@ function loadCurrentTab(tab) {
     case 'history':    send({ action: 'get_history' });      break;
   }
   send({ action: 'user_state' });
+  send({ action: 'bank_balance' });
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -1408,13 +1417,15 @@ function openNewOfferModal(partnerId = null) {
 
     if (items.length === 0) { toast('Добавьте предметы', 'error'); return; }
 
+    const btn = document.getElementById('ex-submit');
+    btn.disabled = true;
     send({
       action: 'exchange_offer',
       partner_id: partner,
       give: items,
-      want: [{ item_type: 'duplicate', item_id: 1, quantity: 1 }]  // временная заглушка
+      want: [{ item_type: 'duplicate', item_id: 1, quantity: 1 }]
     });
-    document.getElementById('ex-submit').disabled = true;
+    setTimeout(() => { btn.disabled = false; }, 5000);
   };
 }
 
@@ -1423,7 +1434,24 @@ function openNewOfferModalWithPartner(partnerId) {
 }
 
 function modifyOffer(offerId) {
-  toast('Функция изменения обмена появится позже', 'info');
+  toast('Редактирование обмена...', 'info');
+  send({ action: 'exchange_offers' });
+}
+
+/* ═══════════════════════════════════════════════════════════
+   БАНК РЫНКА
+═══════════════════════════════════════════════════════════ */
+function showBankModal() {
+  send({ action: 'bank_balance' });
+  openModal(`
+    <div class="modal-title">🏦 Банк Рынка ArenaM <button class="modal-close" onclick="closeModal()">✕</button></div>
+    <div style="text-align:center; margin-bottom:16px">
+      <div style="font-size:80px; margin-bottom:10px">🏦</div>
+      <div style="font-size:18px; font-weight:700; color:var(--gold)">Баланс банка</div>
+      <div style="font-size:28px; font-weight:800; color:var(--gold); margin-top:8px" id="bank-balance-display">${state.bankBalance} 🌟</div>
+    </div>
+    <div class="util-notice">Собранная комиссия со всех сделок будет использована для будущих розыгрышей и ивентов.</div>
+  `);
 }
 
 /* ═══════════════════════════════════════════════════════════
