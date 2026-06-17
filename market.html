@@ -573,6 +573,7 @@
 
     <!-- Content -->
     <div id="content">
+        <!-- ════ TAB: MARKET ════ -->
         <div class="tab-panel active" id="tab-market">
             <div class="section-head">
                 <h2>🏪 Лоты на продажу</h2>
@@ -598,6 +599,7 @@
             </div>
         </div>
 
+        <!-- ════ TAB: DUPLICATES ════ -->
         <div class="tab-panel" id="tab-duplicates">
             <div class="section-head">
                 <h2>🎒 Дубликаты</h2>
@@ -612,6 +614,7 @@
             </div>
         </div>
 
+        <!-- ════ TAB: EXCHANGE ════ -->
         <div class="tab-panel" id="tab-exchange">
             <div class="section-head">
                 <h2>🤝 Обмен</h2>
@@ -630,6 +633,7 @@
             </div>
         </div>
 
+        <!-- ════ TAB: MY LOTS ════ -->
         <div class="tab-panel" id="tab-my-lots">
             <div class="section-head">
                 <h2>📦 Мои лоты</h2>
@@ -643,6 +647,7 @@
             </div>
         </div>
 
+        <!-- ════ TAB: HISTORY ════ -->
         <div class="tab-panel" id="tab-history">
             <div class="section-head">
                 <h2>📜 История операций</h2>
@@ -651,10 +656,14 @@
                 <div class="loading-wrap"><div class="spinner"></div><p>Загрузка…</p></div>
             </div>
         </div>
-    </div>
-</div>
 
+    </div><!-- /content -->
+</div><!-- /app -->
+
+<!-- Toast -->
 <div id="toast-wrap"></div>
+
+<!-- Modal -->
 <div id="modal-overlay">
     <div id="modal-box"></div>
 </div>
@@ -703,7 +712,13 @@
     ═══════════════════════════════════════════════════════════ */
     function init() {
         const params = new URLSearchParams(window.location.search);
-        userId = parseInt(params.get('user_id') || '0');
+
+        // Получаем userId из Telegram initData (надёжный источник)
+        if (window.Telegram?.WebApp?.initDataUnsafe?.user?.id) {
+            userId = window.Telegram.WebApp.initDataUnsafe.user.id;
+        } else {
+            userId = parseInt(params.get('user_id') || '0');
+        }
 
         // partner_id через start_param
         let partnerId = 0;
@@ -717,11 +732,6 @@
         if (window.Telegram?.WebApp) {
             window.Telegram.WebApp.ready();
             window.Telegram.WebApp.expand();
-        }
-
-        const initData = window.Telegram?.WebApp?.initData || '';
-        if (!initData) {
-            alert('Ошибка: Telegram initData отсутствует. Соединение не будет установлено.');
         }
 
         setupTabs();
@@ -743,6 +753,60 @@
     }
 
     /* ═══════════════════════════════════════════════════════════
+       TABS
+    ═══════════════════════════════════════════════════════════ */
+    function setupTabs() {
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+                btn.classList.add('active');
+                const tabId = `tab-${btn.dataset.tab}`;
+                document.getElementById(tabId)?.classList.add('active');
+                loadCurrentTab(btn.dataset.tab);
+            });
+        });
+    }
+
+    function loadCurrentTab(tab) {
+        tab = tab || document.querySelector('.tab-btn.active')?.dataset.tab || 'market';
+        switch(tab) {
+            case 'market':     send({ action: 'market_list' });      break;
+            case 'duplicates': send({ action: 'inventory_list' });  break;
+            case 'exchange':
+                send({ action: 'exchange_offers' });
+                send({ action: 'inventory_list' });
+                break;
+            case 'my-lots':    send({ action: 'my_lots' });          break;
+            case 'history':    send({ action: 'get_history' });      break;
+        }
+        send({ action: 'user_state' });
+        send({ action: 'bank_balance' });
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       FILTERS
+    ═══════════════════════════════════════════════════════════ */
+    function setupFilters() {
+        document.getElementById('market-filter').addEventListener('click', e => {
+            const chip = e.target.closest('[data-filter]');
+            if (!chip) return;
+            document.querySelectorAll('[data-filter]').forEach(c => c.classList.remove('active'));
+            chip.classList.add('active');
+            state.marketFilter = chip.dataset.filter;
+            renderMarket();
+        });
+        document.querySelector('.sort-row').addEventListener('click', e => {
+            const chip = e.target.closest('[data-sort]');
+            if (!chip) return;
+            document.querySelectorAll('[data-sort]').forEach(c => c.classList.remove('active'));
+            chip.classList.add('active');
+            state.marketSort = chip.dataset.sort;
+            renderMarket();
+        });
+    }
+
+    /* ═══════════════════════════════════════════════════════════
        WebSocket
     ═══════════════════════════════════════════════════════════ */
     function getWSUrl() {
@@ -753,8 +817,7 @@
         if (ws) { try { ws.close(); } catch(e){} }
         setConnDot(false);
 
-        const url = getWSUrl();
-        ws = new WebSocket(url);
+        ws = new WebSocket(getWSUrl());
 
         ws.onopen = () => {
             setConnDot(true);
@@ -914,61 +977,7 @@
     }
 
     /* ═══════════════════════════════════════════════════════════
-       TABS
-    ═══════════════════════════════════════════════════════════ */
-    function setupTabs() {
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-                document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-                btn.classList.add('active');
-                const tabId = `tab-${btn.dataset.tab}`;
-                document.getElementById(tabId)?.classList.add('active');
-                loadCurrentTab(btn.dataset.tab);
-            });
-        });
-    }
-
-    function loadCurrentTab(tab) {
-        tab = tab || document.querySelector('.tab-btn.active')?.dataset.tab || 'market';
-        switch(tab) {
-            case 'market':     send({ action: 'market_list' });      break;
-            case 'duplicates': send({ action: 'inventory_list' });  break;
-            case 'exchange':
-                send({ action: 'exchange_offers' });
-                send({ action: 'inventory_list' });
-                break;
-            case 'my-lots':    send({ action: 'my_lots' });          break;
-            case 'history':    send({ action: 'get_history' });      break;
-        }
-        send({ action: 'user_state' });
-        send({ action: 'bank_balance' });
-    }
-
-    /* ═══════════════════════════════════════════════════════════
-       FILTERS
-    ═══════════════════════════════════════════════════════════ */
-    function setupFilters() {
-        document.getElementById('market-filter').addEventListener('click', e => {
-            const chip = e.target.closest('[data-filter]');
-            if (!chip) return;
-            document.querySelectorAll('[data-filter]').forEach(c => c.classList.remove('active'));
-            chip.classList.add('active');
-            state.marketFilter = chip.dataset.filter;
-            renderMarket();
-        });
-        document.querySelector('.sort-row').addEventListener('click', e => {
-            const chip = e.target.closest('[data-sort]');
-            if (!chip) return;
-            document.querySelectorAll('[data-sort]').forEach(c => c.classList.remove('active'));
-            chip.classList.add('active');
-            state.marketSort = chip.dataset.sort;
-            renderMarket();
-        });
-    }
-
-    /* ═══════════════════════════════════════════════════════════
-       RENDER: MARKET
+       RENDER: MARKET (свои лоты – кнопка «Снять»)
     ═══════════════════════════════════════════════════════════ */
     function renderMarket() {
         let lots = [...state.marketLots];
@@ -996,10 +1005,16 @@
         }
 
         el.innerHTML = lots.map(lot => {
+            const isMine = lot.seller_id === userId;
             const icon = (lot.rarity && RARITY_ICON[lot.rarity]) ? RARITY_ICON[lot.rarity] : (TYPE_ICON[lot.item_type] || '📦');
             const rarityClass = lot.rarity ? `r-${lot.rarity}` : '';
-            const isMine = lot.seller_id === userId;
-            const canBuy = !isMine && userCoins >= lot.price;
+            let actionBtn = '';
+            if (isMine) {
+                actionBtn = `<button class="zone-btn danger sm" onclick="cancelLot(${lot.id})">Снять</button>`;
+            } else {
+                const canBuy = userCoins >= lot.price;
+                actionBtn = `<button class="zone-btn sm" ${canBuy ? '' : 'disabled'} onclick="openBuyModal(${lot.id})">Купить</button>`;
+            }
             return `
             <div class="lot-card ${rarityClass}">
                 <div class="lot-icon">${icon}</div>
@@ -1011,11 +1026,7 @@
                 <div class="lot-right">
                     <div class="lot-price">${lot.price} 💸</div>
                     <div class="lot-qty">×${lot.quantity}</div>
-                    ${isMine
-                        ? `<button class="zone-btn danger sm" onclick="cancelLot(${lot.id})">Снять</button>`
-                        : `<button class="zone-btn sm" ${canBuy ? '' : 'disabled'}
-                             onclick="openBuyModal(${lot.id})">Купить</button>`
-                    }
+                    ${actionBtn}
                 </div>
             </div>`;
         }).join('');
@@ -1092,7 +1103,7 @@
     }
 
     /* ═══════════════════════════════════════════════════════════
-       КОМНАТА ОБМЕНА
+       КОМНАТА ОБМЕНА (двусторонняя готовность + таймер)
     ═══════════════════════════════════════════════════════════ */
     function openExchangeRoom(exchangeId) {
         state.currentExchangeId = exchangeId;
@@ -1164,6 +1175,7 @@
         send({ action: ready ? 'exchange_ready' : 'exchange_unready', exchange_id: exchangeId });
     }
 
+    /* ── Редактирование своего предложения (с монетами) ── */
     function editMyOffer(exchangeId) {
         send({ action: 'inventory_list' });
         setTimeout(() => {
@@ -1317,7 +1329,7 @@
     }
 
     /* ═══════════════════════════════════════════════════════════
-       RENDER: HISTORY
+       RENDER: HISTORY (с контрагентом)
     ═══════════════════════════════════════════════════════════ */
     function renderHistory() {
         const recs = state.history;
@@ -1331,12 +1343,15 @@
         const TYPE_LABEL = { sell:'Продажа', buy:'Покупка', exchange:'Обмен', utilize:'Утилизация', cancel:'Отмена' };
         el.innerHTML = recs.map(r => {
             const plus = r.amount > 0;
+            let details = '';
+            if (r.target_name) details += `Контрагент: ${esc(r.target_name)} `;
+            if (r.type === 'buy' && r.amount < 0) details += `(вкл. комиссию)`;
             return `
             <div class="history-item">
                 <div class="history-icon">${HIST_ICON[r.type] || '📝'}</div>
                 <div class="history-text">
                     <div class="history-title">${TYPE_LABEL[r.type] || r.type}: ${esc(r.item_name || r.item_type)}</div>
-                    <div class="history-sub">×${r.quantity} • ${formatDate(r.created_at)}</div>
+                    <div class="history-sub">×${r.quantity} • ${formatDate(r.created_at)}${details ? ' • ' + details : ''}</div>
                 </div>
                 ${r.amount ? `<div class="history-amount ${plus ? 'plus' : 'minus'}">${plus ? '+' : ''}${r.amount} 💸</div>` : ''}
             </div>`;
@@ -1364,6 +1379,7 @@
         clearInterval(lockCountdownTimer);
     }
 
+    /* ── Buy Modal ─────────────────────────────────────────── */
     function openBuyModal(lotId) {
         const lot = state.marketLots.find(l => l.id === lotId);
         if (!lot) return;
@@ -1386,6 +1402,7 @@
         document.getElementById('modal-box').querySelector('button.zone-btn.lg').disabled = true;
     }
 
+    /* ── Utilize Modal ─────────────────────────────────────── */
     function openUtilModal(heroId, heroName, rarity, maxQty) {
         const priceEach = UTIL_PRICES[rarity] || 50;
         let qty = 1;
@@ -1425,6 +1442,7 @@
         };
     }
 
+    /* ── Универсальное окно продажи ── */
     function openSellModal() {
         if (!state.duplicates.length && !state.userHeroes.length && !state.userBoxes.length) {
             send({ action: 'inventory_list' });
@@ -1529,6 +1547,7 @@
         };
     }
 
+    /* ── Вызов продажи конкретного дубликата ── */
     function openSellDupModal(heroId, heroName, rarity, maxQty) {
         openSellModal();
         setTimeout(() => {
@@ -1544,6 +1563,7 @@
         }, 100);
     }
 
+    /* ── НОВЫЙ ОБМЕН С МОНЕТАМИ ── */
     function openNewOfferModal(partnerId = null) {
         const dupOpts = state.duplicates.filter(d => !d.locked).map(d =>
             `<option value="${d.hero_id}" data-type="duplicate">${RARITY_ICON[d.rarity]} ${d.hero_name} ×${d.quantity}</option>`
@@ -1647,6 +1667,9 @@
         };
     }
 
+    /* ═══════════════════════════════════════════════════════════
+       БАНК РЫНКА
+    ═══════════════════════════════════════════════════════════ */
     function showBankModal() {
         send({ action: 'bank_balance' });
         openModal(`
@@ -1660,6 +1683,9 @@
         `);
     }
 
+    /* ═══════════════════════════════════════════════════════════
+       ACTIONS
+    ═══════════════════════════════════════════════════════════ */
     function cancelLot(lotId)    { if(confirm('Снять лот с продажи?')) send({ action:'cancel_lot', lot_id:lotId }); }
     function acceptOffer(offerId) { send({ action:'exchange_accept',   offer_id:offerId }); }
 
@@ -1693,4 +1719,4 @@
     document.addEventListener('DOMContentLoaded', init);
 </script>
 </body>
-</html>
+</html> 
