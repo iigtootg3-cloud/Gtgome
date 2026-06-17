@@ -1131,7 +1131,7 @@ function updateExchangeRoom(msg) {
   content.innerHTML = html;
 }
 
-/* ── Редактирование своего предложения ── */
+/* ── Редактирование своего предложения (с монетами) ── */
 function editMyOffer(exchangeId) {
   send({ action: 'inventory_list' });
   setTimeout(() => {
@@ -1150,10 +1150,16 @@ function editMyOffer(exchangeId) {
       `<option value="${b.box_id}" data-type="box">📦 Бокс #${b.box_id} ×${b.amount}</option>`
     ).join('');
 
+    const currentCoins = state.lastRoomData ? (state.lastRoomData.coin_offer_from_creator || 0) : 0;
+
     openModal(`
       <div class="modal-title">✏️ Изменить предложение <button class="modal-close" onclick="closeModal()">✕</button></div>
       <div id="ex-items-container"></div>
       <button class="zone-btn sm info" id="ex-add-item" style="margin-bottom:12px">➕ Добавить предмет</button>
+      <div class="field-group">
+        <label class="field-label">Монеты (от вас) 💸</label>
+        <input type="number" class="field-input" id="ex-coin-give" min="0" value="${currentCoins}" placeholder="0"/>
+      </div>
       <div class="util-notice">Максимум 5 предметов. После сохранения таймер сбросится.</div>
       <button class="zone-btn lg" id="ex-save">💾 Сохранить изменения</button>
     `);
@@ -1233,10 +1239,13 @@ function editMyOffer(exchangeId) {
         return;
       }
 
+      const coinGive = parseInt(document.getElementById('ex-coin-give').value) || 0;
+
       send({
         action: 'exchange_modify',
         offer_id: exchangeId,
-        give: items
+        give: items,
+        coin_give: coinGive
       });
       closeModal();
       toast('Предложение обновлено', 'success');
@@ -1505,7 +1514,7 @@ function openSellDupModal(heroId, heroName, rarity, maxQty) {
   }, 100);
 }
 
-/* ── НОВЫЙ ОБМЕН С МНОЖЕСТВЕННЫМ ВЫБОРОМ ── */
+/* ── НОВЫЙ ОБМЕН С МОНЕТАМИ ── */
 function openNewOfferModal(partnerId = null) {
   const dupOpts = state.duplicates.filter(d => !d.locked).map(d =>
     `<option value="${d.hero_id}" data-type="duplicate">${RARITY_ICON[d.rarity]} ${d.hero_name} ×${d.quantity}</option>`
@@ -1525,6 +1534,10 @@ function openNewOfferModal(partnerId = null) {
     </div>
     <div id="ex-items-container"></div>
     <button class="zone-btn sm info" id="ex-add-item" style="margin-bottom:12px">➕ Добавить предмет</button>
+    <div class="field-group">
+      <label class="field-label">Монеты (от вас) 💸</label>
+      <input type="number" class="field-input" id="ex-coin-give" min="0" value="0" placeholder="0"/>
+    </div>
     <div class="util-notice">Максимум 5 предметов. После отправки партнёр сможет добавить свои.</div>
     <button class="zone-btn lg" id="ex-submit">✅ Отправить предложение</button>
   `);
@@ -1590,13 +1603,16 @@ function openNewOfferModal(partnerId = null) {
 
     if (items.length === 0) { toast('Добавьте предметы', 'error'); return; }
 
+    const coinGive = parseInt(document.getElementById('ex-coin-give').value) || 0;
+
     const btn = document.getElementById('ex-submit');
     btn.disabled = true;
     send({
       action: 'exchange_offer',
       partner_id: partner,
       give: items,
-      want: []
+      want: [],
+      coin_give: coinGive
     });
     setTimeout(() => { btn.disabled = false; }, 5000);
   };
