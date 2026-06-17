@@ -706,14 +706,28 @@ let state = {
   lastRoomData: null
 };
 
-let lockCountdownTimer = null;  // для таймера в комнате
+let lockCountdownTimer = null;
 
 /* ═══════════════════════════════════════════════════════════
-   INIT
+   INIT (теперь с поддержкой start_param для partner_id)
 ═══════════════════════════════════════════════════════════ */
 function init() {
   const params = new URLSearchParams(window.location.search);
   userId = parseInt(params.get('user_id') || '0');
+
+  // partner_id может прийти через start_param от Telegram
+  let partnerId = 0;
+  if (window.Telegram?.WebApp?.initDataUnsafe?.start_param) {
+    const sp = window.Telegram.WebApp.initDataUnsafe.start_param;
+    const match = sp.match(/^exchange_(\d+)$/);
+    if (match) {
+      partnerId = parseInt(match[1], 10);
+    }
+  }
+  // fallback на старый способ (для обратной совместимости)
+  if (!partnerId) {
+    partnerId = parseInt(params.get('partner_id') || '0');
+  }
 
   if (window.Telegram?.WebApp) {
     window.Telegram.WebApp.ready();
@@ -727,7 +741,6 @@ function init() {
 
   document.getElementById('btn-bank').addEventListener('click', showBankModal);
 
-  const partnerId = parseInt(params.get('partner_id') || '0');
   if (partnerId && partnerId !== userId) {
     setTimeout(() => {
       if (state.duplicates.length > 0 || state.userHeroes.length > 0 || state.userBoxes.length > 0) {
@@ -764,7 +777,6 @@ function connectWS() {
     ws.send(JSON.stringify({ action: 'auth', init_data: initData, user_id: userId }));
     startPing();
     loadCurrentTab();
-    // Если была открыта комната — перезапросим её состояние
     if (state.currentExchangeId) {
       send({ action: 'get_exchange_room', exchange_id: state.currentExchangeId });
     }
@@ -899,7 +911,6 @@ function handleMessage(msg) {
       break;
 
     case 'exchange_updated':
-      // toast убран, чтобы не мешать комнате; можно оставить только для важных
       if (msg.message && msg.message.includes('обмен')) {
         toast(msg.message, 'info');
       }
@@ -1095,7 +1106,7 @@ function renderOfferList(elId, offers, isIncoming) {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   КОМНАТА ОБМЕНА (ПОЛНОСТЬЮ ПЕРЕРАБОТАНА — двусторонняя готовность + таймер)
+   КОМНАТА ОБМЕНА (двусторонняя готовность + таймер)
 ═══════════════════════════════════════════════════════════ */
 function openExchangeRoom(exchangeId) {
   state.currentExchangeId = exchangeId;
@@ -1364,7 +1375,6 @@ function openModal(html) {
 }
 function closeModal() {
   document.getElementById('modal-overlay').classList.remove('open');
-  // сброс комнаты при закрытии
   state.currentExchangeId = null;
   clearInterval(lockCountdownTimer);
 }
@@ -1709,4 +1719,4 @@ function toast(msg, type='info') {
 document.addEventListener('DOMContentLoaded', init);
 </script>
 </body>
-</html>
+</html> 
