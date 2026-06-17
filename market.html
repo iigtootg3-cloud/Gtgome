@@ -702,7 +702,8 @@ let state = {
   userHeroes:   [],
   userBoxes:    [],
   bankBalance: 0,
-  currentExchangeId: null
+  currentExchangeId: null,
+  lastRoomData: null
 };
 
 /* ═══════════════════════════════════════════════════════════
@@ -840,6 +841,7 @@ function handleMessage(msg) {
       break;
 
     case 'exchange_room_updated':
+      state.lastRoomData = msg;
       if (msg.exchange_id === state.currentExchangeId) {
         updateExchangeRoom(msg);
       }
@@ -988,7 +990,6 @@ function renderMarket() {
   }
 
   el.innerHTML = lots.map(lot => {
-    // Иконка: для героев и дубликатов — кружок редкости, для боксов — коробка
     const icon = (lot.rarity && RARITY_ICON[lot.rarity]) ? RARITY_ICON[lot.rarity] : (TYPE_ICON[lot.item_type] || '📦');
     const rarityClass = lot.rarity ? `r-${lot.rarity}` : '';
     const isMine = lot.seller_id === userId;
@@ -1085,7 +1086,7 @@ function renderOfferList(elId, offers, isIncoming) {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   КОМНАТА ОБМЕНА
+   КОМНАТА ОБМЕНА (полностью переработана)
 ═══════════════════════════════════════════════════════════ */
 function openExchangeRoom(exchangeId) {
   state.currentExchangeId = exchangeId;
@@ -1096,10 +1097,17 @@ function openExchangeRoom(exchangeId) {
 function updateExchangeRoom(msg) {
   const content = document.getElementById('exchange-room-content');
   if (!content) return;
-  const myItems = (msg.my_offer||[]).map(i => `${TYPE_ICON[i.item_type]||'📦'} ${esc(i.name)} ×${i.quantity}`).join(', ') || '—';
-  const theirItems = (msg.partner_offer||[]).map(i => `${TYPE_ICON[i.item_type]||'📦'} ${esc(i.name)} ×${i.quantity}`).join(', ') || '—';
+
+  const formatItem = (i) => {
+    const icon = (i.rarity && RARITY_ICON[i.rarity]) ? RARITY_ICON[i.rarity] : (TYPE_ICON[i.item_type] || '📦');
+    return `${icon} ${esc(i.name)} ×${i.quantity}`;
+  };
+
+  const myItems = (msg.my_offer||[]).map(formatItem).join(', ') || '—';
+  const theirItems = (msg.partner_offer||[]).map(formatItem).join(', ') || '—';
   const isLocked = msg.phase === 'locked';
   const myConfirmed = msg.my_confirmed;
+
   let html = `
     <div class="offer-card">
       <div class="offer-header">
@@ -1107,7 +1115,7 @@ function updateExchangeRoom(msg) {
         <span class="offer-status ${isLocked?'locked':'negotiation'}">${isLocked?'🔒 Заблокировано':'✏️ Можно менять'}</span>
       </div>
       <div class="offer-items">${myItems}</div>
-      ${!isLocked ? `<button class="zone-btn sm" onclick="editMyOffer(${msg.exchange_id})">✏️ Изменить</button>` : ''}
+      ${!isLocked ? `<button class="zone-btn sm info" onclick="editMyOffer(${msg.exchange_id})">✏️ Изменить</button>` : ''}
     </div>
     <div class="offer-card">
       <div class="offer-header"><div>Предложение партнёра</div></div>
@@ -1123,7 +1131,119 @@ function updateExchangeRoom(msg) {
   content.innerHTML = html;
 }
 
-function editMyOffer(exchangeId) { /* откроет окно выбора предметов */ }
+/* ── Редактирование своего предложения ── */
+function editMyOffer(exchangeId) {
+  send({ action: 'inventory_list' });
+  setTimeout(() => {
+    if (!state.duplicates.length && !state.userHeroes.length && !state.userBoxes.length) {
+      toast('Нет доступных предметов', 'error');
+      return;
+    }
+
+    const dupOpts = state.duplicates.filter(d => !d.locked).map(d =>
+      `<option value="${d.hero_id}" data-type="duplicate">${RARITY_ICON[d.rarity]} ${d.hero_name} ×${d.quantity}</option>`
+    ).join('');
+    const heroOpts = (state.userHeroes || []).map(h =>
+      `<option value="${h.hero_id}" data-type="hero">${RARITY_ICON[h.rarity] || ''} ${h.name} Lv.${h.level} (${h.rarity})</option>`
+    ).join('');
+    const boxOpts = (state.userBoxes || []).map(b =>
+      `<option value="${b.box_id}" data-type="box">📦 Бокс #${b.box_id} ×${b.amount}</option>`
+    ).join('');
+
+    openModal(`
+      <div class="modal-title">✏️ Изменить предложение <button class="modal-close" onclick="closeModal()">✕</button></div>
+      <div id="ex-items-container"></div>
+      <button class="zone-btn sm info" id="ex-add-item" style="margin-bottom:12px">➕ Добавить предмет</button>
+      <div class="util-notice">Максимум 5 предметов. После сохранения таймер сбросится.</div>
+      <button class="zone-btn lg" id="ex-save">💾 Сохранить изменения</button>
+    `);
+
+    let itemCount = 0;
+    const maxItems = 5;
+
+    function addItemRow(prefill = null) {
+      if (itemCount >= maxItems) return;
+      const container = document.getElementById('ex-items-container');
+      const idx = ++itemCount;
+      const row = document.createElement('div');
+      row.className = 'field-group';
+      row.innerHTML = `
+        <label class="field-label">Предмет ${idx}</label>
+        <select class="field-input ex-item-type">
+          <option value="duplicate">Дубликат</option>
+          <option value="hero">Герой</option>
+          <option value="box">Бокс</option>
+        </select>
+        <select class="field-input ex-item-select" style="margin-top:4px"></select>
+        <input type="number" class="field-input ex-item-qty" min="1" value="1" placeholder="Кол-во" style="margin-top:4px"/>
+      `;
+      container.appendChild(row);
+
+      const typeSelect = row.querySelector('.ex-item-type');
+      const itemSelect = row.querySelector('.ex-item-select');
+      const qtyInput = row.querySelector('.ex-item-qty');
+
+      function updateOptions() {
+        const type = typeSelect.value;
+        itemSelect.innerHTML = type === 'duplicate' ? dupOpts : (type === 'hero' ? heroOpts : boxOpts);
+        if (prefill && type === prefill.item_type) {
+          const opt = [...itemSelect.options].find(o => parseInt(o.value) === prefill.item_id);
+          if (opt) opt.selected = true;
+          qtyInput.value = prefill.quantity;
+        }
+      }
+      typeSelect.addEventListener('change', updateOptions);
+      if (prefill) {
+        typeSelect.value = prefill.item_type || 'duplicate';
+      }
+      updateOptions();
+
+      if (idx > 1) {
+        const delBtn = document.createElement('button');
+        delBtn.className = 'zone-btn danger sm';
+        delBtn.textContent = 'Удалить';
+        delBtn.style.marginTop = '4px';
+        delBtn.onclick = () => { row.remove(); itemCount--; };
+        row.appendChild(delBtn);
+      }
+    }
+
+    const lastRoom = state.lastRoomData;
+    if (lastRoom && lastRoom.my_offer) {
+      lastRoom.my_offer.forEach(item => addItemRow(item));
+    } else {
+      addItemRow();
+    }
+
+    document.getElementById('ex-add-item').onclick = () => addItemRow();
+
+    document.getElementById('ex-save').onclick = () => {
+      const items = [];
+      document.querySelectorAll('#ex-items-container .field-group').forEach(row => {
+        const type = row.querySelector('.ex-item-type').value;
+        const itemId = parseInt(row.querySelector('.ex-item-select').value);
+        const qty = parseInt(row.querySelector('.ex-item-qty').value);
+        if (itemId && qty > 0) {
+          items.push({ item_type: type, item_id: itemId, quantity: qty });
+        }
+      });
+
+      if (items.length === 0) {
+        toast('Добавьте хотя бы один предмет', 'error');
+        return;
+      }
+
+      send({
+        action: 'exchange_modify',
+        offer_id: exchangeId,
+        give: items
+      });
+      closeModal();
+      toast('Предложение обновлено', 'success');
+    };
+  }, 500);
+}
+
 function lockExchange(exchangeId) { send({ action:'lock_exchange', exchange_id: exchangeId }); }
 function confirmExchange(exchangeId) { send({ action:'confirm_exchange', exchange_id: exchangeId }); }
 function cancelExchange(exchangeId) { send({ action:'cancel_exchange', exchange_id: exchangeId }); }
@@ -1405,7 +1525,7 @@ function openNewOfferModal(partnerId = null) {
     </div>
     <div id="ex-items-container"></div>
     <button class="zone-btn sm info" id="ex-add-item" style="margin-bottom:12px">➕ Добавить предмет</button>
-    <div class="util-notice">Максимум 5 предметов. После изменения условий таймер 10 сек.</div>
+    <div class="util-notice">Максимум 5 предметов. После отправки партнёр сможет добавить свои.</div>
     <button class="zone-btn lg" id="ex-submit">✅ Отправить предложение</button>
   `);
 
@@ -1476,7 +1596,7 @@ function openNewOfferModal(partnerId = null) {
       action: 'exchange_offer',
       partner_id: partner,
       give: items,
-      want: [{ item_type: 'duplicate', item_id: 1, quantity: 1 }]
+      want: []
     });
     setTimeout(() => { btn.disabled = false; }, 5000);
   };
