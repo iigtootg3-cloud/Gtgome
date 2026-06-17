@@ -657,7 +657,7 @@ select.field-input option { background: var(--bg2); }
         <span class="count-badge" id="my-lots-count">0</span>
       </div>
       <button class="zone-btn lg info" id="btn-sell" style="margin-bottom:14px;">
-        🏷️ Выставить дубликат на продажу
+        🏷️ Выставить предмет на продажу
       </button>
       <div id="my-lots-list">
         <div class="loading-wrap"><div class="spinner"></div><p>Загрузка…</p></div>
@@ -1117,7 +1117,7 @@ function renderMyLots() {
   const el = document.getElementById('my-lots-list');
 
   if (!lots.length) {
-    el.innerHTML = `<div class="empty-state"><div class="empty-icon">📦</div><p>Вы не выставляли лоты.<br>Нажмите «Выставить дубликат», чтобы начать.</p></div>`;
+    el.innerHTML = `<div class="empty-state"><div class="empty-icon">📦</div><p>Вы не выставляли лоты.<br>Нажмите «Выставить предмет», чтобы начать.</p></div>`;
     return;
   }
 
@@ -1246,82 +1246,105 @@ function openUtilModal(heroId, heroName, rarity, maxQty) {
   };
 }
 
-/* ── Sell Duplicate Modal ──────────────────────────────── */
-function openSellDupModal(heroId, heroName, rarity, maxQty) {
-  let qty = 1;
-  openModal(`
-    <div class="modal-title">
-      🏷️ Выставить на продажу
-      <button class="modal-close" onclick="closeModal()">✕</button>
-    </div>
-    <div class="confirm-row"><span>${RARITY_ICON[rarity]} ${esc(heroName)}</span><span class="val">${rarity}</span></div>
-    <div class="field-group">
-      <label class="field-label">Количество (макс. ${maxQty})</label>
-      <div class="qty-row">
-        <button class="qty-btn" id="qty-minus2">−</button>
-        <div class="qty-display" id="qty-val2">1</div>
-        <button class="qty-btn" id="qty-plus2">+</button>
-      </div>
-    </div>
-    <div class="field-group">
-      <label class="field-label">Цена за всё (🌟)</label>
-      <input type="number" class="field-input" id="sell-price" min="1" max="999999" value="${(UTIL_PRICES[rarity]||50) * 2}" placeholder="Введите цену"/>
-    </div>
-    <div class="util-notice">Лот будет активен 24 часа. После снятия дубликаты вернутся.</div>
-    <button class="zone-btn lg" id="sell-confirm-btn">✅ Выставить лот</button>
-  `);
-  document.getElementById('qty-minus2').onclick = () => { if(qty>1){qty--;document.getElementById('qty-val2').textContent=qty;} };
-  document.getElementById('qty-plus2').onclick  = () => { if(qty<maxQty){qty++;document.getElementById('qty-val2').textContent=qty;} };
-  document.getElementById('sell-confirm-btn').onclick = () => {
-    const price = parseInt(document.getElementById('sell-price').value);
-    if (!price || price < 1) { toast('Укажите корректную цену', 'error'); return; }
-    send({ action: 'create_lot', item_type: 'duplicate', item_id: heroId, quantity: qty, price });
-    document.getElementById('sell-confirm-btn').disabled = true;
-  };
-}
-
-/* ── Generic Sell Modal (from my-lots tab) ─────────────── */
+/* ── Универсальное окно продажи (дубликат/герой/бокс) ── */
 function openSellModal() {
-  if (!state.duplicates.length) {
+  // Загружаем инвентарь, если ещё не загружен
+  if (!state.duplicates.length && !state.userHeroes.length && !state.userBoxes.length) {
     send({ action: 'inventory_list' });
-    toast('Загружаем дубликаты…', 'info');
+    toast('Загружаем предметы…', 'info');
     return;
   }
-  const opts = state.duplicates.filter(d => !d.locked).map(d =>
-    `<option value="${d.hero_id}" data-rarity="${d.rarity}" data-max="${d.quantity}">
-      ${RARITY_ICON[d.rarity]} ${d.hero_name} ×${d.quantity} (${d.rarity})
-    </option>`).join('');
-  if (!opts) { toast('Нет доступных дубликатов', 'info'); return; }
+
+  const dupOpts = state.duplicates.filter(d => !d.locked).map(d =>
+    `<option value="${d.hero_id}" data-type="duplicate" data-max="${d.quantity}">${RARITY_ICON[d.rarity]} ${d.hero_name} ×${d.quantity} (${d.rarity})</option>`
+  ).join('');
+  const heroOpts = (state.userHeroes || []).map(h =>
+    `<option value="${h.hero_id}" data-type="hero" data-max="1">${RARITY_ICON[h.rarity] || ''} ${h.name} Lv.${h.level} (${h.rarity})</option>`
+  ).join('');
+  const boxOpts = (state.userBoxes || []).map(b =>
+    `<option value="${b.box_id}" data-type="box" data-max="${b.amount}">📦 Бокс #${b.box_id} ×${b.amount}</option>`
+  ).join('');
+
   openModal(`
-    <div class="modal-title">
-      🏷️ Выставить на продажу
-      <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-title">🏷️ Выставить на продажу <button class="modal-close" onclick="closeModal()">✕</button></div>
+    <div class="field-group">
+      <label class="field-label">Тип предмета</label>
+      <select class="field-input" id="sell-type">
+        <option value="duplicate">Дубликат</option>
+        <option value="hero">Герой</option>
+        <option value="box">Бокс</option>
+      </select>
     </div>
     <div class="field-group">
-      <label class="field-label">Герой</label>
-      <select class="field-input" id="sell-hero">${opts}</select>
+      <label class="field-label">Предмет</label>
+      <select class="field-input" id="sell-item"></select>
     </div>
-    <div class="field-group">
+    <div class="field-group" id="sell-qty-block">
       <label class="field-label">Количество</label>
       <input type="number" class="field-input" id="sell-qty" min="1" value="1"/>
     </div>
     <div class="field-group">
-      <label class="field-label">Цена (🌟)</label>
-      <input type="number" class="field-input" id="sell-price2" min="1" value="100"/>
+      <label class="field-label">Цена за всё (🌟)</label>
+      <input type="number" class="field-input" id="sell-price" min="1" max="999999" value="100" placeholder="Введите цену"/>
     </div>
     <div class="util-notice">Лот активен 24 ч. Незакрытые лоты автоматически снимаются.</div>
-    <button class="zone-btn lg" id="sell-btn">✅ Выставить</button>
+    <button class="zone-btn lg" id="sell-btn">✅ Выставить лот</button>
   `);
+
+  const typeSelect = document.getElementById('sell-type');
+  const itemSelect = document.getElementById('sell-item');
+  const qtyBlock = document.getElementById('sell-qty-block');
+  const qtyInput = document.getElementById('sell-qty');
+
+  function updateItems() {
+    const type = typeSelect.value;
+    itemSelect.innerHTML = type === 'duplicate' ? dupOpts : (type === 'hero' ? heroOpts : boxOpts);
+    qtyBlock.style.display = type === 'hero' ? 'none' : 'block';
+    if (type === 'hero') qtyInput.value = 1;
+  }
+  typeSelect.addEventListener('change', updateItems);
+  updateItems();
+
   document.getElementById('sell-btn').onclick = () => {
-    const heroId = parseInt(document.getElementById('sell-hero').value);
-    const qty    = parseInt(document.getElementById('sell-qty').value);
-    const price  = parseInt(document.getElementById('sell-price2').value);
-    const maxQty = parseInt(document.getElementById('sell-hero').selectedOptions[0]?.dataset.max || '0');
-    if (!qty || qty < 1 || qty > maxQty) { toast(`Количество 1–${maxQty}`, 'error'); return; }
+    const type = typeSelect.value;
+    const selectedOption = itemSelect.selectedOptions[0];
+    if (!selectedOption) { toast('Выберите предмет', 'error'); return; }
+    const itemId = parseInt(selectedOption.value);
+    const maxQty = parseInt(selectedOption.dataset.max || '1');
+    const qty = type === 'hero' ? 1 : parseInt(qtyInput.value);
+    const price = parseInt(document.getElementById('sell-price').value);
+
+    if (!itemId || !qty || qty < 1 || qty > maxQty) { toast(`Количество 1–${maxQty}`, 'error'); return; }
     if (!price || price < 1) { toast('Укажите цену', 'error'); return; }
-    send({ action: 'create_lot', item_type: 'duplicate', item_id: heroId, quantity: qty, price });
+
+    send({
+      action: 'create_lot',
+      item_type: type,
+      item_id: itemId,
+      quantity: qty,
+      price: price
+    });
     document.getElementById('sell-btn').disabled = true;
   };
+}
+
+/* ── Вызов продажи конкретного дубликата (по кнопке "Продать") ── */
+function openSellDupModal(heroId, heroName, rarity, maxQty) {
+  // Открываем универсальное окно, но предзаполним тип duplicate и выберем нужного героя
+  openSellModal();
+  // Небольшая задержка, чтобы DOM обновился, и устанавливаем нужные значения
+  setTimeout(() => {
+    const typeSelect = document.getElementById('sell-type');
+    const itemSelect = document.getElementById('sell-item');
+    if (typeSelect && itemSelect) {
+      typeSelect.value = 'duplicate';
+      typeSelect.dispatchEvent(new Event('change'));
+      // Ищем опцию с нужным hero_id
+      const option = [...itemSelect.options].find(opt => parseInt(opt.value) === heroId);
+      if (option) option.selected = true;
+      document.getElementById('sell-qty').value = 1;
+    }
+  }, 100);
 }
 
 /* ── НОВЫЙ ОБМЕН С МНОЖЕСТВЕННЫМ ВЫБОРОМ ── */
@@ -1330,7 +1353,7 @@ function openNewOfferModal(partnerId = null) {
     `<option value="${d.hero_id}" data-type="duplicate">${RARITY_ICON[d.rarity]} ${d.hero_name} ×${d.quantity}</option>`
   ).join('');
   const heroOpts = (state.userHeroes || []).map(h =>
-    `<option value="${h.hero_id}" data-type="hero">🗡️ ${h.name} Lv.${h.level}</option>`
+    `<option value="${h.hero_id}" data-type="hero">${RARITY_ICON[h.rarity] || ''} ${h.name} Lv.${h.level} (${h.rarity})</option>`
   ).join('');
   const boxOpts = (state.userBoxes || []).map(b =>
     `<option value="${b.box_id}" data-type="box">📦 Бокс #${b.box_id} ×${b.amount}</option>`
