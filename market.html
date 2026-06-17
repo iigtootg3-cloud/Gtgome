@@ -693,7 +693,7 @@ const RARITY_ICON = {
   'Эпический':    '🟣', 'Легендарный':  '🟡',
   'Божественный': '🔴',
 };
-const TYPE_ICON = { duplicate: '🦸', box: '🎁' };
+const TYPE_ICON = { duplicate: '🦸', hero: '🗡️', box: '🎁' };
 const HIST_ICON = { sell:'💰', buy:'🛍️', exchange:'🔄', utilize:'♻️', cancel:'❌' };
 const UTIL_PRICES = {
   'Обычный':50,'Редкий':150,'Эпический':400,'Легендарный':1000,'Божественный':2500
@@ -714,6 +714,7 @@ let state = {
   offersOut:    [],
   marketFilter: 'all',
   marketSort:   'price_asc',
+  userHeroes:   []   // герои пользователя для обмена
 };
 
 /* ═══════════════════════════════════════════════════════════
@@ -733,15 +734,13 @@ function init() {
   setupFilters();
   connectWS();
 
-  // Авто-открытие обмена при наличии partner_id в URL (команда "обмен @username")
   const partnerId = parseInt(params.get('partner_id') || '0');
   if (partnerId && partnerId !== userId) {
-    // Даём время на загрузку дубликатов
     setTimeout(() => {
-      if (state.duplicates.length > 0) {
-        openNewOfferModalWithPartner(partnerId);
+      if (state.duplicates.length > 0 || state.userHeroes.length > 0) {
+        openNewOfferModal(partnerId);
       } else {
-        toast('У вас нет дубликатов для обмена', 'error');
+        toast('У вас нет предметов для обмена', 'error');
       }
     }, 800);
   }
@@ -751,7 +750,6 @@ function init() {
    WebSocket
 ═══════════════════════════════════════════════════════════ */
 function getWSUrl() {
-    // Жёстко задаём адрес WebSocket-сервера
     return 'wss://vvvty.onrender.com/ws/market?user_id=' + userId + '&mode=market';
 }
 
@@ -773,7 +771,7 @@ function connectWS() {
     ws.send(JSON.stringify({ action: 'auth', init_data: initData, user_id: userId }));
     startPing();
     loadCurrentTab();
-};
+  };
 
   ws.onmessage = (ev) => {
     try { handleMessage(JSON.parse(ev.data)); }
@@ -864,8 +862,9 @@ function handleMessage(msg) {
 
     case 'buy_result':
       if (msg.ok) {
-        toast(`🛍️ Куплено: ${msg.hero_name} ×${msg.quantity} за ${msg.price} 🌟`, 'success');
-        userCoins -= msg.price;
+        const commissionText = msg.commission ? ` (вкл. комиссию ${msg.commission} 🌟)` : '';
+        toast(`🛍️ Куплено: ${msg.hero_name} ×${msg.quantity} за ${msg.price} 🌟${commissionText}`, 'success');
+        userCoins -= (msg.price + (msg.commission||0));
         document.getElementById('user-coins').textContent = `${userCoins} 🌟`;
         send({ action: 'market_list' });
         send({ action: 'duplicates_list' });
@@ -1057,11 +1056,22 @@ function renderOfferList(elId, offers, isIncoming) {
     const myItems  = (o.my_items || []).map(i => `${TYPE_ICON[i.item_type]||'📦'} ${esc(i.name)} ×${i.quantity}`).join(', ') || '—';
     const theirItems = (o.their_items || []).map(i => `${TYPE_ICON[i.item_type]||'📦'} ${esc(i.name)} ×${i.quantity}`).join(', ') || '—';
     const partnerName = isIncoming ? esc(o.creator_name || '…') : esc(o.partner_name || '…');
+
+    // Отображение фазы и таймера
+    let phaseHtml = '';
+    if (o.phase === 'negotiation' && o.timer_expires) {
+      const secLeft = Math.max(0, Math.ceil((new Date(o.timer_expires) - new Date()) / 1000));
+      phaseHtml = `<div class="offer-status" style="background:rgba(255,165,0,0.15);color:orange">⏳ Таймер: ${secLeft}с</div>`;
+    } else if (o.phase === 'locked') {
+      phaseHtml = `<div class="offer-status" style="background:rgba(0,255,0,0.1);color:#0f0">🔒 Готово к обмену</div>`;
+    }
+
     return `
     <div class="offer-card">
       <div class="offer-header">
         <div class="offer-users">${isIncoming ? '👤 От: ' : '👤 Кому: '} <b>${partnerName}</b></div>
         <span class="offer-status ${o.status}">${statusLabel}</span>
+        ${phaseHtml}
       </div>
       <div class="offer-items">
         <div>Они предлагают: ${theirItems}</div>
@@ -1072,12 +1082,13 @@ function renderOfferList(elId, offers, isIncoming) {
           ? `<button class="zone-btn sm success" onclick="acceptOffer(${o.id})">✅ Принять</button>
              <button class="zone-btn sm danger"  onclick="cancelOffer(${o.id})">❌ Отклонить</button>`
           : ''}
-        ${o.status === 'accepted'
+        ${o.phase === 'locked' && o.status === 'accepted'
           ? `<button class="zone-btn sm success" onclick="confirmOffer(${o.id})">✅ Подтвердить обмен</button>`
           : ''}
         ${o.status === 'pending' && !isIncoming
           ? `<button class="zone-btn sm danger" onclick="cancelOffer(${o.id})">❌ Отменить</button>`
           : ''}
+        ${o.phase === 'negotiation' ? `<button class="zone-btn sm info" onclick="modifyOffer(${o.id})">✏️ Изменить</button>` : ''}
       </div>
     </div>`;
   }).join('');
@@ -1145,7 +1156,7 @@ function setupModal() {
   document.getElementById('modal-overlay').addEventListener('click', e => {
     if (e.target === document.getElementById('modal-overlay')) closeModal();
   });
-  document.getElementById('btn-new-offer').addEventListener('click', openNewOfferModal);
+  document.getElementById('btn-new-offer').addEventListener('click', () => openNewOfferModal());
   document.getElementById('btn-sell').addEventListener('click', openSellModal);
 }
 
@@ -1299,29 +1310,36 @@ function openSellModal() {
   };
 }
 
-/* ── New Exchange Offer Modal ──────────────────────────── */
-function openNewOfferModal() {
-  if (!state.duplicates.length) {
-    send({ action: 'duplicates_list' });
-    toast('Сначала убедитесь, что у вас есть дубликаты', 'info');
-    return;
-  }
+/* ── НОВОЕ: создание обмена с поддержкой героев и юзернейма ── */
+function openNewOfferModal(partnerId = null) {
+  const myHeroes = state.userHeroes || [];
   const dupOpts = state.duplicates.filter(d=>!d.locked).map(d =>
-    `<option value="${d.hero_id}">${RARITY_ICON[d.rarity]} ${d.hero_name} ×${d.quantity}</option>`
+    `<option value="${d.hero_id}" data-type="duplicate">${RARITY_ICON[d.rarity]} ${d.hero_name} ×${d.quantity}</option>`
+  ).join('');
+  const heroOpts = myHeroes.map(h =>
+    `<option value="${h.hero_id}" data-type="hero">🗡️ ${h.name} Lv.${h.level}</option>`
   ).join('');
 
   openModal(`
-    <div class="modal-title">
-      🤝 Создать обмен
-      <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-title">🤝 Создать обмен <button class="modal-close" onclick="closeModal()">✕</button></div>
+    <div class="field-group">
+      <label class="field-label">Партнёр (Telegram ID или @username)</label>
+      <input type="text" class="field-input" id="ex-partner" placeholder="ID или @username" value="${partnerId||''}"/>
     </div>
     <div class="field-group">
-      <label class="field-label">Telegram ID партнёра</label>
-      <input type="number" class="field-input" id="ex-partner" placeholder="123456789"/>
+      <label class="field-label">Тип предмета</label>
+      <select class="field-input" id="ex-give-type">
+        <option value="duplicate">Дубликат</option>
+        <option value="hero">Герой</option>
+      </select>
     </div>
-    <div class="field-group">
-      <label class="field-label">Вы предлагаете (дубликат)</label>
+    <div class="field-group" id="ex-give-duplicate-block">
+      <label class="field-label">Дубликат</label>
       <select class="field-input" id="ex-give-hero">${dupOpts}</select>
+    </div>
+    <div class="field-group" id="ex-give-hero-block" style="display:none">
+      <label class="field-label">Герой</label>
+      <select class="field-input" id="ex-give-hero-select">${heroOpts}</select>
     </div>
     <div class="field-group">
       <label class="field-label">Количество</label>
@@ -1335,83 +1353,48 @@ function openNewOfferModal() {
       <label class="field-label">Количество</label>
       <input type="number" class="field-input" id="ex-want-qty" min="1" value="1"/>
     </div>
-    <div class="util-notice">Партнёр должен принять и подтвердить обмен. Дубликаты будут заблокированы до завершения.</div>
+    <div class="util-notice">Партнёр должен принять и подтвердить обмен. После изменения условий действует таймер 10 сек.</div>
     <button class="zone-btn lg" id="ex-submit">✅ Отправить предложение</button>
   `);
+
+  document.getElementById('ex-give-type').onchange = function() {
+    const type = this.value;
+    document.getElementById('ex-give-duplicate-block').style.display = type === 'duplicate' ? 'block' : 'none';
+    document.getElementById('ex-give-hero-block').style.display = type === 'hero' ? 'block' : 'none';
+  };
+
   document.getElementById('ex-submit').onclick = () => {
-    const partnerId = parseInt(document.getElementById('ex-partner').value);
-    const giveHeroId = parseInt(document.getElementById('ex-give-hero').value);
-    const giveQty    = parseInt(document.getElementById('ex-give-qty').value);
+    const partner = document.getElementById('ex-partner').value.trim();
+    const giveType = document.getElementById('ex-give-type').value;
+    const giveItemId = giveType === 'duplicate'
+      ? parseInt(document.getElementById('ex-give-hero').value)
+      : parseInt(document.getElementById('ex-give-hero-select').value);
+    const giveQty = parseInt(document.getElementById('ex-give-qty').value);
     const wantHeroId = parseInt(document.getElementById('ex-want-hero').value);
-    const wantQty    = parseInt(document.getElementById('ex-want-qty').value);
-    if (!partnerId) { toast('Введите ID партнёра', 'error'); return; }
-    if (!giveHeroId || !giveQty || giveQty < 1) { toast('Укажите что отдаёте', 'error'); return; }
-    if (!wantHeroId || !wantQty || wantQty < 1) { toast('Укажите что хотите', 'error'); return; }
-    if (partnerId === userId) { toast('Нельзя обменяться с собой', 'error'); return; }
+    const wantQty = parseInt(document.getElementById('ex-want-qty').value);
+
+    if (!partner) { toast('Введите ID или @username партнёра', 'error'); return; }
+    if (!giveItemId || !giveQty || giveQty < 1) { toast('Укажите предмет и количество', 'error'); return; }
+    if (!wantHeroId || !wantQty || wantQty < 1) { toast('Укажите желаемый предмет', 'error'); return; }
+
     send({
       action: 'exchange_offer',
-      partner_id: partnerId,
-      give: [{ item_type: 'duplicate', item_id: giveHeroId, quantity: giveQty }],
-      want: [{ item_type: 'duplicate', item_id: wantHeroId, quantity: wantQty }],
+      partner_id: partner,
+      give: [{ item_type: giveType, item_id: giveItemId, quantity: giveQty }],
+      want: [{ item_type: 'duplicate', item_id: wantHeroId, quantity: wantQty }]
     });
     document.getElementById('ex-submit').disabled = true;
   };
 }
 
-/* ── Open exchange modal with pre-filled partner_id (вызывается из чата) ── */
+/* ── Версия для вызова из чата с partnerId ── */
 function openNewOfferModalWithPartner(partnerId) {
-  if (!state.duplicates.length) {
-    send({ action: 'duplicates_list' });
-    toast('Загрузка дубликатов...', 'info');
-    return;
-  }
-  const dupOpts = state.duplicates.filter(d=>!d.locked).map(d =>
-    `<option value="${d.hero_id}">${RARITY_ICON[d.rarity]} ${d.hero_name} ×${d.quantity}</option>`
-  ).join('');
+  openNewOfferModal(partnerId);
+}
 
-  openModal(`
-    <div class="modal-title">
-      🤝 Обмен с пользователем #${partnerId}
-      <button class="modal-close" onclick="closeModal()">✕</button>
-    </div>
-    <div class="field-group">
-      <label class="field-label">Ваш партнёр</label>
-      <input type="text" class="field-input" value="ID: ${partnerId}" readonly/>
-    </div>
-    <div class="field-group">
-      <label class="field-label">Вы предлагаете (дубликат)</label>
-      <select class="field-input" id="ex-give-hero">${dupOpts}</select>
-    </div>
-    <div class="field-group">
-      <label class="field-label">Количество</label>
-      <input type="number" class="field-input" id="ex-give-qty" min="1" value="1"/>
-    </div>
-    <div class="field-group">
-      <label class="field-label">Хотите получить (ID героя)</label>
-      <input type="number" class="field-input" id="ex-want-hero" placeholder="ID героя"/>
-    </div>
-    <div class="field-group">
-      <label class="field-label">Количество</label>
-      <input type="number" class="field-input" id="ex-want-qty" min="1" value="1"/>
-    </div>
-    <div class="util-notice">Партнёр должен принять и подтвердить обмен. Дубликаты будут заблокированы до завершения.</div>
-    <button class="zone-btn lg" id="ex-submit">✅ Отправить предложение</button>
-  `);
-  document.getElementById('ex-submit').onclick = () => {
-    const giveHeroId = parseInt(document.getElementById('ex-give-hero').value);
-    const giveQty    = parseInt(document.getElementById('ex-give-qty').value);
-    const wantHeroId = parseInt(document.getElementById('ex-want-hero').value);
-    const wantQty    = parseInt(document.getElementById('ex-want-qty').value);
-    if (!giveHeroId || !giveQty || giveQty < 1) { toast('Укажите что отдаёте', 'error'); return; }
-    if (!wantHeroId || !wantQty || wantQty < 1) { toast('Укажите что хотите', 'error'); return; }
-    send({
-      action: 'exchange_offer',
-      partner_id: partnerId,
-      give: [{ item_type: 'duplicate', item_id: giveHeroId, quantity: giveQty }],
-      want: [{ item_type: 'duplicate', item_id: wantHeroId, quantity: wantQty }],
-    });
-    document.getElementById('ex-submit').disabled = true;
-  };
+/* ── Заглушка изменения обмена ── */
+function modifyOffer(offerId) {
+  toast('Функция изменения обмена появится позже', 'info');
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -1452,4 +1435,4 @@ function toast(msg, type='info') {
 document.addEventListener('DOMContentLoaded', init);
 </script>
 </body>
-  </html>
+          </html> 
