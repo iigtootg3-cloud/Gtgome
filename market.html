@@ -184,7 +184,7 @@ html, body {
 .filter-chip.r-epic.active      { color: var(--r-epic);   border-color: var(--r-epic);   background: rgba(176,106,243,0.12); }
 .filter-chip.r-legend.active    { color: var(--r-legend); border-color: var(--r-legend); background: rgba(245,166,35,0.12); }
 .filter-chip.r-divine.active    { color: var(--r-divine); border-color: var(--r-divine); background: rgba(255,78,78,0.12); }
-.filter-chip.r-box.active       { color: var(--gold);     border-color: var(--gold);     background: var(--gold-dim); } /* для боксов */
+.filter-chip.r-box.active       { color: var(--gold);     border-color: var(--gold);     background: var(--gold-dim); }
 
 /* ── Cards ────────────────────────────────────────────────── */
 .cards-grid {
@@ -960,22 +960,19 @@ function setupFilters() {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   RENDER: MARKET (фильтр по редкости + боксы)
+   RENDER: MARKET (иконка редкости вместо меча)
 ═══════════════════════════════════════════════════════════ */
 function renderMarket() {
   let lots = [...state.marketLots];
 
-  // Фильтр
   if (state.marketFilter !== 'all') {
     if (state.marketFilter === 'box') {
       lots = lots.filter(l => l.item_type === 'box');
     } else {
-      // Фильтр по редкости (для дубликатов и героев)
       lots = lots.filter(l => l.rarity === state.marketFilter && l.item_type !== 'box');
     }
   }
 
-  // Сортировка
   switch(state.marketSort) {
     case 'price_asc':  lots.sort((a,b) => a.price - b.price); break;
     case 'price_desc': lots.sort((a,b) => b.price - a.price); break;
@@ -991,7 +988,8 @@ function renderMarket() {
   }
 
   el.innerHTML = lots.map(lot => {
-    const icon = TYPE_ICON[lot.item_type] || '📦';
+    // Иконка: для героев и дубликатов — кружок редкости, для боксов — коробка
+    const icon = (lot.rarity && RARITY_ICON[lot.rarity]) ? RARITY_ICON[lot.rarity] : (TYPE_ICON[lot.item_type] || '📦');
     const rarityClass = lot.rarity ? `r-${lot.rarity}` : '';
     const isMine = lot.seller_id === userId;
     const canBuy = !isMine && userCoins >= lot.price;
