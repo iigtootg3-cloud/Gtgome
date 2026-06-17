@@ -1,1722 +1,1696 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-<title>ArenaM Legends — Рынок</title>
-<style>
-/* ── Reset & Base ─────────────────────────────────────────── */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <title>ArenaM Legends — Рынок</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        /* ── Reset & Base ─────────────────────────────────────────── */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-:root {
-  --bg:          #0f0f1a;
-  --bg2:         #161628;
-  --bg3:         #1e1e35;
-  --gold:        #f5a623;
-  --gold2:       #e8951d;
-  --gold-dim:    rgba(245,166,35,0.15);
-  --gold-glow:   0 0 18px rgba(245,166,35,0.4);
-  --text:        #e8e0d0;
-  --text2:       #9a8fa0;
-  --danger:      #e05252;
-  --success:     #52c47a;
-  --info:        #5b9cf6;
+        :root {
+            --bg:          #0f0f1a;
+            --bg2:         #161628;
+            --bg3:         #1e1e35;
+            --gold:        #f5a623;
+            --gold2:       #e8951d;
+            --gold-dim:    rgba(245,166,35,0.15);
+            --gold-glow:   0 0 18px rgba(245,166,35,0.4);
+            --text:        #e8e0d0;
+            --text2:       #9a8fa0;
+            --danger:      #e05252;
+            --success:     #52c47a;
+            --info:        #5b9cf6;
 
-  --r-common:    #8a8a8a;
-  --r-rare:      #4a9eff;
-  --r-epic:      #b06af3;
-  --r-legend:    #f5a623;
-  --r-divine:    #ff4e4e;
+            --r-common:    #8a8a8a;
+            --r-rare:      #4a9eff;
+            --r-epic:      #b06af3;
+            --r-legend:    #f5a623;
+            --r-divine:    #ff4e4e;
 
-  --font:        'Segoe UI', system-ui, sans-serif;
-  --radius:      10px;
-  --transition:  0.18s ease;
-}
+            --font:        'Segoe UI', system-ui, sans-serif;
+            --radius:      10px;
+            --transition:  0.18s ease;
+        }
 
-html, body {
-  height: 100%;
-  background: var(--bg);
-  color: var(--text);
-  font-family: var(--font);
-  font-size: 14px;
-  line-height: 1.45;
-  overflow: hidden;
-}
+        html, body {
+            height: 100%;
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--font);
+            font-size: 14px;
+            line-height: 1.45;
+            overflow: hidden;
+        }
 
-/* ── Layout ───────────────────────────────────────────────── */
-#app {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  max-width: 480px;
-  margin: 0 auto;
-}
+        /* ── Layout ───────────────────────────────────────────────── */
+        #app {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            max-width: 480px;
+            margin: 0 auto;
+        }
 
-/* ── Header ───────────────────────────────────────────────── */
-#header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 14px;
-  background: var(--bg2);
-  border-bottom: 1px solid rgba(245,166,35,0.2);
-  flex-shrink: 0;
-  min-height: 52px;
-}
-#header-title {
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--gold);
-  letter-spacing: 0.5px;
-  flex: 1;
-}
-#user-coins {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--gold);
-  background: var(--gold-dim);
-  padding: 3px 10px;
-  border-radius: 20px;
-  border: 1px solid rgba(245,166,35,0.3);
-}
-#conn-dot {
-  width: 8px; height: 8px;
-  border-radius: 50%;
-  background: var(--danger);
-  flex-shrink: 0;
-  transition: background var(--transition);
-}
-#conn-dot.connected { background: var(--success); }
+        /* ── Header ───────────────────────────────────────────────── */
+        #header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            background: var(--bg2);
+            border-bottom: 1px solid rgba(245,166,35,0.2);
+            flex-shrink: 0;
+            min-height: 52px;
+        }
+        #header-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--gold);
+            letter-spacing: 0.5px;
+            flex: 1;
+        }
+        #user-coins {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--gold);
+            background: var(--gold-dim);
+            padding: 3px 10px;
+            border-radius: 20px;
+            border: 1px solid rgba(245,166,35,0.3);
+        }
+        #conn-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: var(--danger);
+            flex-shrink: 0;
+            transition: background var(--transition);
+        }
+        #conn-dot.connected { background: var(--success); }
 
-/* ── Tabs ─────────────────────────────────────────────────── */
-#tabs {
-  display: flex;
-  background: var(--bg2);
-  border-bottom: 1px solid rgba(245,166,35,0.12);
-  flex-shrink: 0;
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-#tabs::-webkit-scrollbar { display: none; }
+        /* ── Tabs ─────────────────────────────────────────────────── */
+        #tabs {
+            display: flex;
+            background: var(--bg2);
+            border-bottom: 1px solid rgba(245,166,35,0.12);
+            flex-shrink: 0;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+        #tabs::-webkit-scrollbar { display: none; }
 
-.tab-btn {
-  flex: 1;
-  min-width: 64px;
-  padding: 9px 4px 8px;
-  background: transparent;
-  border: none;
-  border-bottom: 2px solid transparent;
-  color: var(--text2);
-  font-size: 11px;
-  font-weight: 600;
-  text-align: center;
-  cursor: pointer;
-  transition: all var(--transition);
-  white-space: nowrap;
-  letter-spacing: 0.2px;
-}
-.tab-btn .tab-icon { font-size: 15px; display: block; margin-bottom: 2px; }
-.tab-btn.active {
-  color: var(--gold);
-  border-bottom-color: var(--gold);
-  background: var(--gold-dim);
-}
-.tab-btn:hover:not(.active) { color: var(--text); background: rgba(255,255,255,0.04); }
+        .tab-btn {
+            flex: 1;
+            min-width: 64px;
+            padding: 9px 4px 8px;
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid transparent;
+            color: var(--text2);
+            font-size: 11px;
+            font-weight: 600;
+            text-align: center;
+            cursor: pointer;
+            transition: all var(--transition);
+            white-space: nowrap;
+            letter-spacing: 0.2px;
+        }
+        .tab-btn .tab-icon { font-size: 15px; display: block; margin-bottom: 2px; }
+        .tab-btn.active {
+            color: var(--gold);
+            border-bottom-color: var(--gold);
+            background: var(--gold-dim);
+        }
+        .tab-btn:hover:not(.active) { color: var(--text); background: rgba(255,255,255,0.04); }
 
-/* ── Content ──────────────────────────────────────────────── */
-#content {
-  flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(245,166,35,0.3) transparent;
-}
-#content::-webkit-scrollbar { width: 4px; }
-#content::-webkit-scrollbar-track { background: transparent; }
-#content::-webkit-scrollbar-thumb { background: rgba(245,166,35,0.3); border-radius: 2px; }
+        /* ── Content ──────────────────────────────────────────────── */
+        #content {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(245,166,35,0.3) transparent;
+        }
+        #content::-webkit-scrollbar { width: 4px; }
+        #content::-webkit-scrollbar-track { background: transparent; }
+        #content::-webkit-scrollbar-thumb { background: rgba(245,166,35,0.3); border-radius: 2px; }
 
-.tab-panel { display: none; padding: 12px; }
-.tab-panel.active { display: block; }
+        .tab-panel { display: none; padding: 12px; }
+        .tab-panel.active { display: block; }
 
-/* ── Section Header ───────────────────────────────────────── */
-.section-head {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 12px;
-}
-.section-head h2 {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--gold);
-}
-.section-head .count-badge {
-  font-size: 11px;
-  background: var(--gold-dim);
-  color: var(--gold);
-  border: 1px solid rgba(245,166,35,0.3);
-  border-radius: 10px;
-  padding: 1px 7px;
-}
+        /* ── Section Header ───────────────────────────────────────── */
+        .section-head {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        .section-head h2 {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--gold);
+        }
+        .section-head .count-badge {
+            font-size: 11px;
+            background: var(--gold-dim);
+            color: var(--gold);
+            border: 1px solid rgba(245,166,35,0.3);
+            border-radius: 10px;
+            padding: 1px 7px;
+        }
 
-/* ── Filter Bar ───────────────────────────────────────────── */
-.filter-bar {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-  margin-bottom: 12px;
-}
-.filter-chip {
-  padding: 4px 10px;
-  border-radius: 20px;
-  border: 1px solid rgba(255,255,255,0.12);
-  background: var(--bg3);
-  color: var(--text2);
-  font-size: 11px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all var(--transition);
-  white-space: nowrap;
-}
-.filter-chip.active, .filter-chip:hover { color: var(--gold); border-color: var(--gold); background: var(--gold-dim); }
-.filter-chip.r-common.active    { color: var(--r-common); border-color: var(--r-common); background: rgba(138,138,138,0.12); }
-.filter-chip.r-rare.active      { color: var(--r-rare);   border-color: var(--r-rare);   background: rgba(74,158,255,0.12); }
-.filter-chip.r-epic.active      { color: var(--r-epic);   border-color: var(--r-epic);   background: rgba(176,106,243,0.12); }
-.filter-chip.r-legend.active    { color: var(--r-legend); border-color: var(--r-legend); background: rgba(245,166,35,0.12); }
-.filter-chip.r-divine.active    { color: var(--r-divine); border-color: var(--r-divine); background: rgba(255,78,78,0.12); }
-.filter-chip.r-box.active       { color: var(--gold);     border-color: var(--gold);     background: var(--gold-dim); }
+        /* ── Filter Bar ───────────────────────────────────────────── */
+        .filter-bar {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+        .filter-chip {
+            padding: 4px 10px;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.12);
+            background: var(--bg3);
+            color: var(--text2);
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition);
+            white-space: nowrap;
+        }
+        .filter-chip.active, .filter-chip:hover { color: var(--gold); border-color: var(--gold); background: var(--gold-dim); }
+        .filter-chip.r-common.active    { color: var(--r-common); border-color: var(--r-common); background: rgba(138,138,138,0.12); }
+        .filter-chip.r-rare.active      { color: var(--r-rare);   border-color: var(--r-rare);   background: rgba(74,158,255,0.12); }
+        .filter-chip.r-epic.active      { color: var(--r-epic);   border-color: var(--r-epic);   background: rgba(176,106,243,0.12); }
+        .filter-chip.r-legend.active    { color: var(--r-legend); border-color: var(--r-legend); background: rgba(245,166,35,0.12); }
+        .filter-chip.r-divine.active    { color: var(--r-divine); border-color: var(--r-divine); background: rgba(255,78,78,0.12); }
+        .filter-chip.r-box.active       { color: var(--gold);     border-color: var(--gold);     background: var(--gold-dim); }
 
-/* ── Cards ────────────────────────────────────────────────── */
-.cards-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
+        /* ── Cards ────────────────────────────────────────────────── */
+        .cards-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
 
-.lot-card {
-  background: var(--bg2);
-  border-radius: var(--radius);
-  border: 1px solid rgba(255,255,255,0.07);
-  padding: 12px;
-  display: flex;
-  align-items: center;
-  gap: 11px;
-  transition: border-color var(--transition), box-shadow var(--transition);
-  position: relative;
-  overflow: hidden;
-}
-.lot-card::before {
-  content: '';
-  position: absolute;
-  left: 0; top: 0; bottom: 0;
-  width: 3px;
-  border-radius: var(--radius) 0 0 var(--radius);
-  background: var(--rarity-color, var(--r-common));
-}
-.lot-card:hover { border-color: rgba(245,166,35,0.25); box-shadow: var(--gold-glow); }
+        .lot-card {
+            background: var(--bg2);
+            border-radius: var(--radius);
+            border: 1px solid rgba(255,255,255,0.07);
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            transition: border-color var(--transition), box-shadow var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+        .lot-card::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0; bottom: 0;
+            width: 3px;
+            border-radius: var(--radius) 0 0 var(--radius);
+            background: var(--rarity-color, var(--r-common));
+        }
+        .lot-card:hover { border-color: rgba(245,166,35,0.25); box-shadow: var(--gold-glow); }
 
-.lot-card.r-Обычный     { --rarity-color: var(--r-common); }
-.lot-card.r-Редкий      { --rarity-color: var(--r-rare); }
-.lot-card.r-Эпический   { --rarity-color: var(--r-epic); }
-.lot-card.r-Легендарный { --rarity-color: var(--r-legend); }
-.lot-card.r-Божественный{ --rarity-color: var(--r-divine); }
+        .lot-card.r-Обычный     { --rarity-color: var(--r-common); }
+        .lot-card.r-Редкий      { --rarity-color: var(--r-rare); }
+        .lot-card.r-Эпический   { --rarity-color: var(--r-epic); }
+        .lot-card.r-Легендарный { --rarity-color: var(--r-legend); }
+        .lot-card.r-Божественный{ --rarity-color: var(--r-divine); }
 
-.lot-icon {
-  width: 44px; height: 44px;
-  border-radius: 8px;
-  background: var(--bg3);
-  border: 1px solid rgba(255,255,255,0.08);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 22px;
-  flex-shrink: 0;
-}
+        .lot-icon {
+            width: 44px; height: 44px;
+            border-radius: 8px;
+            background: var(--bg3);
+            border: 1px solid rgba(255,255,255,0.08);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 22px;
+            flex-shrink: 0;
+        }
 
-.lot-info { flex: 1; min-width: 0; }
-.lot-name  { font-weight: 700; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.lot-sub   { font-size: 11px; color: var(--text2); margin-top: 2px; }
-.lot-rarity { display: inline-block; font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 4px; margin-top: 3px; }
+        .lot-info { flex: 1; min-width: 0; }
+        .lot-name  { font-weight: 700; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .lot-sub   { font-size: 11px; color: var(--text2); margin-top: 2px; }
+        .lot-rarity { display: inline-block; font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 4px; margin-top: 3px; }
 
-.lot-rarity.r-Обычный     { color: var(--r-common); background: rgba(138,138,138,0.1); }
-.lot-rarity.r-Редкий      { color: var(--r-rare);   background: rgba(74,158,255,0.1); }
-.lot-rarity.r-Эпический   { color: var(--r-epic);   background: rgba(176,106,243,0.1); }
-.lot-rarity.r-Легендарный { color: var(--r-legend); background: rgba(245,166,35,0.1); }
-.lot-rarity.r-Божественный{ color: var(--r-divine); background: rgba(255,78,78,0.1); }
+        .lot-rarity.r-Обычный     { color: var(--r-common); background: rgba(138,138,138,0.1); }
+        .lot-rarity.r-Редкий      { color: var(--r-rare);   background: rgba(74,158,255,0.1); }
+        .lot-rarity.r-Эпический   { color: var(--r-epic);   background: rgba(176,106,243,0.1); }
+        .lot-rarity.r-Легендарный { color: var(--r-legend); background: rgba(245,166,35,0.1); }
+        .lot-rarity.r-Божественный{ color: var(--r-divine); background: rgba(255,78,78,0.1); }
 
-.lot-right { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0; }
-.lot-price { font-weight: 700; color: var(--gold); font-size: 14px; white-space: nowrap; }
-.lot-qty   { font-size: 11px; color: var(--text2); }
+        .lot-right { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0; }
+        .lot-price { font-weight: 700; color: var(--gold); font-size: 14px; white-space: nowrap; }
+        .lot-qty   { font-size: 11px; color: var(--text2); }
 
-/* ── Buttons ──────────────────────────────────────────────── */
-.zone-btn {
-  padding: 6px 14px;
-  border-radius: 8px;
-  border: 1px solid rgba(245,166,35,0.4);
-  background: transparent;
-  color: var(--gold);
-  font-size: 12px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all var(--transition);
-  white-space: nowrap;
-  letter-spacing: 0.3px;
-}
-.zone-btn:hover:not(:disabled) { background: var(--gold); color: #000; box-shadow: var(--gold-glow); }
-.zone-btn:disabled { opacity: 0.4; cursor: not-allowed; border-color: rgba(255,255,255,0.1); color: var(--text2); }
+        /* ── Buttons ──────────────────────────────────────────────── */
+        .zone-btn {
+            padding: 6px 14px;
+            border-radius: 8px;
+            border: 1px solid rgba(245,166,35,0.4);
+            background: transparent;
+            color: var(--gold);
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all var(--transition);
+            white-space: nowrap;
+            letter-spacing: 0.3px;
+        }
+        .zone-btn:hover:not(:disabled) { background: var(--gold); color: #000; box-shadow: var(--gold-glow); }
+        .zone-btn:disabled { opacity: 0.4; cursor: not-allowed; border-color: rgba(255,255,255,0.1); color: var(--text2); }
 
-.zone-btn.danger { border-color: rgba(224,82,82,0.4); color: var(--danger); }
-.zone-btn.danger:hover:not(:disabled) { background: var(--danger); color: #fff; }
+        .zone-btn.danger { border-color: rgba(224,82,82,0.4); color: var(--danger); }
+        .zone-btn.danger:hover:not(:disabled) { background: var(--danger); color: #fff; }
 
-.zone-btn.success { border-color: rgba(82,196,122,0.4); color: var(--success); }
-.zone-btn.success:hover:not(:disabled) { background: var(--success); color: #000; }
+        .zone-btn.success { border-color: rgba(82,196,122,0.4); color: var(--success); }
+        .zone-btn.success:hover:not(:disabled) { background: var(--success); color: #000; }
 
-.zone-btn.info { border-color: rgba(91,156,246,0.4); color: var(--info); }
-.zone-btn.info:hover:not(:disabled) { background: var(--info); color: #fff; }
+        .zone-btn.info { border-color: rgba(91,156,246,0.4); color: var(--info); }
+        .zone-btn.info:hover:not(:disabled) { background: var(--info); color: #fff; }
 
-.zone-btn.sm { padding: 4px 10px; font-size: 11px; }
-.zone-btn.lg { padding: 10px 22px; font-size: 14px; width: 100%; }
+        .zone-btn.sm { padding: 4px 10px; font-size: 11px; }
+        .zone-btn.lg { padding: 10px 22px; font-size: 14px; width: 100%; }
 
-/* ── Empty State ──────────────────────────────────────────── */
-.empty-state {
-  text-align: center;
-  padding: 40px 20px;
-  color: var(--text2);
-}
-.empty-state .empty-icon { font-size: 40px; margin-bottom: 12px; opacity: 0.6; }
-.empty-state p { font-size: 13px; line-height: 1.6; }
+        /* ── Empty State ──────────────────────────────────────────── */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text2);
+        }
+        .empty-state .empty-icon { font-size: 40px; margin-bottom: 12px; opacity: 0.6; }
+        .empty-state p { font-size: 13px; line-height: 1.6; }
 
-/* ── Toast ────────────────────────────────────────────────── */
-#toast-wrap {
-  position: fixed;
-  bottom: 20px;
-  left: 50%; transform: translateX(-50%);
-  display: flex; flex-direction: column; gap: 6px;
-  z-index: 9999;
-  pointer-events: none;
-  max-width: 340px; width: 90%;
-}
-.toast {
-  padding: 10px 16px;
-  border-radius: 10px;
-  font-size: 13px;
-  font-weight: 600;
-  background: var(--bg3);
-  border: 1px solid rgba(255,255,255,0.1);
-  animation: toastIn 0.25s ease, toastOut 0.3s ease 2.7s forwards;
-  text-align: center;
-}
-.toast.success { border-color: rgba(82,196,122,0.4); color: var(--success); }
-.toast.error   { border-color: rgba(224,82,82,0.4);  color: var(--danger); }
-.toast.info    { border-color: rgba(245,166,35,0.4);  color: var(--gold); }
-@keyframes toastIn  { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
-@keyframes toastOut { from { opacity:1; } to { opacity:0; transform:translateY(8px); } }
+        /* ── Toast ────────────────────────────────────────────────── */
+        #toast-wrap {
+            position: fixed;
+            bottom: 20px;
+            left: 50%; transform: translateX(-50%);
+            display: flex; flex-direction: column; gap: 6px;
+            z-index: 9999;
+            pointer-events: none;
+            max-width: 340px; width: 90%;
+        }
+        .toast {
+            padding: 10px 16px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            background: var(--bg3);
+            border: 1px solid rgba(255,255,255,0.1);
+            animation: toastIn 0.25s ease, toastOut 0.3s ease 2.7s forwards;
+            text-align: center;
+        }
+        .toast.success { border-color: rgba(82,196,122,0.4); color: var(--success); }
+        .toast.error   { border-color: rgba(224,82,82,0.4);  color: var(--danger); }
+        .toast.info    { border-color: rgba(245,166,35,0.4);  color: var(--gold); }
+        @keyframes toastIn  { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
+        @keyframes toastOut { from { opacity:1; } to { opacity:0; transform:translateY(8px); } }
 
-/* ── Modal ────────────────────────────────────────────────── */
-#modal-overlay {
-  display: none;
-  position: fixed; inset: 0;
-  background: rgba(0,0,0,0.7);
-  z-index: 8000;
-  align-items: flex-end;
-  justify-content: center;
-  backdrop-filter: blur(4px);
-}
-#modal-overlay.open { display: flex; }
+        /* ── Modal ────────────────────────────────────────────────── */
+        #modal-overlay {
+            display: none;
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 8000;
+            align-items: flex-end;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+        #modal-overlay.open { display: flex; }
 
-#modal-box {
-  background: var(--bg2);
-  border: 1px solid rgba(245,166,35,0.2);
-  border-radius: 16px 16px 0 0;
-  padding: 20px 18px 30px;
-  width: 100%;
-  max-width: 480px;
-  max-height: 80vh;
-  overflow-y: auto;
-  animation: slideUp 0.25s ease;
-}
-@keyframes slideUp { from { transform: translateY(60px); opacity: 0; } to { transform: none; opacity: 1; } }
+        #modal-box {
+            background: var(--bg2);
+            border: 1px solid rgba(245,166,35,0.2);
+            border-radius: 16px 16px 0 0;
+            padding: 20px 18px 30px;
+            width: 100%;
+            max-width: 480px;
+            max-height: 80vh;
+            overflow-y: auto;
+            animation: slideUp 0.25s ease;
+        }
+        @keyframes slideUp { from { transform: translateY(60px); opacity: 0; } to { transform: none; opacity: 1; } }
 
-.modal-title {
-  font-size: 16px; font-weight: 700; color: var(--gold);
-  margin-bottom: 16px;
-  display: flex; align-items: center; gap: 8px;
-}
-.modal-close {
-  margin-left: auto;
-  background: transparent; border: none;
-  color: var(--text2); font-size: 20px; cursor: pointer; line-height: 1;
-  padding: 0 2px;
-}
-.modal-close:hover { color: var(--text); }
+        .modal-title {
+            font-size: 16px; font-weight: 700; color: var(--gold);
+            margin-bottom: 16px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .modal-close {
+            margin-left: auto;
+            background: transparent; border: none;
+            color: var(--text2); font-size: 20px; cursor: pointer; line-height: 1;
+            padding: 0 2px;
+        }
+        .modal-close:hover { color: var(--text); }
 
-/* ── Form Elements ────────────────────────────────────────── */
-.field-group { margin-bottom: 14px; }
-.field-label {
-  font-size: 11px; font-weight: 700; color: var(--text2);
-  text-transform: uppercase; letter-spacing: 0.5px;
-  margin-bottom: 5px; display: block;
-}
-.field-input {
-  width: 100%;
-  background: var(--bg3);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 8px;
-  color: var(--text);
-  font-size: 14px;
-  padding: 9px 12px;
-  outline: none;
-  transition: border-color var(--transition);
-}
-.field-input:focus { border-color: var(--gold); }
-.field-input::placeholder { color: var(--text2); }
+        /* ── Form Elements ────────────────────────────────────────── */
+        .field-group { margin-bottom: 14px; }
+        .field-label {
+            font-size: 11px; font-weight: 700; color: var(--text2);
+            text-transform: uppercase; letter-spacing: 0.5px;
+            margin-bottom: 5px; display: block;
+        }
+        .field-input {
+            width: 100%;
+            background: var(--bg3);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 14px;
+            padding: 9px 12px;
+            outline: none;
+            transition: border-color var(--transition);
+        }
+        .field-input:focus { border-color: var(--gold); }
+        .field-input::placeholder { color: var(--text2); }
 
-select.field-input option { background: var(--bg2); }
+        select.field-input option { background: var(--bg2); }
 
-/* ── Duplicate Cards ──────────────────────────────────────── */
-.dup-card {
-  background: var(--bg2);
-  border: 1px solid rgba(255,255,255,0.07);
-  border-radius: var(--radius);
-  padding: 12px;
-  display: flex;
-  align-items: center;
-  gap: 11px;
-  margin-bottom: 8px;
-  position: relative;
-  overflow: hidden;
-}
-.dup-card::before {
-  content: '';
-  position: absolute;
-  left: 0; top: 0; bottom: 0; width: 3px;
-  border-radius: var(--radius) 0 0 var(--radius);
-  background: var(--rarity-color, var(--r-common));
-}
+        /* ── Duplicate Cards ──────────────────────────────────────── */
+        .dup-card {
+            background: var(--bg2);
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: var(--radius);
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            margin-bottom: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+        .dup-card::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0; bottom: 0; width: 3px;
+            border-radius: var(--radius) 0 0 var(--radius);
+            background: var(--rarity-color, var(--r-common));
+        }
 
-.dup-qty-badge {
-  position: absolute;
-  top: 8px; right: 8px;
-  background: var(--bg3);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 8px;
-  font-size: 10px; font-weight: 700;
-  padding: 2px 7px;
-  color: var(--text2);
-}
-.dup-card.locked-card { opacity: 0.6; }
-.lock-badge {
-  font-size: 10px; color: var(--danger);
-  background: rgba(224,82,82,0.1);
-  border: 1px solid rgba(224,82,82,0.3);
-  border-radius: 4px; padding: 1px 5px;
-  display: inline-block; margin-top: 3px;
-}
+        .dup-qty-badge {
+            position: absolute;
+            top: 8px; right: 8px;
+            background: var(--bg3);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            font-size: 10px; font-weight: 700;
+            padding: 2px 7px;
+            color: var(--text2);
+        }
+        .dup-card.locked-card { opacity: 0.6; }
+        .lock-badge {
+            font-size: 10px; color: var(--danger);
+            background: rgba(224,82,82,0.1);
+            border: 1px solid rgba(224,82,82,0.3);
+            border-radius: 4px; padding: 1px 5px;
+            display: inline-block; margin-top: 3px;
+        }
 
-/* ── Exchange Panel ───────────────────────────────────────── */
-.exchange-section { margin-bottom: 16px; }
-.exchange-section h3 { font-size: 13px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+        /* ── Exchange Panel ───────────────────────────────────────── */
+        .exchange-section { margin-bottom: 16px; }
+        .exchange-section h3 { font-size: 13px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
 
-.offer-card {
-  background: var(--bg2);
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: var(--radius);
-  padding: 12px;
-  margin-bottom: 8px;
-}
-.offer-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-.offer-users { font-size: 12px; color: var(--text2); }
-.offer-status {
-  font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px;
-}
-.offer-status.pending  { color: var(--gold);    background: var(--gold-dim); }
-.offer-status.accepted { color: var(--info);    background: rgba(91,156,246,0.12); }
-.offer-status.completed{ color: var(--success); background: rgba(82,196,122,0.12); }
-.offer-status.cancelled{ color: var(--danger);  background: rgba(224,82,82,0.12); }
+        .offer-card {
+            background: var(--bg2);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: var(--radius);
+            padding: 12px;
+            margin-bottom: 8px;
+        }
+        .offer-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .offer-users { font-size: 12px; color: var(--text2); }
+        .offer-status {
+            font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px;
+        }
+        .offer-status.pending  { color: var(--gold);    background: var(--gold-dim); }
+        .offer-status.accepted { color: var(--info);    background: rgba(91,156,246,0.12); }
+        .offer-status.completed{ color: var(--success); background: rgba(82,196,122,0.12); }
+        .offer-status.cancelled{ color: var(--danger);  background: rgba(224,82,82,0.12); }
 
-.offer-items { font-size: 12px; color: var(--text2); margin-bottom: 10px; }
-.offer-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+        .offer-items { font-size: 12px; color: var(--text2); margin-bottom: 10px; }
+        .offer-actions { display: flex; gap: 6px; flex-wrap: wrap; }
 
-/* ── History Log ──────────────────────────────────────────── */
-.history-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 10px 0;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
-}
-.history-icon {
-  width: 32px; height: 32px;
-  border-radius: 8px;
-  background: var(--bg3);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 16px;
-  flex-shrink: 0;
-}
-.history-text { flex: 1; }
-.history-title { font-size: 13px; font-weight: 600; }
-.history-sub   { font-size: 11px; color: var(--text2); margin-top: 2px; }
-.history-amount { font-weight: 700; font-size: 13px; white-space: nowrap; flex-shrink: 0; }
-.history-amount.plus  { color: var(--success); }
-.history-amount.minus { color: var(--danger); }
+        /* ── History Log ──────────────────────────────────────────── */
+        .history-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .history-icon {
+            width: 32px; height: 32px;
+            border-radius: 8px;
+            background: var(--bg3);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+        .history-text { flex: 1; }
+        .history-title { font-size: 13px; font-weight: 600; }
+        .history-sub   { font-size: 11px; color: var(--text2); margin-top: 2px; }
+        .history-amount { font-weight: 700; font-size: 13px; white-space: nowrap; flex-shrink: 0; }
+        .history-amount.plus  { color: var(--success); }
+        .history-amount.minus { color: var(--danger); }
 
-/* ── My Lots ──────────────────────────────────────────────── */
-.my-lot-card {
-  background: var(--bg2);
-  border: 1px solid rgba(255,255,255,0.07);
-  border-radius: var(--radius);
-  padding: 12px;
-  margin-bottom: 8px;
-  display: flex;
-  align-items: center;
-  gap: 11px;
-}
-.my-lot-status {
-  font-size: 10px; font-weight: 700;
-  padding: 2px 7px; border-radius: 10px;
-}
-.my-lot-status.active   { color: var(--success); background: rgba(82,196,122,0.1); }
-.my-lot-status.expired  { color: var(--text2);   background: var(--bg3); }
+        /* ── My Lots ──────────────────────────────────────────────── */
+        .my-lot-card {
+            background: var(--bg2);
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: var(--radius);
+            padding: 12px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 11px;
+        }
+        .my-lot-status {
+            font-size: 10px; font-weight: 700;
+            padding: 2px 7px; border-radius: 10px;
+        }
+        .my-lot-status.active   { color: var(--success); background: rgba(82,196,122,0.1); }
+        .my-lot-status.expired  { color: var(--text2);   background: var(--bg3); }
 
-/* ── Util Notice ──────────────────────────────────────────── */
-.util-notice {
-  background: var(--bg3);
-  border: 1px solid rgba(245,166,35,0.15);
-  border-radius: 8px;
-  padding: 10px 12px;
-  font-size: 12px;
-  color: var(--text2);
-  margin-bottom: 12px;
-  line-height: 1.6;
-}
-.util-notice strong { color: var(--gold); }
+        /* ── Util Notice ──────────────────────────────────────────── */
+        .util-notice {
+            background: var(--bg3);
+            border: 1px solid rgba(245,166,35,0.15);
+            border-radius: 8px;
+            padding: 10px 12px;
+            font-size: 12px;
+            color: var(--text2);
+            margin-bottom: 12px;
+            line-height: 1.6;
+        }
+        .util-notice strong { color: var(--gold); }
 
-/* ── Spinner ──────────────────────────────────────────────── */
-.spinner {
-  width: 20px; height: 20px;
-  border: 2px solid rgba(245,166,35,0.2);
-  border-top-color: var(--gold);
-  border-radius: 50%;
-  animation: spin 0.7s linear infinite;
-  margin: 0 auto;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
+        /* ── Spinner ──────────────────────────────────────────────── */
+        .spinner {
+            width: 20px; height: 20px;
+            border: 2px solid rgba(245,166,35,0.2);
+            border-top-color: var(--gold);
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            margin: 0 auto;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
-.loading-wrap { padding: 30px; text-align: center; }
-.loading-wrap .spinner { width: 32px; height: 32px; margin-bottom: 12px; }
-.loading-wrap p { color: var(--text2); font-size: 13px; }
+        .loading-wrap { padding: 30px; text-align: center; }
+        .loading-wrap .spinner { width: 32px; height: 32px; margin-bottom: 12px; }
+        .loading-wrap p { color: var(--text2); font-size: 13px; }
 
-/* ── Divider ──────────────────────────────────────────────── */
-.divider {
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(245,166,35,0.2), transparent);
-  margin: 14px 0;
-}
+        /* ── Divider ──────────────────────────────────────────────── */
+        .divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(245,166,35,0.2), transparent);
+            margin: 14px 0;
+        }
 
-/* ── Qty Input ────────────────────────────────────────────── */
-.qty-row {
-  display: flex; align-items: center; gap: 8px; margin-bottom: 14px;
-}
-.qty-btn {
-  width: 34px; height: 34px;
-  background: var(--bg3);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 8px;
-  color: var(--text);
-  font-size: 18px;
-  cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-}
-.qty-btn:hover { border-color: var(--gold); color: var(--gold); }
-.qty-display {
-  flex: 1; text-align: center;
-  font-size: 18px; font-weight: 700;
-  background: var(--bg3);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 8px;
-  padding: 6px;
-}
+        /* ── Qty Input ────────────────────────────────────────────── */
+        .qty-row {
+            display: flex; align-items: center; gap: 8px; margin-bottom: 14px;
+        }
+        .qty-btn {
+            width: 34px; height: 34px;
+            background: var(--bg3);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 18px;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .qty-btn:hover { border-color: var(--gold); color: var(--gold); }
+        .qty-display {
+            flex: 1; text-align: center;
+            font-size: 18px; font-weight: 700;
+            background: var(--bg3);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            padding: 6px;
+        }
 
-/* ── Confirm Row ──────────────────────────────────────────── */
-.confirm-row {
-  background: var(--bg3);
-  border-radius: 8px;
-  padding: 10px 14px;
-  margin-bottom: 10px;
-  display: flex; justify-content: space-between; align-items: center;
-  font-size: 13px;
-}
-.confirm-row .val { font-weight: 700; color: var(--gold); }
+        /* ── Confirm Row ──────────────────────────────────────────── */
+        .confirm-row {
+            background: var(--bg3);
+            border-radius: 8px;
+            padding: 10px 14px;
+            margin-bottom: 10px;
+            display: flex; justify-content: space-between; align-items: center;
+            font-size: 13px;
+        }
+        .confirm-row .val { font-weight: 700; color: var(--gold); }
 
-/* ── Sort ─────────────────────────────────────────────────── */
-.sort-row { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; }
-.sort-label { font-size: 11px; color: var(--text2); font-weight: 600; }
-</style>
+        /* ── Sort ─────────────────────────────────────────────────── */
+        .sort-row { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; }
+        .sort-label { font-size: 11px; color: var(--text2); font-weight: 600; }
+    </style>
 </head>
 <body>
 <div id="app">
-
-  <!-- Header -->
-  <div id="header">
-    <div id="conn-dot"></div>
-    <div id="header-title">🏰 Рынок ArenaM</div>
-    <button class="zone-btn sm" id="btn-bank" style="margin-right:8px">🏦</button>
-    <div id="user-coins">… 💸</div>
-  </div>
-
-  <!-- Tabs -->
-  <div id="tabs">
-    <button class="tab-btn active" data-tab="market"><span class="tab-icon">🏪</span>Рынок</button>
-    <button class="tab-btn" data-tab="duplicates"><span class="tab-icon">🎒</span>Дублик.</button>
-    <button class="tab-btn" data-tab="exchange"><span class="tab-icon">🤝</span>Обмен</button>
-    <button class="tab-btn" data-tab="my-lots"><span class="tab-icon">📦</span>Мои лоты</button>
-    <button class="tab-btn" data-tab="history"><span class="tab-icon">📜</span>История</button>
-  </div>
-
-  <!-- Content -->
-  <div id="content">
-
-    <!-- ════ TAB: MARKET ════ -->
-    <div class="tab-panel active" id="tab-market">
-      <div class="section-head">
-        <h2>🏪 Лоты на продажу</h2>
-        <span class="count-badge" id="market-count">0</span>
-      </div>
-      <div class="filter-bar" id="market-filter">
-        <span class="filter-chip active" data-filter="all">Все</span>
-        <span class="filter-chip r-common"     data-filter="Обычный">⚪ Обычный</span>
-        <span class="filter-chip r-rare"       data-filter="Редкий">🔵 Редкий</span>
-        <span class="filter-chip r-epic"       data-filter="Эпический">🟣 Эпический</span>
-        <span class="filter-chip r-legend"     data-filter="Легендарный">🟡 Легендарный</span>
-        <span class="filter-chip r-divine"     data-filter="Божественный">🔴 Божественный</span>
-        <span class="filter-chip r-box"        data-filter="box">📦 Боксы</span>
-      </div>
-      <div class="sort-row">
-        <span class="sort-label">Сортировка:</span>
-        <span class="filter-chip active" data-sort="price_asc">↑ Цена</span>
-        <span class="filter-chip" data-sort="price_desc">↓ Цена</span>
-        <span class="filter-chip" data-sort="newest">Новые</span>
-      </div>
-      <div class="cards-grid" id="market-list">
-        <div class="loading-wrap"><div class="spinner"></div><p>Загрузка лотов…</p></div>
-      </div>
+    <!-- Header -->
+    <div id="header">
+        <div id="conn-dot"></div>
+        <div id="header-title">🏰 Рынок ArenaM</div>
+        <button class="zone-btn sm" id="btn-bank" style="margin-right:8px">🏦</button>
+        <div id="user-coins">… 💸</div>
     </div>
 
-    <!-- ════ TAB: DUPLICATES ════ -->
-    <div class="tab-panel" id="tab-duplicates">
-      <div class="section-head">
-        <h2>🎒 Дубликаты</h2>
-        <span class="count-badge" id="dup-count">0</span>
-      </div>
-      <div class="util-notice">
-        Дубликаты появляются, когда из бокса выпадает герой, который у вас уже есть.
-        Вы можете <strong>утилизировать</strong> их за монеты или <strong>выставить на продажу</strong>.
-      </div>
-      <div id="dup-list">
-        <div class="loading-wrap"><div class="spinner"></div><p>Загрузка…</p></div>
-      </div>
+    <!-- Tabs -->
+    <div id="tabs">
+        <button class="tab-btn active" data-tab="market"><span class="tab-icon">🏪</span>Рынок</button>
+        <button class="tab-btn" data-tab="duplicates"><span class="tab-icon">🎒</span>Дублик.</button>
+        <button class="tab-btn" data-tab="exchange"><span class="tab-icon">🤝</span>Обмен</button>
+        <button class="tab-btn" data-tab="my-lots"><span class="tab-icon">📦</span>Мои лоты</button>
+        <button class="tab-btn" data-tab="history"><span class="tab-icon">📜</span>История</button>
     </div>
 
-    <!-- ════ TAB: EXCHANGE ════ -->
-    <div class="tab-panel" id="tab-exchange">
-      <div class="section-head">
-        <h2>🤝 Обмен</h2>
-      </div>
-      <button class="zone-btn lg" id="btn-new-offer" style="margin-bottom:16px;">
-        ➕ Создать предложение обмена
-      </button>
-      <div class="exchange-section">
-        <h3>Входящие предложения</h3>
-        <div id="offers-incoming"></div>
-      </div>
-      <div class="divider"></div>
-      <div class="exchange-section">
-        <h3>Мои предложения</h3>
-        <div id="offers-outgoing"></div>
-      </div>
+    <!-- Content -->
+    <div id="content">
+        <div class="tab-panel active" id="tab-market">
+            <div class="section-head">
+                <h2>🏪 Лоты на продажу</h2>
+                <span class="count-badge" id="market-count">0</span>
+            </div>
+            <div class="filter-bar" id="market-filter">
+                <span class="filter-chip active" data-filter="all">Все</span>
+                <span class="filter-chip r-common"     data-filter="Обычный">⚪ Обычный</span>
+                <span class="filter-chip r-rare"       data-filter="Редкий">🔵 Редкий</span>
+                <span class="filter-chip r-epic"       data-filter="Эпический">🟣 Эпический</span>
+                <span class="filter-chip r-legend"     data-filter="Легендарный">🟡 Легендарный</span>
+                <span class="filter-chip r-divine"     data-filter="Божественный">🔴 Божественный</span>
+                <span class="filter-chip r-box"        data-filter="box">📦 Боксы</span>
+            </div>
+            <div class="sort-row">
+                <span class="sort-label">Сортировка:</span>
+                <span class="filter-chip active" data-sort="price_asc">↑ Цена</span>
+                <span class="filter-chip" data-sort="price_desc">↓ Цена</span>
+                <span class="filter-chip" data-sort="newest">Новые</span>
+            </div>
+            <div class="cards-grid" id="market-list">
+                <div class="loading-wrap"><div class="spinner"></div><p>Загрузка лотов…</p></div>
+            </div>
+        </div>
+
+        <div class="tab-panel" id="tab-duplicates">
+            <div class="section-head">
+                <h2>🎒 Дубликаты</h2>
+                <span class="count-badge" id="dup-count">0</span>
+            </div>
+            <div class="util-notice">
+                Дубликаты появляются, когда из бокса выпадает герой, который у вас уже есть.
+                Вы можете <strong>утилизировать</strong> их за монеты или <strong>выставить на продажу</strong>.
+            </div>
+            <div id="dup-list">
+                <div class="loading-wrap"><div class="spinner"></div><p>Загрузка…</p></div>
+            </div>
+        </div>
+
+        <div class="tab-panel" id="tab-exchange">
+            <div class="section-head">
+                <h2>🤝 Обмен</h2>
+            </div>
+            <button class="zone-btn lg" id="btn-new-offer" style="margin-bottom:16px;">
+                ➕ Создать предложение обмена
+            </button>
+            <div class="exchange-section">
+                <h3>Входящие предложения</h3>
+                <div id="offers-incoming"></div>
+            </div>
+            <div class="divider"></div>
+            <div class="exchange-section">
+                <h3>Мои предложения</h3>
+                <div id="offers-outgoing"></div>
+            </div>
+        </div>
+
+        <div class="tab-panel" id="tab-my-lots">
+            <div class="section-head">
+                <h2>📦 Мои лоты</h2>
+                <span class="count-badge" id="my-lots-count">0</span>
+            </div>
+            <button class="zone-btn lg info" id="btn-sell" style="margin-bottom:14px;">
+                🏷️ Выставить предмет на продажу
+            </button>
+            <div id="my-lots-list">
+                <div class="loading-wrap"><div class="spinner"></div><p>Загрузка…</p></div>
+            </div>
+        </div>
+
+        <div class="tab-panel" id="tab-history">
+            <div class="section-head">
+                <h2>📜 История операций</h2>
+            </div>
+            <div id="history-list">
+                <div class="loading-wrap"><div class="spinner"></div><p>Загрузка…</p></div>
+            </div>
+        </div>
     </div>
+</div>
 
-    <!-- ════ TAB: MY LOTS ════ -->
-    <div class="tab-panel" id="tab-my-lots">
-      <div class="section-head">
-        <h2>📦 Мои лоты</h2>
-        <span class="count-badge" id="my-lots-count">0</span>
-      </div>
-      <button class="zone-btn lg info" id="btn-sell" style="margin-bottom:14px;">
-        🏷️ Выставить предмет на продажу
-      </button>
-      <div id="my-lots-list">
-        <div class="loading-wrap"><div class="spinner"></div><p>Загрузка…</p></div>
-      </div>
-    </div>
-
-    <!-- ════ TAB: HISTORY ════ -->
-    <div class="tab-panel" id="tab-history">
-      <div class="section-head">
-        <h2>📜 История операций</h2>
-      </div>
-      <div id="history-list">
-        <div class="loading-wrap"><div class="spinner"></div><p>Загрузка…</p></div>
-      </div>
-    </div>
-
-  </div><!-- /content -->
-</div><!-- /app -->
-
-<!-- Toast -->
 <div id="toast-wrap"></div>
-
-<!-- Modal -->
 <div id="modal-overlay">
-  <div id="modal-box" id="modal-content"></div>
+    <div id="modal-box"></div>
 </div>
 
 <script>
-/* ═══════════════════════════════════════════════════════════
-   CONSTANTS & STATE
-═══════════════════════════════════════════════════════════ */
-const RARITY_ICON = {
-  'Обычный':      '⚪', 'Редкий':       '🔵',
-  'Эпический':    '🟣', 'Легендарный':  '🟡',
-  'Божественный': '🔴',
-};
-const TYPE_ICON = { duplicate: '🦸', hero: '🗡️', box: '🎁' };
-const HIST_ICON = { sell:'💰', buy:'🛍️', exchange:'🔄', utilize:'♻️', cancel:'❌' };
-const UTIL_PRICES = {
-  'Обычный':50,'Редкий':150,'Эпический':400,'Легендарный':1000,'Божественный':2500
-};
-
-let ws = null;
-let pingInterval = null;
-let reconnectTimer = null;
-let userId = null;
-let userCoins = 0;
-
-let state = {
-  marketLots:   [],
-  duplicates:   [],
-  myLots:       [],
-  history:      [],
-  offersIn:     [],
-  offersOut:    [],
-  marketFilter: 'all',
-  marketSort:   'price_asc',
-  userHeroes:   [],
-  userBoxes:    [],
-  bankBalance: 0,
-  currentExchangeId: null,
-  lastRoomData: null
-};
-
-let lockCountdownTimer = null;
-
-/* ═══════════════════════════════════════════════════════════
-   INIT (теперь с поддержкой start_param для partner_id)
-═══════════════════════════════════════════════════════════ */
-function init() {
-  const params = new URLSearchParams(window.location.search);
-  userId = parseInt(params.get('user_id') || '0');
-
-  // partner_id может прийти через start_param от Telegram
-  let partnerId = 0;
-  if (window.Telegram?.WebApp?.initDataUnsafe?.start_param) {
-    const sp = window.Telegram.WebApp.initDataUnsafe.start_param;
-    const match = sp.match(/^exchange_(\d+)$/);
-    if (match) {
-      partnerId = parseInt(match[1], 10);
-    }
-  }
-  // fallback на старый способ (для обратной совместимости)
-  if (!partnerId) {
-    partnerId = parseInt(params.get('partner_id') || '0');
-  }
-
-  if (window.Telegram?.WebApp) {
-    window.Telegram.WebApp.ready();
-    window.Telegram.WebApp.expand();
-  }
-
-  setupTabs();
-  setupModal();
-  setupFilters();
-  connectWS();
-
-  document.getElementById('btn-bank').addEventListener('click', showBankModal);
-
-  if (partnerId && partnerId !== userId) {
-    setTimeout(() => {
-      if (state.duplicates.length > 0 || state.userHeroes.length > 0 || state.userBoxes.length > 0) {
-        openNewOfferModal(partnerId);
-      } else {
-        toast('У вас нет предметов для обмена', 'error');
-      }
-    }, 800);
-  }
-}
-
-/* ═══════════════════════════════════════════════════════════
-   WebSocket
-═══════════════════════════════════════════════════════════ */
-function getWSUrl() {
-  return 'wss://vvvty.onrender.com/ws/market?user_id=' + userId + '&mode=market';
-}
-
-function connectWS() {
-  if (ws) { try { ws.close(); } catch(e){} }
-  setConnDot(false);
-
-  try {
-    ws = new WebSocket(getWSUrl());
-  } catch(e) {
-    scheduleReconnect();
-    return;
-  }
-
-  ws.onopen = () => {
-    setConnDot(true);
-    clearTimeout(reconnectTimer);
-    const initData = window.Telegram?.WebApp?.initData || '';
-    ws.send(JSON.stringify({ action: 'auth', init_data: initData, user_id: userId }));
-    startPing();
-    loadCurrentTab();
-    if (state.currentExchangeId) {
-      send({ action: 'get_exchange_room', exchange_id: state.currentExchangeId });
-    }
-  };
-
-  ws.onmessage = (ev) => {
-    try { handleMessage(JSON.parse(ev.data)); }
-    catch(e) { console.error('WS parse error', e); }
-  };
-
-  ws.onerror = () => {};
-  ws.onclose = () => {
-    setConnDot(false);
-    stopPing();
-    scheduleReconnect();
-  };
-}
-
-function scheduleReconnect() {
-  clearTimeout(reconnectTimer);
-  reconnectTimer = setTimeout(connectWS, 4000);
-}
-
-function startPing() {
-  stopPing();
-  pingInterval = setInterval(() => {
-    if (ws?.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ action: 'ping' }));
-  }, 30000);
-}
-function stopPing() { clearInterval(pingInterval); }
-
-function send(obj) {
-  if (ws?.readyState === WebSocket.OPEN) ws.send(JSON.stringify(obj));
-  else toast('Нет соединения', 'error');
-}
-
-function setConnDot(ok) {
-  const d = document.getElementById('conn-dot');
-  d.classList.toggle('connected', ok);
-}
-
-/* ═══════════════════════════════════════════════════════════
-   MESSAGE HANDLER
-═══════════════════════════════════════════════════════════ */
-function handleMessage(msg) {
-  switch(msg.type) {
-    case 'pong': break;
-
-    case 'user_state':
-      userCoins = msg.coins || 0;
-      document.getElementById('user-coins').textContent = `${userCoins} 💸`;
-      break;
-
-    case 'market_list':
-      state.marketLots = msg.lots || [];
-      renderMarket();
-      break;
-
-    case 'inventory_list':
-      state.duplicates = msg.duplicates || [];
-      state.userHeroes = msg.heroes || [];
-      state.userBoxes = msg.boxes || [];
-      renderDuplicates();
-      break;
-
-    case 'my_lots':
-      state.myLots = msg.lots || [];
-      renderMyLots();
-      break;
-
-    case 'history':
-      state.history = msg.records || [];
-      renderHistory();
-      break;
-
-    case 'exchange_offers':
-      state.offersIn  = msg.incoming || [];
-      state.offersOut = msg.outgoing || [];
-      renderExchange();
-      break;
-
-    case 'exchange_room_updated':
-      state.lastRoomData = msg;
-      if (msg.exchange_id === state.currentExchangeId) {
-        renderExchangeRoom(msg);
-      }
-      break;
-
-    case 'lot_created':
-      toast(`✅ Лот выставлен: ${msg.hero_name} ×${msg.quantity}`, 'success');
-      closeModal();
-      send({ action: 'my_lots' });
-      send({ action: 'inventory_list' });
-      break;
-
-    case 'lot_cancelled':
-      toast('Лот снят с продажи', 'info');
-      send({ action: 'my_lots' });
-      send({ action: 'inventory_list' });
-      break;
-
-    case 'buy_result':
-      if (msg.ok) {
-        const commissionText = msg.commission ? ` (вкл. комиссию ${msg.commission} 💸)` : '';
-        toast(`🛍️ Куплено: ${msg.hero_name} ×${msg.quantity} за ${msg.price} 💸${commissionText}`, 'success');
-        userCoins -= (msg.price + (msg.commission||0));
-        document.getElementById('user-coins').textContent = `${userCoins} 💸`;
-        send({ action: 'market_list' });
-        send({ action: 'inventory_list' });
-        closeModal();
-      } else {
-        toast(`❌ ${msg.error}`, 'error');
-      }
-      break;
-
-    case 'utilize_result':
-      if (msg.ok) {
-        toast(`♻️ Утилизировано ×${msg.quantity}. Получено: ${msg.earned} 💸`, 'success');
-        userCoins += msg.earned;
-        document.getElementById('user-coins').textContent = `${userCoins} 💸`;
-        send({ action: 'inventory_list' });
-        closeModal();
-      } else {
-        toast(`❌ ${msg.error}`, 'error');
-      }
-      break;
-
-    case 'exchange_created':
-      toast('🤝 Предложение обмена отправлено!', 'success');
-      closeModal();
-      send({ action: 'exchange_offers' });
-      break;
-
-    case 'exchange_updated':
-      if (msg.message && msg.message.includes('обмен')) {
-        toast(msg.message, 'info');
-      }
-      send({ action: 'exchange_offers' });
-      break;
-
-    case 'bank_balance':
-      state.bankBalance = msg.balance || 0;
-      break;
-
-    case 'error':
-      toast(msg.message || 'Ошибка', 'error');
-      break;
-  }
-}
-
-/* ═══════════════════════════════════════════════════════════
-   TABS
-═══════════════════════════════════════════════════════════ */
-function setupTabs() {
-  document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-      btn.classList.add('active');
-      const tabId = `tab-${btn.dataset.tab}`;
-      document.getElementById(tabId)?.classList.add('active');
-      loadCurrentTab(btn.dataset.tab);
-    });
-  });
-}
-
-function loadCurrentTab(tab) {
-  tab = tab || document.querySelector('.tab-btn.active')?.dataset.tab || 'market';
-  switch(tab) {
-    case 'market':     send({ action: 'market_list' });      break;
-    case 'duplicates': send({ action: 'inventory_list' });  break;
-    case 'exchange':
-      send({ action: 'exchange_offers' });
-      send({ action: 'inventory_list' });
-      break;
-    case 'my-lots':    send({ action: 'my_lots' });          break;
-    case 'history':    send({ action: 'get_history' });      break;
-  }
-  send({ action: 'user_state' });
-  send({ action: 'bank_balance' });
-}
-
-/* ═══════════════════════════════════════════════════════════
-   FILTERS
-═══════════════════════════════════════════════════════════ */
-function setupFilters() {
-  document.getElementById('market-filter').addEventListener('click', e => {
-    const chip = e.target.closest('[data-filter]');
-    if (!chip) return;
-    document.querySelectorAll('[data-filter]').forEach(c => c.classList.remove('active'));
-    chip.classList.add('active');
-    state.marketFilter = chip.dataset.filter;
-    renderMarket();
-  });
-  document.querySelector('.sort-row').addEventListener('click', e => {
-    const chip = e.target.closest('[data-sort]');
-    if (!chip) return;
-    document.querySelectorAll('[data-sort]').forEach(c => c.classList.remove('active'));
-    chip.classList.add('active');
-    state.marketSort = chip.dataset.sort;
-    renderMarket();
-  });
-}
-
-/* ═══════════════════════════════════════════════════════════
-   RENDER: MARKET
-═══════════════════════════════════════════════════════════ */
-function renderMarket() {
-  let lots = [...state.marketLots];
-
-  if (state.marketFilter !== 'all') {
-    if (state.marketFilter === 'box') {
-      lots = lots.filter(l => l.item_type === 'box');
-    } else {
-      lots = lots.filter(l => l.rarity === state.marketFilter && l.item_type !== 'box');
-    }
-  }
-
-  switch(state.marketSort) {
-    case 'price_asc':  lots.sort((a,b) => a.price - b.price); break;
-    case 'price_desc': lots.sort((a,b) => b.price - a.price); break;
-    case 'newest':     lots.sort((a,b) => b.id - a.id);       break;
-  }
-
-  document.getElementById('market-count').textContent = lots.length;
-  const el = document.getElementById('market-list');
-
-  if (!lots.length) {
-    el.innerHTML = `<div class="empty-state"><div class="empty-icon">🏪</div><p>Нет лотов по выбранному фильтру</p></div>`;
-    return;
-  }
-
-  el.innerHTML = lots.map(lot => {
-    const icon = (lot.rarity && RARITY_ICON[lot.rarity]) ? RARITY_ICON[lot.rarity] : (TYPE_ICON[lot.item_type] || '📦');
-    const rarityClass = lot.rarity ? `r-${lot.rarity}` : '';
-    const isMine = lot.seller_id === userId;
-    const canBuy = !isMine && userCoins >= lot.price;
-    return `
-    <div class="lot-card ${rarityClass}">
-      <div class="lot-icon">${icon}</div>
-      <div class="lot-info">
-        <div class="lot-name">${esc(lot.hero_name || lot.item_name || 'Предмет')}</div>
-        <div class="lot-sub">Продавец: ${esc(lot.seller_name || '…')}</div>
-        ${lot.rarity ? `<span class="lot-rarity ${rarityClass}">${RARITY_ICON[lot.rarity]||''} ${lot.rarity}</span>` : ''}
-      </div>
-      <div class="lot-right">
-        <div class="lot-price">${lot.price} 💸</div>
-        <div class="lot-qty">×${lot.quantity}</div>
-        ${isMine
-          ? `<button class="zone-btn danger sm" onclick="cancelLot(${lot.id})">Снять</button>`
-          : `<button class="zone-btn sm" ${canBuy ? '' : 'disabled'}
-               onclick="openBuyModal(${lot.id})">Купить</button>`
-        }
-      </div>
-    </div>`;
-  }).join('');
-}
-
-/* ═══════════════════════════════════════════════════════════
-   RENDER: DUPLICATES
-═══════════════════════════════════════════════════════════ */
-function renderDuplicates() {
-  const dups = state.duplicates;
-  document.getElementById('dup-count').textContent = dups.length;
-  const el = document.getElementById('dup-list');
-
-  if (!dups.length) {
-    el.innerHTML = `<div class="empty-state"><div class="empty-icon">🎒</div><p>Дубликатов нет.<br>Открывайте боксы — если герой уже есть, получите дубликат.</p></div>`;
-    return;
-  }
-
-  el.innerHTML = dups.map(d => {
-    const price = UTIL_PRICES[d.rarity] || 50;
-    return `
-    <div class="dup-card r-${d.rarity} ${d.locked ? 'locked-card' : ''}">
-      <div class="lot-icon">${RARITY_ICON[d.rarity] || '⚫'}</div>
-      <div class="lot-info">
-        <div class="lot-name">${esc(d.hero_name)}</div>
-        <span class="lot-rarity r-${d.rarity}">${d.rarity}</span>
-        ${d.locked ? '<span class="lock-badge">🔒 В обмене</span>' : ''}
-        <div class="lot-sub">${price} 💸 / шт.</div>
-      </div>
-      <div class="lot-right" style="gap:5px">
-        <div class="dup-qty-badge">×${d.quantity}</div>
-        <button class="zone-btn sm" style="margin-top:22px"
-          onclick="openUtilModal(${d.hero_id}, '${esc(d.hero_name)}', '${d.rarity}', ${d.quantity})"
-          ${d.locked ? 'disabled' : ''}>♻️ Утил.</button>
-        <button class="zone-btn sm info"
-          onclick="openSellDupModal(${d.hero_id}, '${esc(d.hero_name)}', '${d.rarity}', ${d.quantity})"
-          ${d.locked ? 'disabled' : ''}>🏷️ Продать</button>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-/* ═══════════════════════════════════════════════════════════
-   RENDER: EXCHANGE (с кнопкой "Войти в комнату")
-═══════════════════════════════════════════════════════════ */
-function renderExchange() {
-  renderOfferList('offers-incoming', state.offersIn, true);
-  renderOfferList('offers-outgoing', state.offersOut, false);
-}
-
-function renderOfferList(elId, offers, isIncoming) {
-  const el = document.getElementById(elId);
-  if (!offers.length) {
-    el.innerHTML = `<div class="empty-state" style="padding:20px 0"><div class="empty-icon" style="font-size:28px">📭</div><p>Нет предложений</p></div>`;
-    return;
-  }
-  el.innerHTML = offers.map(o => {
-    const statusLabel = { pending:'Ожидание', accepted:'Принято', completed:'Завершено', cancelled:'Отменено' }[o.status] || o.status;
-    const partnerName = isIncoming ? esc(o.creator_name || '…') : esc(o.partner_name || '…');
-    return `
-    <div class="offer-card">
-      <div class="offer-header">
-        <div class="offer-users">${isIncoming ? '👤 От: ' : '👤 Кому: '} <b>${partnerName}</b></div>
-        <span class="offer-status ${o.status}">${statusLabel}</span>
-      </div>
-      <div class="offer-actions">
-        ${o.status === 'pending' && isIncoming
-          ? `<button class="zone-btn sm success" onclick="acceptOffer(${o.id})">✅ Принять</button>`
-          : ''}
-        <button class="zone-btn sm" onclick="openExchangeRoom(${o.id})">🚪 Войти в комнату</button>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-/* ═══════════════════════════════════════════════════════════
-   КОМНАТА ОБМЕНА (двусторонняя готовность + таймер)
-═══════════════════════════════════════════════════════════ */
-function openExchangeRoom(exchangeId) {
-  state.currentExchangeId = exchangeId;
-  send({ action: 'get_exchange_room', exchange_id: exchangeId });
-  openModal(`<div class="modal-title">🤝 Комната обмена #${exchangeId} <button class="modal-close" onclick="closeModal()">✕</button></div><div id="exchange-room-content"><div class="loading-wrap"><div class="spinner"></div><p>Загрузка...</p></div></div>`);
-}
-
-function renderExchangeRoom(msg) {
-  const content = document.getElementById('exchange-room-content');
-  if (!content) return;
-
-  const formatItem = (i) => {
-    const icon = (i.rarity && RARITY_ICON[i.rarity]) ? RARITY_ICON[i.rarity] : (TYPE_ICON[i.item_type] || '📦');
-    return `${icon} ${esc(i.name)} ×${i.quantity}`;
-  };
-
-  const myList = (msg.my_offer || []).map(formatItem).join(', ') || '—';
-  const theirList = (msg.partner_offer || []).map(formatItem).join(', ') || '—';
-  const isLocked = msg.phase === 'locked';
-
-  let actionsHtml = '';
-  if (msg.phase === 'negotiation') {
-    actionsHtml = `
-      <button class="zone-btn sm info" onclick="editMyOffer(${msg.exchange_id})">✏️ Изменить мою часть</button>
-      <button class="zone-btn lg success" onclick="setReady(${msg.exchange_id}, true)">✅ Готов к обмену</button>
-      <div class="util-notice">${msg.partner_ready ? '🟢 Партнёр готов — нажмите «Готов», чтобы заблокировать сделку.' : '⚪ Партнёр ещё не готов.'}</div>`;
-  } else if (msg.phase === 'locked') {
-    const remaining = msg.timer_expires ? Math.max(0, Math.round((new Date(msg.timer_expires) - Date.now()) / 1000)) : 0;
-    actionsHtml = `
-      <div class="util-notice" id="lock-countdown">🔒 Сделка заблокирована. Подтверждение доступно через <b id="lock-seconds">${remaining}</b> сек.</div>
-      <button class="zone-btn lg success" id="confirm-btn-room" onclick="confirmExchange(${msg.exchange_id})" ${remaining > 0 ? 'disabled' : ''}>🤝 Обменяться</button>
-      <button class="zone-btn sm danger" onclick="setReady(${msg.exchange_id}, false)">↩️ Отменить готовность</button>`;
-    startLockCountdown(remaining);
-  }
-
-  content.innerHTML = `
-    <div class="offer-card">
-      <div class="offer-header"><div>Вы отдаёте</div></div>
-      <div class="offer-items">${myList}</div>
-      <div class="confirm-row"><span>Ваши монеты</span><span class="val">${msg.my_coins || 0} 💸</span></div>
-    </div>
-    <div class="offer-card">
-      <div class="offer-header"><div>Вы получаете</div></div>
-      <div class="offer-items">${theirList}</div>
-      <div class="confirm-row"><span>Монеты партнёра</span><span class="val">${msg.partner_coins || 0} 💸</span></div>
-    </div>
-    <div class="offer-actions">${actionsHtml}
-      <button class="zone-btn danger sm" onclick="cancelExchange(${msg.exchange_id})">❌ Отменить сделку</button>
-    </div>`;
-}
-
-function startLockCountdown(seconds) {
-  clearInterval(lockCountdownTimer);
-  if (seconds <= 0) return;
-  let left = seconds;
-  lockCountdownTimer = setInterval(() => {
-    left -= 1;
-    const el = document.getElementById('lock-seconds');
-    if (el) el.textContent = Math.max(0, left);
-    if (left <= 0) {
-      clearInterval(lockCountdownTimer);
-      const confirmBtn = document.getElementById('confirm-btn-room');
-      if (confirmBtn) confirmBtn.removeAttribute('disabled');
-    }
-  }, 1000);
-}
-
-function setReady(exchangeId, ready) {
-  send({ action: ready ? 'exchange_ready' : 'exchange_unready', exchange_id: exchangeId });
-}
-
-/* ── Редактирование своего предложения (с монетами) ── */
-function editMyOffer(exchangeId) {
-  send({ action: 'inventory_list' });
-  setTimeout(() => {
-    if (!state.duplicates.length && !state.userHeroes.length && !state.userBoxes.length) {
-      toast('Нет доступных предметов', 'error');
-      return;
-    }
-
-    const dupOpts = state.duplicates.filter(d => !d.locked).map(d =>
-      `<option value="${d.hero_id}" data-type="duplicate">${RARITY_ICON[d.rarity]} ${d.hero_name} ×${d.quantity}</option>`
-    ).join('');
-    const heroOpts = (state.userHeroes || []).map(h =>
-      `<option value="${h.hero_id}" data-type="hero">${RARITY_ICON[h.rarity] || ''} ${h.name} Lv.${h.level} (${h.rarity})</option>`
-    ).join('');
-    const boxOpts = (state.userBoxes || []).map(b =>
-      `<option value="${b.box_id}" data-type="box">📦 Бокс #${b.box_id} ×${b.amount}</option>`
-    ).join('');
-
-    const currentCoins = state.lastRoomData ? (state.lastRoomData.my_coins || 0) : 0;
-
-    openModal(`
-      <div class="modal-title">✏️ Изменить предложение <button class="modal-close" onclick="closeModal()">✕</button></div>
-      <div id="ex-items-container"></div>
-      <button class="zone-btn sm info" id="ex-add-item" style="margin-bottom:12px">➕ Добавить предмет</button>
-      <div class="field-group">
-        <label class="field-label">Монеты (от вас) 💸</label>
-        <input type="number" class="field-input" id="ex-coin-give" min="0" value="${currentCoins}" placeholder="0"/>
-      </div>
-      <div class="util-notice">Максимум 5 предметов. После сохранения таймер сбросится.</div>
-      <button class="zone-btn lg" id="ex-save">💾 Сохранить изменения</button>
-    `);
-
-    let itemCount = 0;
-    const maxItems = 5;
-
-    function addItemRow(prefill = null) {
-      if (itemCount >= maxItems) return;
-      const container = document.getElementById('ex-items-container');
-      const idx = ++itemCount;
-      const row = document.createElement('div');
-      row.className = 'field-group';
-      row.innerHTML = `
-        <label class="field-label">Предмет ${idx}</label>
-        <select class="field-input ex-item-type">
-          <option value="duplicate">Дубликат</option>
-          <option value="hero">Герой</option>
-          <option value="box">Бокс</option>
-        </select>
-        <select class="field-input ex-item-select" style="margin-top:4px"></select>
-        <input type="number" class="field-input ex-item-qty" min="1" value="1" placeholder="Кол-во" style="margin-top:4px"/>
-      `;
-      container.appendChild(row);
-
-      const typeSelect = row.querySelector('.ex-item-type');
-      const itemSelect = row.querySelector('.ex-item-select');
-      const qtyInput = row.querySelector('.ex-item-qty');
-
-      function updateOptions() {
-        const type = typeSelect.value;
-        itemSelect.innerHTML = type === 'duplicate' ? dupOpts : (type === 'hero' ? heroOpts : boxOpts);
-        if (prefill && type === prefill.item_type) {
-          const opt = [...itemSelect.options].find(o => parseInt(o.value) === prefill.item_id);
-          if (opt) opt.selected = true;
-          qtyInput.value = prefill.quantity;
-        }
-      }
-      typeSelect.addEventListener('change', updateOptions);
-      if (prefill) {
-        typeSelect.value = prefill.item_type || 'duplicate';
-      }
-      updateOptions();
-
-      if (idx > 1) {
-        const delBtn = document.createElement('button');
-        delBtn.className = 'zone-btn danger sm';
-        delBtn.textContent = 'Удалить';
-        delBtn.style.marginTop = '4px';
-        delBtn.onclick = () => { row.remove(); itemCount--; };
-        row.appendChild(delBtn);
-      }
-    }
-
-    const lastRoom = state.lastRoomData;
-    if (lastRoom && lastRoom.my_offer) {
-      lastRoom.my_offer.forEach(item => addItemRow(item));
-    } else {
-      addItemRow();
-    }
-
-    document.getElementById('ex-add-item').onclick = () => addItemRow();
-
-    document.getElementById('ex-save').onclick = () => {
-      const items = [];
-      document.querySelectorAll('#ex-items-container .field-group').forEach(row => {
-        const type = row.querySelector('.ex-item-type').value;
-        const itemId = parseInt(row.querySelector('.ex-item-select').value);
-        const qty = parseInt(row.querySelector('.ex-item-qty').value);
-        if (itemId && qty > 0) {
-          items.push({ item_type: type, item_id: itemId, quantity: qty });
-        }
-      });
-
-      if (items.length === 0) {
-        toast('Добавьте хотя бы один предмет', 'error');
-        return;
-      }
-
-      const coinGive = parseInt(document.getElementById('ex-coin-give').value) || 0;
-
-      send({
-        action: 'exchange_modify',
-        offer_id: exchangeId,
-        give: items,
-        coin_give: coinGive
-      });
-      closeModal();
-      toast('Предложение обновлено', 'success');
+    /* ═══════════════════════════════════════════════════════════
+       CONSTANTS & STATE
+    ═══════════════════════════════════════════════════════════ */
+    const RARITY_ICON = {
+        'Обычный':      '⚪', 'Редкий':       '🔵',
+        'Эпический':    '🟣', 'Легендарный':  '🟡',
+        'Божественный': '🔴',
     };
-  }, 500);
-}
+    const TYPE_ICON = { duplicate: '🦸', hero: '🗡️', box: '🎁' };
+    const HIST_ICON = { sell:'💰', buy:'🛍️', exchange:'🔄', utilize:'♻️', cancel:'❌' };
+    const UTIL_PRICES = {
+        'Обычный':50,'Редкий':150,'Эпический':400,'Легендарный':1000,'Божественный':2500
+    };
 
-function lockExchange(exchangeId) { send({ action:'lock_exchange', exchange_id: exchangeId }); }
-function confirmExchange(exchangeId) { send({ action:'confirm_exchange', exchange_id: exchangeId }); }
-function cancelExchange(exchangeId) { send({ action:'cancel_exchange', exchange_id: exchangeId }); }
+    let ws = null;
+    let pingInterval = null;
+    let reconnectTimer = null;
+    let userId = null;
+    let userCoins = 0;
 
-/* ═══════════════════════════════════════════════════════════
-   RENDER: MY LOTS
-═══════════════════════════════════════════════════════════ */
-function renderMyLots() {
-  const lots = state.myLots;
-  document.getElementById('my-lots-count').textContent = lots.length;
-  const el = document.getElementById('my-lots-list');
+    let state = {
+        marketLots:   [],
+        duplicates:   [],
+        myLots:       [],
+        history:      [],
+        offersIn:     [],
+        offersOut:    [],
+        marketFilter: 'all',
+        marketSort:   'price_asc',
+        userHeroes:   [],
+        userBoxes:    [],
+        bankBalance: 0,
+        currentExchangeId: null,
+        lastRoomData: null
+    };
 
-  if (!lots.length) {
-    el.innerHTML = `<div class="empty-state"><div class="empty-icon">📦</div><p>Вы не выставляли лоты.<br>Нажмите «Выставить предмет», чтобы начать.</p></div>`;
-    return;
-  }
+    let lockCountdownTimer = null;
 
-  el.innerHTML = lots.map(l => `
-    <div class="my-lot-card">
-      <div class="lot-icon">${TYPE_ICON[l.item_type] || '📦'}</div>
-      <div class="lot-info">
-        <div class="lot-name">${esc(l.hero_name || l.item_name)}</div>
-        <div class="lot-sub">×${l.quantity} • ${l.price} 💸 • ${formatDate(l.created_at)}</div>
-      </div>
-      <div class="lot-right">
-        <span class="my-lot-status ${l.active ? 'active' : 'expired'}">${l.active ? 'Активен' : 'Истёк'}</span>
-        ${l.active ? `<button class="zone-btn sm danger" onclick="cancelLot(${l.id})">Снять</button>` : ''}
-      </div>
-    </div>`).join('');
-}
+    /* ═══════════════════════════════════════════════════════════
+       INIT
+    ═══════════════════════════════════════════════════════════ */
+    function init() {
+        const params = new URLSearchParams(window.location.search);
+        userId = parseInt(params.get('user_id') || '0');
 
-/* ═══════════════════════════════════════════════════════════
-   RENDER: HISTORY
-═══════════════════════════════════════════════════════════ */
-function renderHistory() {
-  const recs = state.history;
-  const el = document.getElementById('history-list');
+        // partner_id через start_param
+        let partnerId = 0;
+        if (window.Telegram?.WebApp?.initDataUnsafe?.start_param) {
+            const sp = window.Telegram.WebApp.initDataUnsafe.start_param;
+            const match = sp.match(/^exchange_(\d+)$/);
+            if (match) partnerId = parseInt(match[1], 10);
+        }
+        if (!partnerId) partnerId = parseInt(params.get('partner_id') || '0');
 
-  if (!recs.length) {
-    el.innerHTML = `<div class="empty-state"><div class="empty-icon">📜</div><p>История операций пуста</p></div>`;
-    return;
-  }
+        if (window.Telegram?.WebApp) {
+            window.Telegram.WebApp.ready();
+            window.Telegram.WebApp.expand();
+        }
 
-  const TYPE_LABEL = { sell:'Продажа', buy:'Покупка', exchange:'Обмен', utilize:'Утилизация', cancel:'Отмена' };
-  el.innerHTML = recs.map(r => {
-    const plus = r.amount > 0;
-    return `
-    <div class="history-item">
-      <div class="history-icon">${HIST_ICON[r.type] || '📝'}</div>
-      <div class="history-text">
-        <div class="history-title">${TYPE_LABEL[r.type] || r.type}: ${esc(r.item_name || r.item_type)}</div>
-        <div class="history-sub">×${r.quantity} • ${formatDate(r.created_at)}</div>
-      </div>
-      ${r.amount ? `<div class="history-amount ${plus ? 'plus' : 'minus'}">${plus ? '+' : ''}${r.amount} 💸</div>` : ''}
-    </div>`;
-  }).join('');
-}
+        const initData = window.Telegram?.WebApp?.initData || '';
+        if (!initData) {
+            alert('Ошибка: Telegram initData отсутствует. Соединение не будет установлено.');
+        }
 
-/* ═══════════════════════════════════════════════════════════
-   MODAL
-═══════════════════════════════════════════════════════════ */
-function setupModal() {
-  document.getElementById('modal-overlay').addEventListener('click', e => {
-    if (e.target === document.getElementById('modal-overlay')) closeModal();
-  });
-  document.getElementById('btn-new-offer').addEventListener('click', () => openNewOfferModal());
-  document.getElementById('btn-sell').addEventListener('click', openSellModal);
-}
+        setupTabs();
+        setupModal();
+        setupFilters();
+        connectWS();
 
-function openModal(html) {
-  document.getElementById('modal-box').innerHTML = html;
-  document.getElementById('modal-overlay').classList.add('open');
-}
-function closeModal() {
-  document.getElementById('modal-overlay').classList.remove('open');
-  state.currentExchangeId = null;
-  clearInterval(lockCountdownTimer);
-}
+        document.getElementById('btn-bank').addEventListener('click', showBankModal);
 
-/* ── Buy Modal ─────────────────────────────────────────── */
-function openBuyModal(lotId) {
-  const lot = state.marketLots.find(l => l.id === lotId);
-  if (!lot) return;
-  openModal(`
-    <div class="modal-title">
-      🛍️ Купить
-      <button class="modal-close" onclick="closeModal()">✕</button>
-    </div>
-    <div class="confirm-row"><span>${esc(lot.hero_name || lot.item_name)}</span><span class="val">${lot.rarity||''}</span></div>
-    <div class="confirm-row"><span>Количество</span><span class="val">×${lot.quantity}</span></div>
-    <div class="confirm-row"><span>Стоимость</span><span class="val">${lot.price} 💸</span></div>
-    <div class="confirm-row"><span>Ваши монеты</span><span class="val">${userCoins} 💸</span></div>
-    ${userCoins < lot.price ? '<div style="color:var(--danger);font-size:12px;margin-bottom:10px;">❌ Недостаточно монет</div>' : ''}
-    <button class="zone-btn lg" ${userCoins < lot.price ? 'disabled' : ''}
-      onclick="executeBuy(${lotId})">✅ Подтвердить покупку</button>
-  `);
-}
-function executeBuy(lotId) {
-  send({ action: 'buy_lot', lot_id: lotId });
-  document.getElementById('modal-box').querySelector('button.zone-btn.lg').disabled = true;
-}
-
-/* ── Utilize Modal ─────────────────────────────────────── */
-function openUtilModal(heroId, heroName, rarity, maxQty) {
-  const priceEach = UTIL_PRICES[rarity] || 50;
-  let qty = 1;
-  function render() {
-    const total = qty * priceEach;
-    return `
-      <div class="modal-title">
-        ♻️ Утилизация
-        <button class="modal-close" onclick="closeModal()">✕</button>
-      </div>
-      <div class="confirm-row"><span>${RARITY_ICON[rarity]} ${esc(heroName)}</span><span class="val">${rarity}</span></div>
-      <div class="confirm-row"><span>Цена за шт.</span><span class="val">${priceEach} 💸</span></div>
-      <div class="field-group">
-        <label class="field-label">Количество (макс. ${maxQty})</label>
-        <div class="qty-row">
-          <button class="qty-btn" id="qty-minus">−</button>
-          <div class="qty-display" id="qty-val">${qty}</div>
-          <button class="qty-btn" id="qty-plus">+</button>
-        </div>
-      </div>
-      <div class="confirm-row"><span>Вы получите</span><span class="val" id="util-total">${total} 💸</span></div>
-      <button class="zone-btn lg success" id="util-confirm-btn">✅ Утилизировать за ${total} 💸</button>
-    `;
-  }
-  openModal(render());
-  function updateQty() {
-    document.getElementById('qty-val').textContent = qty;
-    const total = qty * priceEach;
-    document.getElementById('util-total').textContent = `${total} 💸`;
-    document.getElementById('util-confirm-btn').textContent = `✅ Утилизировать за ${total} 💸`;
-  }
-  document.getElementById('qty-minus').onclick = () => { if(qty > 1) { qty--; updateQty(); } };
-  document.getElementById('qty-plus').onclick  = () => { if(qty < maxQty) { qty++; updateQty(); } };
-  document.getElementById('util-confirm-btn').onclick = () => {
-    send({ action: 'duplicate_utilize', hero_id: heroId, quantity: qty });
-    document.getElementById('util-confirm-btn').disabled = true;
-  };
-}
-
-/* ── Универсальное окно продажи ── */
-function openSellModal() {
-  if (!state.duplicates.length && !state.userHeroes.length && !state.userBoxes.length) {
-    send({ action: 'inventory_list' });
-    toast('Загружаем предметы…', 'info');
-    return;
-  }
-
-  const dupOpts = state.duplicates.filter(d => !d.locked).map(d =>
-    `<option value="${d.hero_id}" data-type="duplicate" data-max="${d.quantity}">${RARITY_ICON[d.rarity]} ${d.hero_name} ×${d.quantity} (${d.rarity})</option>`
-  ).join('');
-  const heroOpts = (state.userHeroes || []).map(h =>
-    `<option value="${h.hero_id}" data-type="hero" data-max="1">${RARITY_ICON[h.rarity] || ''} ${h.name} Lv.${h.level} (${h.rarity})</option>`
-  ).join('');
-  const boxOpts = (state.userBoxes || []).map(b =>
-    `<option value="${b.box_id}" data-type="box" data-max="${b.amount}">📦 Бокс #${b.box_id} ×${b.amount}</option>`
-  ).join('');
-  const durationPrices = { '24':0, '72':15, '168':20, '336':30, '720':35 };
-  openModal(`
-    <div class="modal-title">🏷️ Выставить на продажу <button class="modal-close" onclick="closeModal()">✕</button></div>
-    <div class="field-group">
-      <label class="field-label">Тип предмета</label>
-      <select class="field-input" id="sell-type">
-        <option value="duplicate">Дубликат</option>
-        <option value="hero">Герой</option>
-        <option value="box">Бокс</option>
-      </select>
-    </div>
-    <div class="field-group">
-      <label class="field-label">Предмет</label>
-      <select class="field-input" id="sell-item"></select>
-    </div>
-    <div class="field-group" id="sell-qty-block">
-      <label class="field-label">Количество</label>
-      <input type="number" class="field-input" id="sell-qty" min="1" value="1"/>
-    </div>
-    <div class="field-group">
-      <label class="field-label">Цена за всё (💸)</label>
-      <input type="number" class="field-input" id="sell-price" min="1" max="999999" value="100"/>
-    </div>
-    <div class="field-group">
-      <label class="field-label">Длительность</label>
-      <select class="field-input" id="sell-duration">
-        <option value="24">24 часа (бесплатно)</option>
-        <option value="72">3 дня (15 💸)</option>
-        <option value="168">7 дней (20 💸)</option>
-        <option value="336">14 дней (30 💸)</option>
-        <option value="720">30 дней (35 💸)</option>
-      </select>
-    </div>
-    <div class="util-notice" id="sell-fee-notice"></div>
-    <button class="zone-btn lg" id="sell-btn">✅ Выставить лот</button>
-  `);
-
-  const typeSelect = document.getElementById('sell-type');
-  const itemSelect = document.getElementById('sell-item');
-  const qtyBlock = document.getElementById('sell-qty-block');
-  const qtyInput = document.getElementById('sell-qty');
-  const durationSelect = document.getElementById('sell-duration');
-  const feeNotice = document.getElementById('sell-fee-notice');
-
-  function updateItems() {
-    const type = typeSelect.value;
-    itemSelect.innerHTML = type === 'duplicate' ? dupOpts : (type === 'hero' ? heroOpts : boxOpts);
-    qtyBlock.style.display = type === 'hero' ? 'none' : 'block';
-    if (type === 'hero') qtyInput.value = 1;
-  }
-  typeSelect.addEventListener('change', updateItems);
-  updateItems();
-
-  function updateFeeNotice() {
-    const hours = durationSelect.value;
-    const price = durationPrices[hours] || 0;
-    feeNotice.textContent = price > 0 ? `Плата за размещение: ${price} 💸` : 'Размещение бесплатное';
-  }
-  durationSelect.addEventListener('change', updateFeeNotice);
-  updateFeeNotice();
-
-  document.getElementById('sell-btn').onclick = () => {
-    const type = typeSelect.value;
-    const selectedOption = itemSelect.selectedOptions[0];
-    if (!selectedOption) { toast('Выберите предмет', 'error'); return; }
-    const itemId = parseInt(selectedOption.value);
-    const maxQty = parseInt(selectedOption.dataset.max || '1');
-    const qty = type === 'hero' ? 1 : parseInt(qtyInput.value);
-    const price = parseInt(document.getElementById('sell-price').value);
-    const hours = parseInt(durationSelect.value);
-    const fee = durationPrices[hours] || 0;
-
-    if (!itemId || !qty || qty < 1 || qty > maxQty) { toast(`Количество 1–${maxQty}`, 'error'); return; }
-    if (!price || price < 1) { toast('Укажите цену', 'error'); return; }
-
-    send({
-      action: 'create_lot',
-      item_type: type,
-      item_id: itemId,
-      quantity: qty,
-      price: price,
-      duration_hours: hours,
-      placement_fee: fee
-    });
-    document.getElementById('sell-btn').disabled = true;
-  };
-}
-
-/* ── Вызов продажи конкретного дубликата ── */
-function openSellDupModal(heroId, heroName, rarity, maxQty) {
-  openSellModal();
-  setTimeout(() => {
-    const typeSelect = document.getElementById('sell-type');
-    const itemSelect = document.getElementById('sell-item');
-    if (typeSelect && itemSelect) {
-      typeSelect.value = 'duplicate';
-      typeSelect.dispatchEvent(new Event('change'));
-      const option = [...itemSelect.options].find(opt => parseInt(opt.value) === heroId);
-      if (option) option.selected = true;
-      document.getElementById('sell-qty').value = 1;
+        if (partnerId && partnerId !== userId) {
+            setTimeout(() => {
+                if (state.duplicates.length > 0 || state.userHeroes.length > 0 || state.userBoxes.length > 0) {
+                    openNewOfferModal(partnerId);
+                } else {
+                    toast('У вас нет предметов для обмена', 'error');
+                }
+            }, 800);
+        }
     }
-  }, 100);
-}
 
-/* ── НОВЫЙ ОБМЕН С МОНЕТАМИ ── */
-function openNewOfferModal(partnerId = null) {
-  const dupOpts = state.duplicates.filter(d => !d.locked).map(d =>
-    `<option value="${d.hero_id}" data-type="duplicate">${RARITY_ICON[d.rarity]} ${d.hero_name} ×${d.quantity}</option>`
-  ).join('');
-  const heroOpts = (state.userHeroes || []).map(h =>
-    `<option value="${h.hero_id}" data-type="hero">${RARITY_ICON[h.rarity] || ''} ${h.name} Lv.${h.level} (${h.rarity})</option>`
-  ).join('');
-  const boxOpts = (state.userBoxes || []).map(b =>
-    `<option value="${b.box_id}" data-type="box">📦 Бокс #${b.box_id} ×${b.amount}</option>`
-  ).join('');
-
-  openModal(`
-    <div class="modal-title">🤝 Создать обмен <button class="modal-close" onclick="closeModal()">✕</button></div>
-    <div class="field-group">
-      <label class="field-label">Партнёр (Telegram ID или @username)</label>
-      <input type="text" class="field-input" id="ex-partner" placeholder="ID или @username" value="${partnerId||''}"/>
-    </div>
-    <div id="ex-items-container"></div>
-    <button class="zone-btn sm info" id="ex-add-item" style="margin-bottom:12px">➕ Добавить предмет</button>
-    <div class="field-group">
-      <label class="field-label">Монеты (от вас) 💸</label>
-      <input type="number" class="field-input" id="ex-coin-give" min="0" value="0" placeholder="0"/>
-    </div>
-    <div class="util-notice">Максимум 5 предметов. После отправки партнёр сможет добавить свои.</div>
-    <button class="zone-btn lg" id="ex-submit">✅ Отправить предложение</button>
-  `);
-
-  let itemCount = 0;
-  const maxItems = 5;
-
-  function addItemRow() {
-    if (itemCount >= maxItems) return;
-    const container = document.getElementById('ex-items-container');
-    const idx = ++itemCount;
-    const row = document.createElement('div');
-    row.className = 'field-group';
-    row.innerHTML = `
-      <label class="field-label">Предмет ${idx}</label>
-      <select class="field-input ex-item-type">
-        <option value="duplicate">Дубликат</option>
-        <option value="hero">Герой</option>
-        <option value="box">Бокс</option>
-      </select>
-      <select class="field-input ex-item-select" style="margin-top:4px"></select>
-      <input type="number" class="field-input ex-item-qty" min="1" value="1" placeholder="Кол-во" style="margin-top:4px"/>
-    `;
-    container.appendChild(row);
-
-    const typeSelect = row.querySelector('.ex-item-type');
-    const itemSelect = row.querySelector('.ex-item-select');
-
-    function updateOptions() {
-      const type = typeSelect.value;
-      itemSelect.innerHTML = type === 'duplicate' ? dupOpts : (type === 'hero' ? heroOpts : boxOpts);
+    /* ═══════════════════════════════════════════════════════════
+       WebSocket
+    ═══════════════════════════════════════════════════════════ */
+    function getWSUrl() {
+        return 'wss://vvvty.onrender.com/ws/market?user_id=' + userId + '&mode=market';
     }
-    typeSelect.addEventListener('change', updateOptions);
-    updateOptions();
 
-    if (idx > 1) {
-      const delBtn = document.createElement('button');
-      delBtn.className = 'zone-btn danger sm';
-      delBtn.textContent = 'Удалить';
-      delBtn.style.marginTop = '4px';
-      delBtn.onclick = () => { row.remove(); itemCount--; };
-      row.appendChild(delBtn);
+    function connectWS() {
+        if (ws) { try { ws.close(); } catch(e){} }
+        setConnDot(false);
+
+        const url = getWSUrl();
+        ws = new WebSocket(url);
+
+        ws.onopen = () => {
+            setConnDot(true);
+            clearTimeout(reconnectTimer);
+            const initData = window.Telegram?.WebApp?.initData || '';
+            ws.send(JSON.stringify({ action: 'auth', init_data: initData, user_id: userId }));
+            startPing();
+            loadCurrentTab();
+            if (state.currentExchangeId) {
+                send({ action: 'get_exchange_room', exchange_id: state.currentExchangeId });
+            }
+        };
+
+        ws.onmessage = (ev) => {
+            try { handleMessage(JSON.parse(ev.data)); }
+            catch(e) { console.error('WS parse error', e); }
+        };
+
+        ws.onerror = () => {};
+        ws.onclose = () => {
+            setConnDot(false);
+            stopPing();
+            scheduleReconnect();
+        };
     }
-  }
 
-  addItemRow();
+    function scheduleReconnect() {
+        clearTimeout(reconnectTimer);
+        reconnectTimer = setTimeout(connectWS, 4000);
+    }
 
-  document.getElementById('ex-add-item').onclick = () => addItemRow();
+    function startPing() {
+        stopPing();
+        pingInterval = setInterval(() => {
+            if (ws?.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ action: 'ping' }));
+        }, 30000);
+    }
+    function stopPing() { clearInterval(pingInterval); }
 
-  document.getElementById('ex-submit').onclick = () => {
-    const partner = document.getElementById('ex-partner').value.trim();
-    if (!partner) { toast('Введите партнёра', 'error'); return; }
+    function send(obj) {
+        if (ws?.readyState === WebSocket.OPEN) ws.send(JSON.stringify(obj));
+        else toast('Нет соединения', 'error');
+    }
 
-    const items = [];
-    document.querySelectorAll('#ex-items-container .field-group').forEach(row => {
-      const type = row.querySelector('.ex-item-type').value;
-      const itemId = parseInt(row.querySelector('.ex-item-select').value);
-      const qty = parseInt(row.querySelector('.ex-item-qty').value);
-      if (itemId && qty > 0) {
-        items.push({ item_type: type, item_id: itemId, quantity: qty });
-      }
-    });
+    function setConnDot(ok) {
+        const d = document.getElementById('conn-dot');
+        d.classList.toggle('connected', ok);
+    }
 
-    if (items.length === 0) { toast('Добавьте предметы', 'error'); return; }
+    /* ═══════════════════════════════════════════════════════════
+       MESSAGE HANDLER
+    ═══════════════════════════════════════════════════════════ */
+    function handleMessage(msg) {
+        switch(msg.type) {
+            case 'pong': break;
 
-    const coinGive = parseInt(document.getElementById('ex-coin-give').value) || 0;
+            case 'user_state':
+                userCoins = msg.coins || 0;
+                document.getElementById('user-coins').textContent = `${userCoins} 💸`;
+                break;
 
-    const btn = document.getElementById('ex-submit');
-    btn.disabled = true;
-    send({
-      action: 'exchange_offer',
-      partner_id: partner,
-      give: items,
-      want: [],
-      coin_give: coinGive
-    });
-    setTimeout(() => { btn.disabled = false; }, 5000);
-  };
-}
+            case 'market_list':
+                state.marketLots = msg.lots || [];
+                renderMarket();
+                break;
 
-/* ═══════════════════════════════════════════════════════════
-   БАНК РЫНКА
-═══════════════════════════════════════════════════════════ */
-function showBankModal() {
-  send({ action: 'bank_balance' });
-  openModal(`
-    <div class="modal-title">🏦 Банк Рынка ArenaM <button class="modal-close" onclick="closeModal()">✕</button></div>
-    <div style="text-align:center; margin-bottom:16px">
-      <div style="font-size:80px; margin-bottom:10px">🏦</div>
-      <div style="font-size:18px; font-weight:700; color:var(--gold)">Баланс банка</div>
-      <div style="font-size:28px; font-weight:800; color:var(--gold); margin-top:8px">${state.bankBalance} 💸</div>
-    </div>
-    <div class="util-notice">Собранная комиссия со всех сделок будет использована для будущих розыгрышей и ивентов.</div>
-  `);
-}
+            case 'inventory_list':
+                state.duplicates = msg.duplicates || [];
+                state.userHeroes = msg.heroes || [];
+                state.userBoxes = msg.boxes || [];
+                renderDuplicates();
+                break;
 
-/* ═══════════════════════════════════════════════════════════
-   ACTIONS
-═══════════════════════════════════════════════════════════ */
-function cancelLot(lotId)    { if(confirm('Снять лот с продажи?')) send({ action:'cancel_lot', lot_id:lotId }); }
-function acceptOffer(offerId) { send({ action:'exchange_accept',   offer_id:offerId }); }
+            case 'my_lots':
+                state.myLots = msg.lots || [];
+                renderMyLots();
+                break;
 
-/* ═══════════════════════════════════════════════════════════
-   UTILS
-═══════════════════════════════════════════════════════════ */
-function esc(str) {
-  if (!str) return '';
-  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
+            case 'history':
+                state.history = msg.records || [];
+                renderHistory();
+                break;
 
-function formatDate(ts) {
-  if (!ts) return '';
-  const d = new Date(typeof ts === 'number' ? ts * 1000 : ts);
-  if (isNaN(d)) return '';
-  return d.toLocaleDateString('ru-RU', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
-}
+            case 'exchange_offers':
+                state.offersIn  = msg.incoming || [];
+                state.offersOut = msg.outgoing || [];
+                renderExchange();
+                break;
 
-function toast(msg, type='info') {
-  const wrap = document.getElementById('toast-wrap');
-  const el = document.createElement('div');
-  el.className = `toast ${type}`;
-  el.textContent = msg;
-  wrap.appendChild(el);
-  setTimeout(() => el.remove(), 3200);
-}
+            case 'exchange_room_updated':
+                state.lastRoomData = msg;
+                if (msg.exchange_id === state.currentExchangeId) {
+                    renderExchangeRoom(msg);
+                }
+                break;
 
-/* ═══════════════════════════════════════════════════════════
-   START
-═══════════════════════════════════════════════════════════ */
-document.addEventListener('DOMContentLoaded', init);
+            case 'lot_created':
+                toast(`✅ Лот выставлен: ${msg.hero_name} ×${msg.quantity}`, 'success');
+                closeModal();
+                send({ action: 'my_lots' });
+                send({ action: 'inventory_list' });
+                break;
+
+            case 'lot_cancelled':
+                toast('Лот снят с продажи', 'info');
+                send({ action: 'my_lots' });
+                send({ action: 'inventory_list' });
+                break;
+
+            case 'buy_result':
+                if (msg.ok) {
+                    const commissionText = msg.commission ? ` (вкл. комиссию ${msg.commission} 💸)` : '';
+                    toast(`🛍️ Куплено: ${msg.hero_name} ×${msg.quantity} за ${msg.price} 💸${commissionText}`, 'success');
+                    userCoins -= (msg.price + (msg.commission||0));
+                    document.getElementById('user-coins').textContent = `${userCoins} 💸`;
+                    send({ action: 'market_list' });
+                    send({ action: 'inventory_list' });
+                    closeModal();
+                } else {
+                    toast(`❌ ${msg.error}`, 'error');
+                }
+                break;
+
+            case 'utilize_result':
+                if (msg.ok) {
+                    toast(`♻️ Утилизировано ×${msg.quantity}. Получено: ${msg.earned} 💸`, 'success');
+                    userCoins += msg.earned;
+                    document.getElementById('user-coins').textContent = `${userCoins} 💸`;
+                    send({ action: 'inventory_list' });
+                    closeModal();
+                } else {
+                    toast(`❌ ${msg.error}`, 'error');
+                }
+                break;
+
+            case 'exchange_created':
+                toast('🤝 Предложение обмена отправлено!', 'success');
+                closeModal();
+                send({ action: 'exchange_offers' });
+                break;
+
+            case 'exchange_updated':
+                if (msg.message && msg.message.includes('обмен')) {
+                    toast(msg.message, 'info');
+                }
+                send({ action: 'exchange_offers' });
+                break;
+
+            case 'bank_balance':
+                state.bankBalance = msg.balance || 0;
+                break;
+
+            case 'error':
+                toast(msg.message || 'Ошибка', 'error');
+                break;
+        }
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       TABS
+    ═══════════════════════════════════════════════════════════ */
+    function setupTabs() {
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+                btn.classList.add('active');
+                const tabId = `tab-${btn.dataset.tab}`;
+                document.getElementById(tabId)?.classList.add('active');
+                loadCurrentTab(btn.dataset.tab);
+            });
+        });
+    }
+
+    function loadCurrentTab(tab) {
+        tab = tab || document.querySelector('.tab-btn.active')?.dataset.tab || 'market';
+        switch(tab) {
+            case 'market':     send({ action: 'market_list' });      break;
+            case 'duplicates': send({ action: 'inventory_list' });  break;
+            case 'exchange':
+                send({ action: 'exchange_offers' });
+                send({ action: 'inventory_list' });
+                break;
+            case 'my-lots':    send({ action: 'my_lots' });          break;
+            case 'history':    send({ action: 'get_history' });      break;
+        }
+        send({ action: 'user_state' });
+        send({ action: 'bank_balance' });
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       FILTERS
+    ═══════════════════════════════════════════════════════════ */
+    function setupFilters() {
+        document.getElementById('market-filter').addEventListener('click', e => {
+            const chip = e.target.closest('[data-filter]');
+            if (!chip) return;
+            document.querySelectorAll('[data-filter]').forEach(c => c.classList.remove('active'));
+            chip.classList.add('active');
+            state.marketFilter = chip.dataset.filter;
+            renderMarket();
+        });
+        document.querySelector('.sort-row').addEventListener('click', e => {
+            const chip = e.target.closest('[data-sort]');
+            if (!chip) return;
+            document.querySelectorAll('[data-sort]').forEach(c => c.classList.remove('active'));
+            chip.classList.add('active');
+            state.marketSort = chip.dataset.sort;
+            renderMarket();
+        });
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       RENDER: MARKET
+    ═══════════════════════════════════════════════════════════ */
+    function renderMarket() {
+        let lots = [...state.marketLots];
+
+        if (state.marketFilter !== 'all') {
+            if (state.marketFilter === 'box') {
+                lots = lots.filter(l => l.item_type === 'box');
+            } else {
+                lots = lots.filter(l => l.rarity === state.marketFilter && l.item_type !== 'box');
+            }
+        }
+
+        switch(state.marketSort) {
+            case 'price_asc':  lots.sort((a,b) => a.price - b.price); break;
+            case 'price_desc': lots.sort((a,b) => b.price - a.price); break;
+            case 'newest':     lots.sort((a,b) => b.id - a.id);       break;
+        }
+
+        document.getElementById('market-count').textContent = lots.length;
+        const el = document.getElementById('market-list');
+
+        if (!lots.length) {
+            el.innerHTML = `<div class="empty-state"><div class="empty-icon">🏪</div><p>Нет лотов по выбранному фильтру</p></div>`;
+            return;
+        }
+
+        el.innerHTML = lots.map(lot => {
+            const icon = (lot.rarity && RARITY_ICON[lot.rarity]) ? RARITY_ICON[lot.rarity] : (TYPE_ICON[lot.item_type] || '📦');
+            const rarityClass = lot.rarity ? `r-${lot.rarity}` : '';
+            const isMine = lot.seller_id === userId;
+            const canBuy = !isMine && userCoins >= lot.price;
+            return `
+            <div class="lot-card ${rarityClass}">
+                <div class="lot-icon">${icon}</div>
+                <div class="lot-info">
+                    <div class="lot-name">${esc(lot.hero_name || lot.item_name || 'Предмет')}</div>
+                    <div class="lot-sub">Продавец: ${esc(lot.seller_name || '…')}</div>
+                    ${lot.rarity ? `<span class="lot-rarity ${rarityClass}">${RARITY_ICON[lot.rarity]||''} ${lot.rarity}</span>` : ''}
+                </div>
+                <div class="lot-right">
+                    <div class="lot-price">${lot.price} 💸</div>
+                    <div class="lot-qty">×${lot.quantity}</div>
+                    ${isMine
+                        ? `<button class="zone-btn danger sm" onclick="cancelLot(${lot.id})">Снять</button>`
+                        : `<button class="zone-btn sm" ${canBuy ? '' : 'disabled'}
+                             onclick="openBuyModal(${lot.id})">Купить</button>`
+                    }
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       RENDER: DUPLICATES
+    ═══════════════════════════════════════════════════════════ */
+    function renderDuplicates() {
+        const dups = state.duplicates;
+        document.getElementById('dup-count').textContent = dups.length;
+        const el = document.getElementById('dup-list');
+
+        if (!dups.length) {
+            el.innerHTML = `<div class="empty-state"><div class="empty-icon">🎒</div><p>Дубликатов нет.<br>Открывайте боксы — если герой уже есть, получите дубликат.</p></div>`;
+            return;
+        }
+
+        el.innerHTML = dups.map(d => {
+            const price = UTIL_PRICES[d.rarity] || 50;
+            return `
+            <div class="dup-card r-${d.rarity} ${d.locked ? 'locked-card' : ''}">
+                <div class="lot-icon">${RARITY_ICON[d.rarity] || '⚫'}</div>
+                <div class="lot-info">
+                    <div class="lot-name">${esc(d.hero_name)}</div>
+                    <span class="lot-rarity r-${d.rarity}">${d.rarity}</span>
+                    ${d.locked ? '<span class="lock-badge">🔒 В обмене</span>' : ''}
+                    <div class="lot-sub">${price} 💸 / шт.</div>
+                </div>
+                <div class="lot-right" style="gap:5px">
+                    <div class="dup-qty-badge">×${d.quantity}</div>
+                    <button class="zone-btn sm" style="margin-top:22px"
+                        onclick="openUtilModal(${d.hero_id}, '${esc(d.hero_name)}', '${d.rarity}', ${d.quantity})"
+                        ${d.locked ? 'disabled' : ''}>♻️ Утил.</button>
+                    <button class="zone-btn sm info"
+                        onclick="openSellDupModal(${d.hero_id}, '${esc(d.hero_name)}', '${d.rarity}', ${d.quantity})"
+                        ${d.locked ? 'disabled' : ''}>🏷️ Продать</button>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       RENDER: EXCHANGE
+    ═══════════════════════════════════════════════════════════ */
+    function renderExchange() {
+        renderOfferList('offers-incoming', state.offersIn, true);
+        renderOfferList('offers-outgoing', state.offersOut, false);
+    }
+
+    function renderOfferList(elId, offers, isIncoming) {
+        const el = document.getElementById(elId);
+        if (!offers.length) {
+            el.innerHTML = `<div class="empty-state" style="padding:20px 0"><div class="empty-icon" style="font-size:28px">📭</div><p>Нет предложений</p></div>`;
+            return;
+        }
+        el.innerHTML = offers.map(o => {
+            const statusLabel = { pending:'Ожидание', accepted:'Принято', completed:'Завершено', cancelled:'Отменено' }[o.status] || o.status;
+            const partnerName = isIncoming ? esc(o.creator_name || '…') : esc(o.partner_name || '…');
+            return `
+            <div class="offer-card">
+                <div class="offer-header">
+                    <div class="offer-users">${isIncoming ? '👤 От: ' : '👤 Кому: '} <b>${partnerName}</b></div>
+                    <span class="offer-status ${o.status}">${statusLabel}</span>
+                </div>
+                <div class="offer-actions">
+                    ${o.status === 'pending' && isIncoming
+                        ? `<button class="zone-btn sm success" onclick="acceptOffer(${o.id})">✅ Принять</button>`
+                        : ''}
+                    <button class="zone-btn sm" onclick="openExchangeRoom(${o.id})">🚪 Войти в комнату</button>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       КОМНАТА ОБМЕНА
+    ═══════════════════════════════════════════════════════════ */
+    function openExchangeRoom(exchangeId) {
+        state.currentExchangeId = exchangeId;
+        send({ action: 'get_exchange_room', exchange_id: exchangeId });
+        openModal(`<div class="modal-title">🤝 Комната обмена #${exchangeId} <button class="modal-close" onclick="closeModal()">✕</button></div><div id="exchange-room-content"><div class="loading-wrap"><div class="spinner"></div><p>Загрузка...</p></div></div>`);
+    }
+
+    function renderExchangeRoom(msg) {
+        const content = document.getElementById('exchange-room-content');
+        if (!content) return;
+
+        const formatItem = (i) => {
+            const icon = (i.rarity && RARITY_ICON[i.rarity]) ? RARITY_ICON[i.rarity] : (TYPE_ICON[i.item_type] || '📦');
+            return `${icon} ${esc(i.name)} ×${i.quantity}`;
+        };
+
+        const myList = (msg.my_offer || []).map(formatItem).join(', ') || '—';
+        const theirList = (msg.partner_offer || []).map(formatItem).join(', ') || '—';
+        const isLocked = msg.phase === 'locked';
+
+        let actionsHtml = '';
+        if (msg.phase === 'negotiation') {
+            actionsHtml = `
+                <button class="zone-btn sm info" onclick="editMyOffer(${msg.exchange_id})">✏️ Изменить мою часть</button>
+                <button class="zone-btn lg success" onclick="setReady(${msg.exchange_id}, true)">✅ Готов к обмену</button>
+                <div class="util-notice">${msg.partner_ready ? '🟢 Партнёр готов — нажмите «Готов», чтобы заблокировать сделку.' : '⚪ Партнёр ещё не готов.'}</div>`;
+        } else if (msg.phase === 'locked') {
+            const remaining = msg.timer_expires ? Math.max(0, Math.round((new Date(msg.timer_expires) - Date.now()) / 1000)) : 0;
+            actionsHtml = `
+                <div class="util-notice" id="lock-countdown">🔒 Сделка заблокирована. Подтверждение доступно через <b id="lock-seconds">${remaining}</b> сек.</div>
+                <button class="zone-btn lg success" id="confirm-btn-room" onclick="confirmExchange(${msg.exchange_id})" ${remaining > 0 ? 'disabled' : ''}>🤝 Обменяться</button>
+                <button class="zone-btn sm danger" onclick="setReady(${msg.exchange_id}, false)">↩️ Отменить готовность</button>`;
+            startLockCountdown(remaining);
+        }
+
+        content.innerHTML = `
+            <div class="offer-card">
+                <div class="offer-header"><div>Вы отдаёте</div></div>
+                <div class="offer-items">${myList}</div>
+                <div class="confirm-row"><span>Ваши монеты</span><span class="val">${msg.my_coins || 0} 💸</span></div>
+            </div>
+            <div class="offer-card">
+                <div class="offer-header"><div>Вы получаете</div></div>
+                <div class="offer-items">${theirList}</div>
+                <div class="confirm-row"><span>Монеты партнёра</span><span class="val">${msg.partner_coins || 0} 💸</span></div>
+            </div>
+            <div class="offer-actions">${actionsHtml}
+                <button class="zone-btn danger sm" onclick="cancelExchange(${msg.exchange_id})">❌ Отменить сделку</button>
+            </div>`;
+    }
+
+    function startLockCountdown(seconds) {
+        clearInterval(lockCountdownTimer);
+        if (seconds <= 0) return;
+        let left = seconds;
+        lockCountdownTimer = setInterval(() => {
+            left -= 1;
+            const el = document.getElementById('lock-seconds');
+            if (el) el.textContent = Math.max(0, left);
+            if (left <= 0) {
+                clearInterval(lockCountdownTimer);
+                const confirmBtn = document.getElementById('confirm-btn-room');
+                if (confirmBtn) confirmBtn.removeAttribute('disabled');
+            }
+        }, 1000);
+    }
+
+    function setReady(exchangeId, ready) {
+        send({ action: ready ? 'exchange_ready' : 'exchange_unready', exchange_id: exchangeId });
+    }
+
+    function editMyOffer(exchangeId) {
+        send({ action: 'inventory_list' });
+        setTimeout(() => {
+            if (!state.duplicates.length && !state.userHeroes.length && !state.userBoxes.length) {
+                toast('Нет доступных предметов', 'error');
+                return;
+            }
+
+            const dupOpts = state.duplicates.filter(d => !d.locked).map(d =>
+                `<option value="${d.hero_id}" data-type="duplicate">${RARITY_ICON[d.rarity]} ${d.hero_name} ×${d.quantity}</option>`
+            ).join('');
+            const heroOpts = (state.userHeroes || []).map(h =>
+                `<option value="${h.hero_id}" data-type="hero">${RARITY_ICON[h.rarity] || ''} ${h.name} Lv.${h.level} (${h.rarity})</option>`
+            ).join('');
+            const boxOpts = (state.userBoxes || []).map(b =>
+                `<option value="${b.box_id}" data-type="box">📦 Бокс #${b.box_id} ×${b.amount}</option>`
+            ).join('');
+
+            const currentCoins = state.lastRoomData ? (state.lastRoomData.my_coins || 0) : 0;
+
+            openModal(`
+                <div class="modal-title">✏️ Изменить предложение <button class="modal-close" onclick="closeModal()">✕</button></div>
+                <div id="ex-items-container"></div>
+                <button class="zone-btn sm info" id="ex-add-item" style="margin-bottom:12px">➕ Добавить предмет</button>
+                <div class="field-group">
+                    <label class="field-label">Монеты (от вас) 💸</label>
+                    <input type="number" class="field-input" id="ex-coin-give" min="0" value="${currentCoins}" placeholder="0"/>
+                </div>
+                <div class="util-notice">Максимум 5 предметов. После сохранения таймер сбросится.</div>
+                <button class="zone-btn lg" id="ex-save">💾 Сохранить изменения</button>
+            `);
+
+            let itemCount = 0;
+            const maxItems = 5;
+
+            function addItemRow(prefill = null) {
+                if (itemCount >= maxItems) return;
+                const container = document.getElementById('ex-items-container');
+                const idx = ++itemCount;
+                const row = document.createElement('div');
+                row.className = 'field-group';
+                row.innerHTML = `
+                    <label class="field-label">Предмет ${idx}</label>
+                    <select class="field-input ex-item-type">
+                        <option value="duplicate">Дубликат</option>
+                        <option value="hero">Герой</option>
+                        <option value="box">Бокс</option>
+                    </select>
+                    <select class="field-input ex-item-select" style="margin-top:4px"></select>
+                    <input type="number" class="field-input ex-item-qty" min="1" value="1" placeholder="Кол-во" style="margin-top:4px"/>
+                `;
+                container.appendChild(row);
+
+                const typeSelect = row.querySelector('.ex-item-type');
+                const itemSelect = row.querySelector('.ex-item-select');
+                const qtyInput = row.querySelector('.ex-item-qty');
+
+                function updateOptions() {
+                    const type = typeSelect.value;
+                    itemSelect.innerHTML = type === 'duplicate' ? dupOpts : (type === 'hero' ? heroOpts : boxOpts);
+                    if (prefill && type === prefill.item_type) {
+                        const opt = [...itemSelect.options].find(o => parseInt(o.value) === prefill.item_id);
+                        if (opt) opt.selected = true;
+                        qtyInput.value = prefill.quantity;
+                    }
+                }
+                typeSelect.addEventListener('change', updateOptions);
+                if (prefill) {
+                    typeSelect.value = prefill.item_type || 'duplicate';
+                }
+                updateOptions();
+
+                if (idx > 1) {
+                    const delBtn = document.createElement('button');
+                    delBtn.className = 'zone-btn danger sm';
+                    delBtn.textContent = 'Удалить';
+                    delBtn.style.marginTop = '4px';
+                    delBtn.onclick = () => { row.remove(); itemCount--; };
+                    row.appendChild(delBtn);
+                }
+            }
+
+            const lastRoom = state.lastRoomData;
+            if (lastRoom && lastRoom.my_offer) {
+                lastRoom.my_offer.forEach(item => addItemRow(item));
+            } else {
+                addItemRow();
+            }
+
+            document.getElementById('ex-add-item').onclick = () => addItemRow();
+
+            document.getElementById('ex-save').onclick = () => {
+                const items = [];
+                document.querySelectorAll('#ex-items-container .field-group').forEach(row => {
+                    const type = row.querySelector('.ex-item-type').value;
+                    const itemId = parseInt(row.querySelector('.ex-item-select').value);
+                    const qty = parseInt(row.querySelector('.ex-item-qty').value);
+                    if (itemId && qty > 0) {
+                        items.push({ item_type: type, item_id: itemId, quantity: qty });
+                    }
+                });
+
+                if (items.length === 0) {
+                    toast('Добавьте хотя бы один предмет', 'error');
+                    return;
+                }
+
+                const coinGive = parseInt(document.getElementById('ex-coin-give').value) || 0;
+
+                send({
+                    action: 'exchange_modify',
+                    offer_id: exchangeId,
+                    give: items,
+                    coin_give: coinGive
+                });
+                closeModal();
+                toast('Предложение обновлено', 'success');
+            };
+        }, 500);
+    }
+
+    function lockExchange(exchangeId) { send({ action:'lock_exchange', exchange_id: exchangeId }); }
+    function confirmExchange(exchangeId) { send({ action:'confirm_exchange', exchange_id: exchangeId }); }
+    function cancelExchange(exchangeId) { send({ action:'cancel_exchange', exchange_id: exchangeId }); }
+
+    /* ═══════════════════════════════════════════════════════════
+       RENDER: MY LOTS
+    ═══════════════════════════════════════════════════════════ */
+    function renderMyLots() {
+        const lots = state.myLots;
+        document.getElementById('my-lots-count').textContent = lots.length;
+        const el = document.getElementById('my-lots-list');
+
+        if (!lots.length) {
+            el.innerHTML = `<div class="empty-state"><div class="empty-icon">📦</div><p>Вы не выставляли лоты.<br>Нажмите «Выставить предмет», чтобы начать.</p></div>`;
+            return;
+        }
+
+        el.innerHTML = lots.map(l => `
+            <div class="my-lot-card">
+                <div class="lot-icon">${TYPE_ICON[l.item_type] || '📦'}</div>
+                <div class="lot-info">
+                    <div class="lot-name">${esc(l.hero_name || l.item_name)}</div>
+                    <div class="lot-sub">×${l.quantity} • ${l.price} 💸 • ${formatDate(l.created_at)}</div>
+                </div>
+                <div class="lot-right">
+                    <span class="my-lot-status ${l.active ? 'active' : 'expired'}">${l.active ? 'Активен' : 'Истёк'}</span>
+                    ${l.active ? `<button class="zone-btn sm danger" onclick="cancelLot(${l.id})">Снять</button>` : ''}
+                </div>
+            </div>`).join('');
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       RENDER: HISTORY
+    ═══════════════════════════════════════════════════════════ */
+    function renderHistory() {
+        const recs = state.history;
+        const el = document.getElementById('history-list');
+
+        if (!recs.length) {
+            el.innerHTML = `<div class="empty-state"><div class="empty-icon">📜</div><p>История операций пуста</p></div>`;
+            return;
+        }
+
+        const TYPE_LABEL = { sell:'Продажа', buy:'Покупка', exchange:'Обмен', utilize:'Утилизация', cancel:'Отмена' };
+        el.innerHTML = recs.map(r => {
+            const plus = r.amount > 0;
+            return `
+            <div class="history-item">
+                <div class="history-icon">${HIST_ICON[r.type] || '📝'}</div>
+                <div class="history-text">
+                    <div class="history-title">${TYPE_LABEL[r.type] || r.type}: ${esc(r.item_name || r.item_type)}</div>
+                    <div class="history-sub">×${r.quantity} • ${formatDate(r.created_at)}</div>
+                </div>
+                ${r.amount ? `<div class="history-amount ${plus ? 'plus' : 'minus'}">${plus ? '+' : ''}${r.amount} 💸</div>` : ''}
+            </div>`;
+        }).join('');
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       MODAL
+    ═══════════════════════════════════════════════════════════ */
+    function setupModal() {
+        document.getElementById('modal-overlay').addEventListener('click', e => {
+            if (e.target === document.getElementById('modal-overlay')) closeModal();
+        });
+        document.getElementById('btn-new-offer').addEventListener('click', () => openNewOfferModal());
+        document.getElementById('btn-sell').addEventListener('click', openSellModal);
+    }
+
+    function openModal(html) {
+        document.getElementById('modal-box').innerHTML = html;
+        document.getElementById('modal-overlay').classList.add('open');
+    }
+    function closeModal() {
+        document.getElementById('modal-overlay').classList.remove('open');
+        state.currentExchangeId = null;
+        clearInterval(lockCountdownTimer);
+    }
+
+    function openBuyModal(lotId) {
+        const lot = state.marketLots.find(l => l.id === lotId);
+        if (!lot) return;
+        openModal(`
+            <div class="modal-title">
+                🛍️ Купить
+                <button class="modal-close" onclick="closeModal()">✕</button>
+            </div>
+            <div class="confirm-row"><span>${esc(lot.hero_name || lot.item_name)}</span><span class="val">${lot.rarity||''}</span></div>
+            <div class="confirm-row"><span>Количество</span><span class="val">×${lot.quantity}</span></div>
+            <div class="confirm-row"><span>Стоимость</span><span class="val">${lot.price} 💸</span></div>
+            <div class="confirm-row"><span>Ваши монеты</span><span class="val">${userCoins} 💸</span></div>
+            ${userCoins < lot.price ? '<div style="color:var(--danger);font-size:12px;margin-bottom:10px;">❌ Недостаточно монет</div>' : ''}
+            <button class="zone-btn lg" ${userCoins < lot.price ? 'disabled' : ''}
+                onclick="executeBuy(${lotId})">✅ Подтвердить покупку</button>
+        `);
+    }
+    function executeBuy(lotId) {
+        send({ action: 'buy_lot', lot_id: lotId });
+        document.getElementById('modal-box').querySelector('button.zone-btn.lg').disabled = true;
+    }
+
+    function openUtilModal(heroId, heroName, rarity, maxQty) {
+        const priceEach = UTIL_PRICES[rarity] || 50;
+        let qty = 1;
+        function render() {
+            const total = qty * priceEach;
+            return `
+                <div class="modal-title">
+                    ♻️ Утилизация
+                    <button class="modal-close" onclick="closeModal()">✕</button>
+                </div>
+                <div class="confirm-row"><span>${RARITY_ICON[rarity]} ${esc(heroName)}</span><span class="val">${rarity}</span></div>
+                <div class="confirm-row"><span>Цена за шт.</span><span class="val">${priceEach} 💸</span></div>
+                <div class="field-group">
+                    <label class="field-label">Количество (макс. ${maxQty})</label>
+                    <div class="qty-row">
+                        <button class="qty-btn" id="qty-minus">−</button>
+                        <div class="qty-display" id="qty-val">${qty}</div>
+                        <button class="qty-btn" id="qty-plus">+</button>
+                    </div>
+                </div>
+                <div class="confirm-row"><span>Вы получите</span><span class="val" id="util-total">${total} 💸</span></div>
+                <button class="zone-btn lg success" id="util-confirm-btn">✅ Утилизировать за ${total} 💸</button>
+            `;
+        }
+        openModal(render());
+        function updateQty() {
+            document.getElementById('qty-val').textContent = qty;
+            const total = qty * priceEach;
+            document.getElementById('util-total').textContent = `${total} 💸`;
+            document.getElementById('util-confirm-btn').textContent = `✅ Утилизировать за ${total} 💸`;
+        }
+        document.getElementById('qty-minus').onclick = () => { if(qty > 1) { qty--; updateQty(); } };
+        document.getElementById('qty-plus').onclick  = () => { if(qty < maxQty) { qty++; updateQty(); } };
+        document.getElementById('util-confirm-btn').onclick = () => {
+            send({ action: 'duplicate_utilize', hero_id: heroId, quantity: qty });
+            document.getElementById('util-confirm-btn').disabled = true;
+        };
+    }
+
+    function openSellModal() {
+        if (!state.duplicates.length && !state.userHeroes.length && !state.userBoxes.length) {
+            send({ action: 'inventory_list' });
+            toast('Загружаем предметы…', 'info');
+            return;
+        }
+
+        const dupOpts = state.duplicates.filter(d => !d.locked).map(d =>
+            `<option value="${d.hero_id}" data-type="duplicate" data-max="${d.quantity}">${RARITY_ICON[d.rarity]} ${d.hero_name} ×${d.quantity} (${d.rarity})</option>`
+        ).join('');
+        const heroOpts = (state.userHeroes || []).map(h =>
+            `<option value="${h.hero_id}" data-type="hero" data-max="1">${RARITY_ICON[h.rarity] || ''} ${h.name} Lv.${h.level} (${h.rarity})</option>`
+        ).join('');
+        const boxOpts = (state.userBoxes || []).map(b =>
+            `<option value="${b.box_id}" data-type="box" data-max="${b.amount}">📦 Бокс #${b.box_id} ×${b.amount}</option>`
+        ).join('');
+        const durationPrices = { '24':0, '72':15, '168':20, '336':30, '720':35 };
+        openModal(`
+            <div class="modal-title">🏷️ Выставить на продажу <button class="modal-close" onclick="closeModal()">✕</button></div>
+            <div class="field-group">
+                <label class="field-label">Тип предмета</label>
+                <select class="field-input" id="sell-type">
+                    <option value="duplicate">Дубликат</option>
+                    <option value="hero">Герой</option>
+                    <option value="box">Бокс</option>
+                </select>
+            </div>
+            <div class="field-group">
+                <label class="field-label">Предмет</label>
+                <select class="field-input" id="sell-item"></select>
+            </div>
+            <div class="field-group" id="sell-qty-block">
+                <label class="field-label">Количество</label>
+                <input type="number" class="field-input" id="sell-qty" min="1" value="1"/>
+            </div>
+            <div class="field-group">
+                <label class="field-label">Цена за всё (💸)</label>
+                <input type="number" class="field-input" id="sell-price" min="1" max="999999" value="100"/>
+            </div>
+            <div class="field-group">
+                <label class="field-label">Длительность</label>
+                <select class="field-input" id="sell-duration">
+                    <option value="24">24 часа (бесплатно)</option>
+                    <option value="72">3 дня (15 💸)</option>
+                    <option value="168">7 дней (20 💸)</option>
+                    <option value="336">14 дней (30 💸)</option>
+                    <option value="720">30 дней (35 💸)</option>
+                </select>
+            </div>
+            <div class="util-notice" id="sell-fee-notice"></div>
+            <button class="zone-btn lg" id="sell-btn">✅ Выставить лот</button>
+        `);
+
+        const typeSelect = document.getElementById('sell-type');
+        const itemSelect = document.getElementById('sell-item');
+        const qtyBlock = document.getElementById('sell-qty-block');
+        const qtyInput = document.getElementById('sell-qty');
+        const durationSelect = document.getElementById('sell-duration');
+        const feeNotice = document.getElementById('sell-fee-notice');
+
+        function updateItems() {
+            const type = typeSelect.value;
+            itemSelect.innerHTML = type === 'duplicate' ? dupOpts : (type === 'hero' ? heroOpts : boxOpts);
+            qtyBlock.style.display = type === 'hero' ? 'none' : 'block';
+            if (type === 'hero') qtyInput.value = 1;
+        }
+        typeSelect.addEventListener('change', updateItems);
+        updateItems();
+
+        function updateFeeNotice() {
+            const hours = durationSelect.value;
+            const price = durationPrices[hours] || 0;
+            feeNotice.textContent = price > 0 ? `Плата за размещение: ${price} 💸` : 'Размещение бесплатное';
+        }
+        durationSelect.addEventListener('change', updateFeeNotice);
+        updateFeeNotice();
+
+        document.getElementById('sell-btn').onclick = () => {
+            const type = typeSelect.value;
+            const selectedOption = itemSelect.selectedOptions[0];
+            if (!selectedOption) { toast('Выберите предмет', 'error'); return; }
+            const itemId = parseInt(selectedOption.value);
+            const maxQty = parseInt(selectedOption.dataset.max || '1');
+            const qty = type === 'hero' ? 1 : parseInt(qtyInput.value);
+            const price = parseInt(document.getElementById('sell-price').value);
+            const hours = parseInt(durationSelect.value);
+            const fee = durationPrices[hours] || 0;
+
+            if (!itemId || !qty || qty < 1 || qty > maxQty) { toast(`Количество 1–${maxQty}`, 'error'); return; }
+            if (!price || price < 1) { toast('Укажите цену', 'error'); return; }
+
+            send({
+                action: 'create_lot',
+                item_type: type,
+                item_id: itemId,
+                quantity: qty,
+                price: price,
+                duration_hours: hours,
+                placement_fee: fee
+            });
+            document.getElementById('sell-btn').disabled = true;
+        };
+    }
+
+    function openSellDupModal(heroId, heroName, rarity, maxQty) {
+        openSellModal();
+        setTimeout(() => {
+            const typeSelect = document.getElementById('sell-type');
+            const itemSelect = document.getElementById('sell-item');
+            if (typeSelect && itemSelect) {
+                typeSelect.value = 'duplicate';
+                typeSelect.dispatchEvent(new Event('change'));
+                const option = [...itemSelect.options].find(opt => parseInt(opt.value) === heroId);
+                if (option) option.selected = true;
+                document.getElementById('sell-qty').value = 1;
+            }
+        }, 100);
+    }
+
+    function openNewOfferModal(partnerId = null) {
+        const dupOpts = state.duplicates.filter(d => !d.locked).map(d =>
+            `<option value="${d.hero_id}" data-type="duplicate">${RARITY_ICON[d.rarity]} ${d.hero_name} ×${d.quantity}</option>`
+        ).join('');
+        const heroOpts = (state.userHeroes || []).map(h =>
+            `<option value="${h.hero_id}" data-type="hero">${RARITY_ICON[h.rarity] || ''} ${h.name} Lv.${h.level} (${h.rarity})</option>`
+        ).join('');
+        const boxOpts = (state.userBoxes || []).map(b =>
+            `<option value="${b.box_id}" data-type="box">📦 Бокс #${b.box_id} ×${b.amount}</option>`
+        ).join('');
+
+        openModal(`
+            <div class="modal-title">🤝 Создать обмен <button class="modal-close" onclick="closeModal()">✕</button></div>
+            <div class="field-group">
+                <label class="field-label">Партнёр (Telegram ID или @username)</label>
+                <input type="text" class="field-input" id="ex-partner" placeholder="ID или @username" value="${partnerId||''}"/>
+            </div>
+            <div id="ex-items-container"></div>
+            <button class="zone-btn sm info" id="ex-add-item" style="margin-bottom:12px">➕ Добавить предмет</button>
+            <div class="field-group">
+                <label class="field-label">Монеты (от вас) 💸</label>
+                <input type="number" class="field-input" id="ex-coin-give" min="0" value="0" placeholder="0"/>
+            </div>
+            <div class="util-notice">Максимум 5 предметов. После отправки партнёр сможет добавить свои.</div>
+            <button class="zone-btn lg" id="ex-submit">✅ Отправить предложение</button>
+        `);
+
+        let itemCount = 0;
+        const maxItems = 5;
+
+        function addItemRow() {
+            if (itemCount >= maxItems) return;
+            const container = document.getElementById('ex-items-container');
+            const idx = ++itemCount;
+            const row = document.createElement('div');
+            row.className = 'field-group';
+            row.innerHTML = `
+                <label class="field-label">Предмет ${idx}</label>
+                <select class="field-input ex-item-type">
+                    <option value="duplicate">Дубликат</option>
+                    <option value="hero">Герой</option>
+                    <option value="box">Бокс</option>
+                </select>
+                <select class="field-input ex-item-select" style="margin-top:4px"></select>
+                <input type="number" class="field-input ex-item-qty" min="1" value="1" placeholder="Кол-во" style="margin-top:4px"/>
+            `;
+            container.appendChild(row);
+
+            const typeSelect = row.querySelector('.ex-item-type');
+            const itemSelect = row.querySelector('.ex-item-select');
+
+            function updateOptions() {
+                const type = typeSelect.value;
+                itemSelect.innerHTML = type === 'duplicate' ? dupOpts : (type === 'hero' ? heroOpts : boxOpts);
+            }
+            typeSelect.addEventListener('change', updateOptions);
+            updateOptions();
+
+            if (idx > 1) {
+                const delBtn = document.createElement('button');
+                delBtn.className = 'zone-btn danger sm';
+                delBtn.textContent = 'Удалить';
+                delBtn.style.marginTop = '4px';
+                delBtn.onclick = () => { row.remove(); itemCount--; };
+                row.appendChild(delBtn);
+            }
+        }
+
+        addItemRow();
+
+        document.getElementById('ex-add-item').onclick = () => addItemRow();
+
+        document.getElementById('ex-submit').onclick = () => {
+            const partner = document.getElementById('ex-partner').value.trim();
+            if (!partner) { toast('Введите партнёра', 'error'); return; }
+
+            const items = [];
+            document.querySelectorAll('#ex-items-container .field-group').forEach(row => {
+                const type = row.querySelector('.ex-item-type').value;
+                const itemId = parseInt(row.querySelector('.ex-item-select').value);
+                const qty = parseInt(row.querySelector('.ex-item-qty').value);
+                if (itemId && qty > 0) {
+                    items.push({ item_type: type, item_id: itemId, quantity: qty });
+                }
+            });
+
+            if (items.length === 0) { toast('Добавьте предметы', 'error'); return; }
+
+            const coinGive = parseInt(document.getElementById('ex-coin-give').value) || 0;
+
+            const btn = document.getElementById('ex-submit');
+            btn.disabled = true;
+            send({
+                action: 'exchange_offer',
+                partner_id: partner,
+                give: items,
+                want: [],
+                coin_give: coinGive
+            });
+            setTimeout(() => { btn.disabled = false; }, 5000);
+        };
+    }
+
+    function showBankModal() {
+        send({ action: 'bank_balance' });
+        openModal(`
+            <div class="modal-title">🏦 Банк Рынка ArenaM <button class="modal-close" onclick="closeModal()">✕</button></div>
+            <div style="text-align:center; margin-bottom:16px">
+                <div style="font-size:80px; margin-bottom:10px">🏦</div>
+                <div style="font-size:18px; font-weight:700; color:var(--gold)">Баланс банка</div>
+                <div style="font-size:28px; font-weight:800; color:var(--gold); margin-top:8px">${state.bankBalance} 💸</div>
+            </div>
+            <div class="util-notice">Собранная комиссия со всех сделок будет использована для будущих розыгрышей и ивентов.</div>
+        `);
+    }
+
+    function cancelLot(lotId)    { if(confirm('Снять лот с продажи?')) send({ action:'cancel_lot', lot_id:lotId }); }
+    function acceptOffer(offerId) { send({ action:'exchange_accept',   offer_id:offerId }); }
+
+    /* ═══════════════════════════════════════════════════════════
+       UTILS
+    ═══════════════════════════════════════════════════════════ */
+    function esc(str) {
+        if (!str) return '';
+        return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function formatDate(ts) {
+        if (!ts) return '';
+        const d = new Date(typeof ts === 'number' ? ts * 1000 : ts);
+        if (isNaN(d)) return '';
+        return d.toLocaleDateString('ru-RU', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
+    }
+
+    function toast(msg, type='info') {
+        const wrap = document.getElementById('toast-wrap');
+        const el = document.createElement('div');
+        el.className = `toast ${type}`;
+        el.textContent = msg;
+        wrap.appendChild(el);
+        setTimeout(() => el.remove(), 3200);
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       START
+    ═══════════════════════════════════════════════════════════ */
+    document.addEventListener('DOMContentLoaded', init);
 </script>
 </body>
-</html> 
+</html>
