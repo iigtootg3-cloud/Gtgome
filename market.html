@@ -179,6 +179,12 @@ html, body {
   white-space: nowrap;
 }
 .filter-chip.active, .filter-chip:hover { color: var(--gold); border-color: var(--gold); background: var(--gold-dim); }
+.filter-chip.r-common.active    { color: var(--r-common); border-color: var(--r-common); background: rgba(138,138,138,0.12); }
+.filter-chip.r-rare.active      { color: var(--r-rare);   border-color: var(--r-rare);   background: rgba(74,158,255,0.12); }
+.filter-chip.r-epic.active      { color: var(--r-epic);   border-color: var(--r-epic);   background: rgba(176,106,243,0.12); }
+.filter-chip.r-legend.active    { color: var(--r-legend); border-color: var(--r-legend); background: rgba(245,166,35,0.12); }
+.filter-chip.r-divine.active    { color: var(--r-divine); border-color: var(--r-divine); background: rgba(255,78,78,0.12); }
+.filter-chip.r-box.active       { color: var(--gold);     border-color: var(--gold);     background: var(--gold-dim); } /* для боксов */
 
 /* ── Cards ────────────────────────────────────────────────── */
 .cards-grid {
@@ -209,6 +215,12 @@ html, body {
 }
 .lot-card:hover { border-color: rgba(245,166,35,0.25); box-shadow: var(--gold-glow); }
 
+.lot-card.r-Обычный     { --rarity-color: var(--r-common); }
+.lot-card.r-Редкий      { --rarity-color: var(--r-rare); }
+.lot-card.r-Эпический   { --rarity-color: var(--r-epic); }
+.lot-card.r-Легендарный { --rarity-color: var(--r-legend); }
+.lot-card.r-Божественный{ --rarity-color: var(--r-divine); }
+
 .lot-icon {
   width: 44px; height: 44px;
   border-radius: 8px;
@@ -222,6 +234,13 @@ html, body {
 .lot-info { flex: 1; min-width: 0; }
 .lot-name  { font-weight: 700; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .lot-sub   { font-size: 11px; color: var(--text2); margin-top: 2px; }
+.lot-rarity { display: inline-block; font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 4px; margin-top: 3px; }
+
+.lot-rarity.r-Обычный     { color: var(--r-common); background: rgba(138,138,138,0.1); }
+.lot-rarity.r-Редкий      { color: var(--r-rare);   background: rgba(74,158,255,0.1); }
+.lot-rarity.r-Эпический   { color: var(--r-epic);   background: rgba(176,106,243,0.1); }
+.lot-rarity.r-Легендарный { color: var(--r-legend); background: rgba(245,166,35,0.1); }
+.lot-rarity.r-Божественный{ color: var(--r-divine); background: rgba(255,78,78,0.1); }
 
 .lot-right { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0; }
 .lot-price { font-weight: 700; color: var(--gold); font-size: 14px; white-space: nowrap; }
@@ -563,9 +582,12 @@ select.field-input option { background: var(--bg2); }
       </div>
       <div class="filter-bar" id="market-filter">
         <span class="filter-chip active" data-filter="all">Все</span>
-        <span class="filter-chip" data-filter="duplicate">🦸 Дубликаты</span>
-        <span class="filter-chip" data-filter="hero">🗡️ Герои</span>
-        <span class="filter-chip" data-filter="box">📦 Боксы</span>
+        <span class="filter-chip r-common"     data-filter="Обычный">⚪ Обычный</span>
+        <span class="filter-chip r-rare"       data-filter="Редкий">🔵 Редкий</span>
+        <span class="filter-chip r-epic"       data-filter="Эпический">🟣 Эпический</span>
+        <span class="filter-chip r-legend"     data-filter="Легендарный">🟡 Легендарный</span>
+        <span class="filter-chip r-divine"     data-filter="Божественный">🔴 Божественный</span>
+        <span class="filter-chip r-box"        data-filter="box">📦 Боксы</span>
       </div>
       <div class="sort-row">
         <span class="sort-label">Сортировка:</span>
@@ -938,13 +960,22 @@ function setupFilters() {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   RENDER: MARKET (фильтр по типу)
+   RENDER: MARKET (фильтр по редкости + боксы)
 ═══════════════════════════════════════════════════════════ */
 function renderMarket() {
   let lots = [...state.marketLots];
 
-  if (state.marketFilter !== 'all') lots = lots.filter(l => l.item_type === state.marketFilter);
+  // Фильтр
+  if (state.marketFilter !== 'all') {
+    if (state.marketFilter === 'box') {
+      lots = lots.filter(l => l.item_type === 'box');
+    } else {
+      // Фильтр по редкости (для дубликатов и героев)
+      lots = lots.filter(l => l.rarity === state.marketFilter && l.item_type !== 'box');
+    }
+  }
 
+  // Сортировка
   switch(state.marketSort) {
     case 'price_asc':  lots.sort((a,b) => a.price - b.price); break;
     case 'price_desc': lots.sort((a,b) => b.price - a.price); break;
@@ -961,14 +992,16 @@ function renderMarket() {
 
   el.innerHTML = lots.map(lot => {
     const icon = TYPE_ICON[lot.item_type] || '📦';
+    const rarityClass = lot.rarity ? `r-${lot.rarity}` : '';
     const isMine = lot.seller_id === userId;
     const canBuy = !isMine && userCoins >= lot.price;
     return `
-    <div class="lot-card">
+    <div class="lot-card ${rarityClass}">
       <div class="lot-icon">${icon}</div>
       <div class="lot-info">
         <div class="lot-name">${esc(lot.hero_name || lot.item_name || 'Предмет')}</div>
         <div class="lot-sub">Продавец: ${esc(lot.seller_name || '…')}</div>
+        ${lot.rarity ? `<span class="lot-rarity ${rarityClass}">${RARITY_ICON[lot.rarity]||''} ${lot.rarity}</span>` : ''}
       </div>
       <div class="lot-right">
         <div class="lot-price">${lot.price} 💸</div>
@@ -1514,4 +1547,4 @@ function toast(msg, type='info') {
 document.addEventListener('DOMContentLoaded', init);
 </script>
 </body>
-</html>
+</html> 
