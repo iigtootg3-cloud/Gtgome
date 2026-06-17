@@ -179,11 +179,6 @@ html, body {
   white-space: nowrap;
 }
 .filter-chip.active, .filter-chip:hover { color: var(--gold); border-color: var(--gold); background: var(--gold-dim); }
-.filter-chip.r-common.active    { color: var(--r-common); border-color: var(--r-common); background: rgba(138,138,138,0.12); }
-.filter-chip.r-rare.active      { color: var(--r-rare);   border-color: var(--r-rare);   background: rgba(74,158,255,0.12); }
-.filter-chip.r-epic.active      { color: var(--r-epic);   border-color: var(--r-epic);   background: rgba(176,106,243,0.12); }
-.filter-chip.r-legend.active    { color: var(--r-legend); border-color: var(--r-legend); background: rgba(245,166,35,0.12); }
-.filter-chip.r-divine.active    { color: var(--r-divine); border-color: var(--r-divine); background: rgba(255,78,78,0.12); }
 
 /* ── Cards ────────────────────────────────────────────────── */
 .cards-grid {
@@ -214,12 +209,6 @@ html, body {
 }
 .lot-card:hover { border-color: rgba(245,166,35,0.25); box-shadow: var(--gold-glow); }
 
-.lot-card.r-Обычный     { --rarity-color: var(--r-common); }
-.lot-card.r-Редкий      { --rarity-color: var(--r-rare); }
-.lot-card.r-Эпический   { --rarity-color: var(--r-epic); }
-.lot-card.r-Легендарный { --rarity-color: var(--r-legend); }
-.lot-card.r-Божественный{ --rarity-color: var(--r-divine); }
-
 .lot-icon {
   width: 44px; height: 44px;
   border-radius: 8px;
@@ -233,13 +222,6 @@ html, body {
 .lot-info { flex: 1; min-width: 0; }
 .lot-name  { font-weight: 700; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .lot-sub   { font-size: 11px; color: var(--text2); margin-top: 2px; }
-.lot-rarity { display: inline-block; font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 4px; margin-top: 3px; }
-
-.lot-rarity.r-Обычный     { color: var(--r-common); background: rgba(138,138,138,0.1); }
-.lot-rarity.r-Редкий      { color: var(--r-rare);   background: rgba(74,158,255,0.1); }
-.lot-rarity.r-Эпический   { color: var(--r-epic);   background: rgba(176,106,243,0.1); }
-.lot-rarity.r-Легендарный { color: var(--r-legend); background: rgba(245,166,35,0.1); }
-.lot-rarity.r-Божественный{ color: var(--r-divine); background: rgba(255,78,78,0.1); }
 
 .lot-right { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0; }
 .lot-price { font-weight: 700; color: var(--gold); font-size: 14px; white-space: nowrap; }
@@ -263,10 +245,10 @@ html, body {
 .zone-btn:disabled { opacity: 0.4; cursor: not-allowed; border-color: rgba(255,255,255,0.1); color: var(--text2); }
 
 .zone-btn.danger { border-color: rgba(224,82,82,0.4); color: var(--danger); }
-.zone-btn.danger:hover:not(:disabled) { background: var(--danger); color: #fff; box-shadow: 0 0 15px rgba(224,82,82,0.4); }
+.zone-btn.danger:hover:not(:disabled) { background: var(--danger); color: #fff; }
 
 .zone-btn.success { border-color: rgba(82,196,122,0.4); color: var(--success); }
-.zone-btn.success:hover:not(:disabled) { background: var(--success); color: #000; box-shadow: 0 0 15px rgba(82,196,122,0.4); }
+.zone-btn.success:hover:not(:disabled) { background: var(--success); color: #000; }
 
 .zone-btn.info { border-color: rgba(91,156,246,0.4); color: var(--info); }
 .zone-btn.info:hover:not(:disabled) { background: var(--info); color: #fff; }
@@ -302,7 +284,6 @@ html, body {
   border: 1px solid rgba(255,255,255,0.1);
   animation: toastIn 0.25s ease, toastOut 0.3s ease 2.7s forwards;
   text-align: center;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
 }
 .toast.success { border-color: rgba(82,196,122,0.4); color: var(--success); }
 .toast.error   { border-color: rgba(224,82,82,0.4);  color: var(--danger); }
@@ -391,11 +372,6 @@ select.field-input option { background: var(--bg2); }
   border-radius: var(--radius) 0 0 var(--radius);
   background: var(--rarity-color, var(--r-common));
 }
-.dup-card.r-Обычный     { --rarity-color: var(--r-common); }
-.dup-card.r-Редкий      { --rarity-color: var(--r-rare); }
-.dup-card.r-Эпический   { --rarity-color: var(--r-epic); }
-.dup-card.r-Легендарный { --rarity-color: var(--r-legend); }
-.dup-card.r-Божественный{ --rarity-color: var(--r-divine); }
 
 .dup-qty-badge {
   position: absolute;
@@ -481,7 +457,7 @@ select.field-input option { background: var(--bg2); }
 .my-lot-status.active   { color: var(--success); background: rgba(82,196,122,0.1); }
 .my-lot-status.expired  { color: var(--text2);   background: var(--bg3); }
 
-/* ── Sell Modal Util Notice ───────────────────────────────── */
+/* ── Util Notice ──────────────────────────────────────────── */
 .util-notice {
   background: var(--bg3);
   border: 1px solid rgba(245,166,35,0.15);
@@ -516,7 +492,7 @@ select.field-input option { background: var(--bg2); }
   margin: 14px 0;
 }
 
-/* ── Qty Input in confirm ─────────────────────────────────── */
+/* ── Qty Input ────────────────────────────────────────────── */
 .qty-row {
   display: flex; align-items: center; gap: 8px; margin-bottom: 14px;
 }
@@ -528,9 +504,7 @@ select.field-input option { background: var(--bg2); }
   color: var(--text);
   font-size: 18px;
   cursor: pointer;
-  transition: border-color var(--transition);
   display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
 }
 .qty-btn:hover { border-color: var(--gold); color: var(--gold); }
 .qty-display {
@@ -542,7 +516,7 @@ select.field-input option { background: var(--bg2); }
   padding: 6px;
 }
 
-/* ── Confirm Box ──────────────────────────────────────────── */
+/* ── Confirm Row ──────────────────────────────────────────── */
 .confirm-row {
   background: var(--bg3);
   border-radius: 8px;
@@ -553,7 +527,7 @@ select.field-input option { background: var(--bg2); }
 }
 .confirm-row .val { font-weight: 700; color: var(--gold); }
 
-/* ── Price sort indicator ─────────────────────────────────── */
+/* ── Sort ─────────────────────────────────────────────────── */
 .sort-row { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; }
 .sort-label { font-size: 11px; color: var(--text2); font-weight: 600; }
 </style>
@@ -566,26 +540,16 @@ select.field-input option { background: var(--bg2); }
     <div id="conn-dot"></div>
     <div id="header-title">🏰 Рынок ArenaM</div>
     <button class="zone-btn sm" id="btn-bank" style="margin-right:8px">🏦</button>
-    <div id="user-coins">… 🌟</div>
+    <div id="user-coins">… 💸</div>
   </div>
 
   <!-- Tabs -->
   <div id="tabs">
-    <button class="tab-btn active" data-tab="market">
-      <span class="tab-icon">🏪</span>Рынок
-    </button>
-    <button class="tab-btn" data-tab="duplicates">
-      <span class="tab-icon">🎒</span>Дублик.
-    </button>
-    <button class="tab-btn" data-tab="exchange">
-      <span class="tab-icon">🤝</span>Обмен
-    </button>
-    <button class="tab-btn" data-tab="my-lots">
-      <span class="tab-icon">📦</span>Мои лоты
-    </button>
-    <button class="tab-btn" data-tab="history">
-      <span class="tab-icon">📜</span>История
-    </button>
+    <button class="tab-btn active" data-tab="market"><span class="tab-icon">🏪</span>Рынок</button>
+    <button class="tab-btn" data-tab="duplicates"><span class="tab-icon">🎒</span>Дублик.</button>
+    <button class="tab-btn" data-tab="exchange"><span class="tab-icon">🤝</span>Обмен</button>
+    <button class="tab-btn" data-tab="my-lots"><span class="tab-icon">📦</span>Мои лоты</button>
+    <button class="tab-btn" data-tab="history"><span class="tab-icon">📜</span>История</button>
   </div>
 
   <!-- Content -->
@@ -599,11 +563,9 @@ select.field-input option { background: var(--bg2); }
       </div>
       <div class="filter-bar" id="market-filter">
         <span class="filter-chip active" data-filter="all">Все</span>
-        <span class="filter-chip r-common"     data-filter="Обычный">⚪ Обычный</span>
-        <span class="filter-chip r-rare"       data-filter="Редкий">🔵 Редкий</span>
-        <span class="filter-chip r-epic"       data-filter="Эпический">🟣 Эпический</span>
-        <span class="filter-chip r-legend"     data-filter="Легендарный">🟡 Легендарный</span>
-        <span class="filter-chip r-divine"     data-filter="Божественный">🔴 Божественный</span>
+        <span class="filter-chip" data-filter="duplicate">🦸 Дубликаты</span>
+        <span class="filter-chip" data-filter="hero">🗡️ Герои</span>
+        <span class="filter-chip" data-filter="box">📦 Боксы</span>
       </div>
       <div class="sort-row">
         <span class="sort-label">Сортировка:</span>
@@ -717,7 +679,8 @@ let state = {
   marketSort:   'price_asc',
   userHeroes:   [],
   userBoxes:    [],
-  bankBalance: 0
+  bankBalance: 0,
+  currentExchangeId: null
 };
 
 /* ═══════════════════════════════════════════════════════════
@@ -823,7 +786,7 @@ function handleMessage(msg) {
 
     case 'user_state':
       userCoins = msg.coins || 0;
-      document.getElementById('user-coins').textContent = `${userCoins} 🌟`;
+      document.getElementById('user-coins').textContent = `${userCoins} 💸`;
       break;
 
     case 'market_list':
@@ -854,6 +817,12 @@ function handleMessage(msg) {
       renderExchange();
       break;
 
+    case 'exchange_room_updated':
+      if (msg.exchange_id === state.currentExchangeId) {
+        updateExchangeRoom(msg);
+      }
+      break;
+
     case 'lot_created':
       toast(`✅ Лот выставлен: ${msg.hero_name} ×${msg.quantity}`, 'success');
       closeModal();
@@ -869,10 +838,10 @@ function handleMessage(msg) {
 
     case 'buy_result':
       if (msg.ok) {
-        const commissionText = msg.commission ? ` (вкл. комиссию ${msg.commission} 🌟)` : '';
-        toast(`🛍️ Куплено: ${msg.hero_name} ×${msg.quantity} за ${msg.price} 🌟${commissionText}`, 'success');
+        const commissionText = msg.commission ? ` (вкл. комиссию ${msg.commission} 💸)` : '';
+        toast(`🛍️ Куплено: ${msg.hero_name} ×${msg.quantity} за ${msg.price} 💸${commissionText}`, 'success');
         userCoins -= (msg.price + (msg.commission||0));
-        document.getElementById('user-coins').textContent = `${userCoins} 🌟`;
+        document.getElementById('user-coins').textContent = `${userCoins} 💸`;
         send({ action: 'market_list' });
         send({ action: 'inventory_list' });
         closeModal();
@@ -883,9 +852,9 @@ function handleMessage(msg) {
 
     case 'utilize_result':
       if (msg.ok) {
-        toast(`♻️ Утилизировано ×${msg.quantity}. Получено: ${msg.earned} 🌟`, 'success');
+        toast(`♻️ Утилизировано ×${msg.quantity}. Получено: ${msg.earned} 💸`, 'success');
         userCoins += msg.earned;
-        document.getElementById('user-coins').textContent = `${userCoins} 🌟`;
+        document.getElementById('user-coins').textContent = `${userCoins} 💸`;
         send({ action: 'inventory_list' });
         closeModal();
       } else {
@@ -969,12 +938,12 @@ function setupFilters() {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   RENDER: MARKET
+   RENDER: MARKET (фильтр по типу)
 ═══════════════════════════════════════════════════════════ */
 function renderMarket() {
   let lots = [...state.marketLots];
 
-  if (state.marketFilter !== 'all') lots = lots.filter(l => l.rarity === state.marketFilter);
+  if (state.marketFilter !== 'all') lots = lots.filter(l => l.item_type === state.marketFilter);
 
   switch(state.marketSort) {
     case 'price_asc':  lots.sort((a,b) => a.price - b.price); break;
@@ -991,19 +960,18 @@ function renderMarket() {
   }
 
   el.innerHTML = lots.map(lot => {
-    const icon = lot.item_type === 'box' ? '🎁' : (RARITY_ICON[lot.rarity] || '⚫');
+    const icon = TYPE_ICON[lot.item_type] || '📦';
     const isMine = lot.seller_id === userId;
     const canBuy = !isMine && userCoins >= lot.price;
     return `
-    <div class="lot-card r-${lot.rarity || ''}">
+    <div class="lot-card">
       <div class="lot-icon">${icon}</div>
       <div class="lot-info">
         <div class="lot-name">${esc(lot.hero_name || lot.item_name || 'Предмет')}</div>
         <div class="lot-sub">Продавец: ${esc(lot.seller_name || '…')}</div>
-        <span class="lot-rarity r-${lot.rarity}">${lot.rarity || '—'}</span>
       </div>
       <div class="lot-right">
-        <div class="lot-price">${lot.price} 🌟</div>
+        <div class="lot-price">${lot.price} 💸</div>
         <div class="lot-qty">×${lot.quantity}</div>
         ${isMine
           ? `<button class="zone-btn danger sm" onclick="cancelLot(${lot.id})">Снять</button>`
@@ -1037,7 +1005,7 @@ function renderDuplicates() {
         <div class="lot-name">${esc(d.hero_name)}</div>
         <span class="lot-rarity r-${d.rarity}">${d.rarity}</span>
         ${d.locked ? '<span class="lock-badge">🔒 В обмене</span>' : ''}
-        <div class="lot-sub">${price} 🌟 / шт.</div>
+        <div class="lot-sub">${price} 💸 / шт.</div>
       </div>
       <div class="lot-right" style="gap:5px">
         <div class="dup-qty-badge">×${d.quantity}</div>
@@ -1053,7 +1021,7 @@ function renderDuplicates() {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   RENDER: EXCHANGE
+   RENDER: EXCHANGE (с кнопкой "Войти в комнату")
 ═══════════════════════════════════════════════════════════ */
 function renderExchange() {
   renderOfferList('offers-incoming', state.offersIn, true);
@@ -1068,45 +1036,66 @@ function renderOfferList(elId, offers, isIncoming) {
   }
   el.innerHTML = offers.map(o => {
     const statusLabel = { pending:'Ожидание', accepted:'Принято', completed:'Завершено', cancelled:'Отменено' }[o.status] || o.status;
-    const myItems  = (o.my_items || []).map(i => `${TYPE_ICON[i.item_type]||'📦'} ${esc(i.name)} ×${i.quantity}`).join(', ') || '—';
-    const theirItems = (o.their_items || []).map(i => `${TYPE_ICON[i.item_type]||'📦'} ${esc(i.name)} ×${i.quantity}`).join(', ') || '—';
     const partnerName = isIncoming ? esc(o.creator_name || '…') : esc(o.partner_name || '…');
-
-    let phaseHtml = '';
-    if (o.phase === 'negotiation' && o.timer_expires) {
-      const secLeft = Math.max(0, Math.ceil((new Date(o.timer_expires) - new Date()) / 1000));
-      phaseHtml = `<div class="offer-status" style="background:rgba(255,165,0,0.15);color:orange">⏳ Таймер: ${secLeft}с</div>`;
-    } else if (o.phase === 'locked') {
-      phaseHtml = `<div class="offer-status" style="background:rgba(0,255,0,0.1);color:#0f0">🔒 Готово к обмену</div>`;
-    }
-
     return `
     <div class="offer-card">
       <div class="offer-header">
         <div class="offer-users">${isIncoming ? '👤 От: ' : '👤 Кому: '} <b>${partnerName}</b></div>
         <span class="offer-status ${o.status}">${statusLabel}</span>
-        ${phaseHtml}
-      </div>
-      <div class="offer-items">
-        <div>Они предлагают: ${theirItems}</div>
-        <div>Вы отдаёте: ${myItems}</div>
       </div>
       <div class="offer-actions">
         ${o.status === 'pending' && isIncoming
-          ? `<button class="zone-btn sm success" onclick="acceptOffer(${o.id})">✅ Принять</button>
-             <button class="zone-btn sm danger"  onclick="cancelOffer(${o.id})">❌ Отклонить</button>`
+          ? `<button class="zone-btn sm success" onclick="acceptOffer(${o.id})">✅ Принять</button>`
           : ''}
-        ${o.phase === 'locked' && o.status === 'accepted'
-          ? `<button class="zone-btn sm success" onclick="confirmOffer(${o.id})">✅ Подтвердить обмен</button>`
-          : ''}
-        ${o.status === 'pending' && !isIncoming
-          ? `<button class="zone-btn sm danger" onclick="cancelOffer(${o.id})">❌ Отменить</button>`
-          : ''}
-        ${o.phase === 'negotiation' ? `<button class="zone-btn sm info" onclick="modifyOffer(${o.id})">✏️ Изменить</button>` : ''}
+        <button class="zone-btn sm" onclick="openExchangeRoom(${o.id})">🚪 Войти в комнату</button>
       </div>
     </div>`;
   }).join('');
 }
+
+/* ═══════════════════════════════════════════════════════════
+   КОМНАТА ОБМЕНА
+═══════════════════════════════════════════════════════════ */
+function openExchangeRoom(exchangeId) {
+  state.currentExchangeId = exchangeId;
+  send({ action: 'get_exchange_room', exchange_id: exchangeId });
+  openModal(`<div class="modal-title">🤝 Комната обмена #${exchangeId} <button class="modal-close" onclick="closeModal()">✕</button></div><div id="exchange-room-content"><p>Загрузка...</p></div>`);
+}
+
+function updateExchangeRoom(msg) {
+  const content = document.getElementById('exchange-room-content');
+  if (!content) return;
+  const myItems = (msg.my_offer||[]).map(i => `${TYPE_ICON[i.item_type]||'📦'} ${esc(i.name)} ×${i.quantity}`).join(', ') || '—';
+  const theirItems = (msg.partner_offer||[]).map(i => `${TYPE_ICON[i.item_type]||'📦'} ${esc(i.name)} ×${i.quantity}`).join(', ') || '—';
+  const isLocked = msg.phase === 'locked';
+  const myConfirmed = msg.my_confirmed;
+  let html = `
+    <div class="offer-card">
+      <div class="offer-header">
+        <div>Моё предложение</div>
+        <span class="offer-status ${isLocked?'locked':'negotiation'}">${isLocked?'🔒 Заблокировано':'✏️ Можно менять'}</span>
+      </div>
+      <div class="offer-items">${myItems}</div>
+      ${!isLocked ? `<button class="zone-btn sm" onclick="editMyOffer(${msg.exchange_id})">✏️ Изменить</button>` : ''}
+    </div>
+    <div class="offer-card">
+      <div class="offer-header"><div>Предложение партнёра</div></div>
+      <div class="offer-items">${theirItems}</div>
+    </div>
+    <div class="confirm-row"><span>Монеты (от меня)</span><span class="val">${msg.coin_offer_from_creator||0} 💸</span></div>
+    <div class="confirm-row"><span>Монеты (от партнёра)</span><span class="val">${msg.coin_offer_from_partner||0} 💸</span></div>
+    <div class="offer-actions">
+      ${!isLocked ? `<button class="zone-btn lg success" onclick="lockExchange(${msg.exchange_id})">🔒 Заблокировать и подтвердить</button>` : ''}
+      ${isLocked && !myConfirmed ? `<button class="zone-btn lg success" onclick="confirmExchange(${msg.exchange_id})">✅ Подтвердить обмен</button>` : ''}
+      <button class="zone-btn danger sm" onclick="cancelExchange(${msg.exchange_id})">❌ Отменить</button>
+    </div>`;
+  content.innerHTML = html;
+}
+
+function editMyOffer(exchangeId) { /* откроет окно выбора предметов */ }
+function lockExchange(exchangeId) { send({ action:'lock_exchange', exchange_id: exchangeId }); }
+function confirmExchange(exchangeId) { send({ action:'confirm_exchange', exchange_id: exchangeId }); }
+function cancelExchange(exchangeId) { send({ action:'cancel_exchange', exchange_id: exchangeId }); }
 
 /* ═══════════════════════════════════════════════════════════
    RENDER: MY LOTS
@@ -1123,11 +1112,10 @@ function renderMyLots() {
 
   el.innerHTML = lots.map(l => `
     <div class="my-lot-card">
-      <div class="lot-icon">${RARITY_ICON[l.rarity] || '📦'}</div>
+      <div class="lot-icon">${TYPE_ICON[l.item_type] || '📦'}</div>
       <div class="lot-info">
         <div class="lot-name">${esc(l.hero_name || l.item_name)}</div>
-        <div class="lot-sub">×${l.quantity} • ${l.price} 🌟 • ${formatDate(l.created_at)}</div>
-        <span class="lot-rarity r-${l.rarity}">${l.rarity || ''}</span>
+        <div class="lot-sub">×${l.quantity} • ${l.price} 💸 • ${formatDate(l.created_at)}</div>
       </div>
       <div class="lot-right">
         <span class="my-lot-status ${l.active ? 'active' : 'expired'}">${l.active ? 'Активен' : 'Истёк'}</span>
@@ -1158,7 +1146,7 @@ function renderHistory() {
         <div class="history-title">${TYPE_LABEL[r.type] || r.type}: ${esc(r.item_name || r.item_type)}</div>
         <div class="history-sub">×${r.quantity} • ${formatDate(r.created_at)}</div>
       </div>
-      ${r.amount ? `<div class="history-amount ${plus ? 'plus' : 'minus'}">${plus ? '+' : ''}${r.amount} 🌟</div>` : ''}
+      ${r.amount ? `<div class="history-amount ${plus ? 'plus' : 'minus'}">${plus ? '+' : ''}${r.amount} 💸</div>` : ''}
     </div>`;
   }).join('');
 }
@@ -1186,16 +1174,15 @@ function closeModal() {
 function openBuyModal(lotId) {
   const lot = state.marketLots.find(l => l.id === lotId);
   if (!lot) return;
-  const icon = RARITY_ICON[lot.rarity] || '📦';
   openModal(`
     <div class="modal-title">
       🛍️ Купить
       <button class="modal-close" onclick="closeModal()">✕</button>
     </div>
-    <div class="confirm-row"><span>${icon} ${esc(lot.hero_name || lot.item_name)}</span><span class="val">${lot.rarity}</span></div>
+    <div class="confirm-row"><span>${esc(lot.hero_name || lot.item_name)}</span><span class="val">${lot.rarity||''}</span></div>
     <div class="confirm-row"><span>Количество</span><span class="val">×${lot.quantity}</span></div>
-    <div class="confirm-row"><span>Стоимость</span><span class="val">${lot.price} 🌟</span></div>
-    <div class="confirm-row"><span>Ваши монеты</span><span class="val">${userCoins} 🌟</span></div>
+    <div class="confirm-row"><span>Стоимость</span><span class="val">${lot.price} 💸</span></div>
+    <div class="confirm-row"><span>Ваши монеты</span><span class="val">${userCoins} 💸</span></div>
     ${userCoins < lot.price ? '<div style="color:var(--danger);font-size:12px;margin-bottom:10px;">❌ Недостаточно монет</div>' : ''}
     <button class="zone-btn lg" ${userCoins < lot.price ? 'disabled' : ''}
       onclick="executeBuy(${lotId})">✅ Подтвердить покупку</button>
@@ -1218,7 +1205,7 @@ function openUtilModal(heroId, heroName, rarity, maxQty) {
         <button class="modal-close" onclick="closeModal()">✕</button>
       </div>
       <div class="confirm-row"><span>${RARITY_ICON[rarity]} ${esc(heroName)}</span><span class="val">${rarity}</span></div>
-      <div class="confirm-row"><span>Цена за шт.</span><span class="val">${priceEach} 🌟</span></div>
+      <div class="confirm-row"><span>Цена за шт.</span><span class="val">${priceEach} 💸</span></div>
       <div class="field-group">
         <label class="field-label">Количество (макс. ${maxQty})</label>
         <div class="qty-row">
@@ -1227,16 +1214,16 @@ function openUtilModal(heroId, heroName, rarity, maxQty) {
           <button class="qty-btn" id="qty-plus">+</button>
         </div>
       </div>
-      <div class="confirm-row"><span>Вы получите</span><span class="val" id="util-total">${total} 🌟</span></div>
-      <button class="zone-btn lg success" id="util-confirm-btn">✅ Утилизировать за ${total} 🌟</button>
+      <div class="confirm-row"><span>Вы получите</span><span class="val" id="util-total">${total} 💸</span></div>
+      <button class="zone-btn lg success" id="util-confirm-btn">✅ Утилизировать за ${total} 💸</button>
     `;
   }
   openModal(render());
   function updateQty() {
     document.getElementById('qty-val').textContent = qty;
     const total = qty * priceEach;
-    document.getElementById('util-total').textContent = `${total} 🌟`;
-    document.getElementById('util-confirm-btn').textContent = `✅ Утилизировать за ${total} 🌟`;
+    document.getElementById('util-total').textContent = `${total} 💸`;
+    document.getElementById('util-confirm-btn').textContent = `✅ Утилизировать за ${total} 💸`;
   }
   document.getElementById('qty-minus').onclick = () => { if(qty > 1) { qty--; updateQty(); } };
   document.getElementById('qty-plus').onclick  = () => { if(qty < maxQty) { qty++; updateQty(); } };
@@ -1246,9 +1233,8 @@ function openUtilModal(heroId, heroName, rarity, maxQty) {
   };
 }
 
-/* ── Универсальное окно продажи (дубликат/герой/бокс) ── */
+/* ── Универсальное окно продажи ── */
 function openSellModal() {
-  // Загружаем инвентарь, если ещё не загружен
   if (!state.duplicates.length && !state.userHeroes.length && !state.userBoxes.length) {
     send({ action: 'inventory_list' });
     toast('Загружаем предметы…', 'info');
@@ -1264,7 +1250,7 @@ function openSellModal() {
   const boxOpts = (state.userBoxes || []).map(b =>
     `<option value="${b.box_id}" data-type="box" data-max="${b.amount}">📦 Бокс #${b.box_id} ×${b.amount}</option>`
   ).join('');
-
+  const durationPrices = { '24':0, '72':15, '168':20, '336':30, '720':35 };
   openModal(`
     <div class="modal-title">🏷️ Выставить на продажу <button class="modal-close" onclick="closeModal()">✕</button></div>
     <div class="field-group">
@@ -1284,10 +1270,20 @@ function openSellModal() {
       <input type="number" class="field-input" id="sell-qty" min="1" value="1"/>
     </div>
     <div class="field-group">
-      <label class="field-label">Цена за всё (🌟)</label>
-      <input type="number" class="field-input" id="sell-price" min="1" max="999999" value="100" placeholder="Введите цену"/>
+      <label class="field-label">Цена за всё (💸)</label>
+      <input type="number" class="field-input" id="sell-price" min="1" max="999999" value="100"/>
     </div>
-    <div class="util-notice">Лот активен 24 ч. Незакрытые лоты автоматически снимаются.</div>
+    <div class="field-group">
+      <label class="field-label">Длительность</label>
+      <select class="field-input" id="sell-duration">
+        <option value="24">24 часа (бесплатно)</option>
+        <option value="72">3 дня (15 💸)</option>
+        <option value="168">7 дней (20 💸)</option>
+        <option value="336">14 дней (30 💸)</option>
+        <option value="720">30 дней (35 💸)</option>
+      </select>
+    </div>
+    <div class="util-notice" id="sell-fee-notice"></div>
     <button class="zone-btn lg" id="sell-btn">✅ Выставить лот</button>
   `);
 
@@ -1295,6 +1291,8 @@ function openSellModal() {
   const itemSelect = document.getElementById('sell-item');
   const qtyBlock = document.getElementById('sell-qty-block');
   const qtyInput = document.getElementById('sell-qty');
+  const durationSelect = document.getElementById('sell-duration');
+  const feeNotice = document.getElementById('sell-fee-notice');
 
   function updateItems() {
     const type = typeSelect.value;
@@ -1305,6 +1303,14 @@ function openSellModal() {
   typeSelect.addEventListener('change', updateItems);
   updateItems();
 
+  function updateFeeNotice() {
+    const hours = durationSelect.value;
+    const price = durationPrices[hours] || 0;
+    feeNotice.textContent = price > 0 ? `Плата за размещение: ${price} 💸` : 'Размещение бесплатное';
+  }
+  durationSelect.addEventListener('change', updateFeeNotice);
+  updateFeeNotice();
+
   document.getElementById('sell-btn').onclick = () => {
     const type = typeSelect.value;
     const selectedOption = itemSelect.selectedOptions[0];
@@ -1313,6 +1319,8 @@ function openSellModal() {
     const maxQty = parseInt(selectedOption.dataset.max || '1');
     const qty = type === 'hero' ? 1 : parseInt(qtyInput.value);
     const price = parseInt(document.getElementById('sell-price').value);
+    const hours = parseInt(durationSelect.value);
+    const fee = durationPrices[hours] || 0;
 
     if (!itemId || !qty || qty < 1 || qty > maxQty) { toast(`Количество 1–${maxQty}`, 'error'); return; }
     if (!price || price < 1) { toast('Укажите цену', 'error'); return; }
@@ -1322,24 +1330,23 @@ function openSellModal() {
       item_type: type,
       item_id: itemId,
       quantity: qty,
-      price: price
+      price: price,
+      duration_hours: hours,
+      placement_fee: fee
     });
     document.getElementById('sell-btn').disabled = true;
   };
 }
 
-/* ── Вызов продажи конкретного дубликата (по кнопке "Продать") ── */
+/* ── Вызов продажи конкретного дубликата ── */
 function openSellDupModal(heroId, heroName, rarity, maxQty) {
-  // Открываем универсальное окно, но предзаполним тип duplicate и выберем нужного героя
   openSellModal();
-  // Небольшая задержка, чтобы DOM обновился, и устанавливаем нужные значения
   setTimeout(() => {
     const typeSelect = document.getElementById('sell-type');
     const itemSelect = document.getElementById('sell-item');
     if (typeSelect && itemSelect) {
       typeSelect.value = 'duplicate';
       typeSelect.dispatchEvent(new Event('change'));
-      // Ищем опцию с нужным hero_id
       const option = [...itemSelect.options].find(opt => parseInt(opt.value) === heroId);
       if (option) option.selected = true;
       document.getElementById('sell-qty').value = 1;
@@ -1463,7 +1470,7 @@ function showBankModal() {
     <div style="text-align:center; margin-bottom:16px">
       <div style="font-size:80px; margin-bottom:10px">🏦</div>
       <div style="font-size:18px; font-weight:700; color:var(--gold)">Баланс банка</div>
-      <div style="font-size:28px; font-weight:800; color:var(--gold); margin-top:8px" id="bank-balance-display">${state.bankBalance} 🌟</div>
+      <div style="font-size:28px; font-weight:800; color:var(--gold); margin-top:8px">${state.bankBalance} 💸</div>
     </div>
     <div class="util-notice">Собранная комиссия со всех сделок будет использована для будущих розыгрышей и ивентов.</div>
   `);
@@ -1507,4 +1514,4 @@ function toast(msg, type='info') {
 document.addEventListener('DOMContentLoaded', init);
 </script>
 </body>
-</html> 
+</html>
