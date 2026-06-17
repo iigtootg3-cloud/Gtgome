@@ -755,7 +755,7 @@ function init() {
    WebSocket
 ═══════════════════════════════════════════════════════════ */
 function getWSUrl() {
-    return 'wss://vvvty.onrender.com/ws/market?user_id=' + userId + '&mode=market';
+  return 'wss://vvvty.onrender.com/ws/market?user_id=' + userId + '&mode=market';
 }
 
 function connectWS() {
@@ -831,8 +831,10 @@ function handleMessage(msg) {
       renderMarket();
       break;
 
-    case 'duplicates_list':
+    case 'inventory_list':
       state.duplicates = msg.duplicates || [];
+      state.userHeroes = msg.heroes || [];
+      state.userBoxes = msg.boxes || [];
       renderDuplicates();
       break;
 
@@ -852,29 +854,17 @@ function handleMessage(msg) {
       renderExchange();
       break;
 
-    case 'my_heroes_list':
-      state.userHeroes = msg.heroes || [];
-      break;
-
-    case 'my_boxes_list':
-      state.userBoxes = msg.boxes || [];
-      break;
-
-    case 'bank_balance':
-      state.bankBalance = msg.balance || 0;
-      break;
-
     case 'lot_created':
       toast(`✅ Лот выставлен: ${msg.hero_name} ×${msg.quantity}`, 'success');
       closeModal();
       send({ action: 'my_lots' });
-      send({ action: 'duplicates_list' });
+      send({ action: 'inventory_list' });
       break;
 
     case 'lot_cancelled':
       toast('Лот снят с продажи', 'info');
       send({ action: 'my_lots' });
-      send({ action: 'duplicates_list' });
+      send({ action: 'inventory_list' });
       break;
 
     case 'buy_result':
@@ -884,7 +874,7 @@ function handleMessage(msg) {
         userCoins -= (msg.price + (msg.commission||0));
         document.getElementById('user-coins').textContent = `${userCoins} 🌟`;
         send({ action: 'market_list' });
-        send({ action: 'duplicates_list' });
+        send({ action: 'inventory_list' });
         closeModal();
       } else {
         toast(`❌ ${msg.error}`, 'error');
@@ -896,7 +886,7 @@ function handleMessage(msg) {
         toast(`♻️ Утилизировано ×${msg.quantity}. Получено: ${msg.earned} 🌟`, 'success');
         userCoins += msg.earned;
         document.getElementById('user-coins').textContent = `${userCoins} 🌟`;
-        send({ action: 'duplicates_list' });
+        send({ action: 'inventory_list' });
         closeModal();
       } else {
         toast(`❌ ${msg.error}`, 'error');
@@ -912,6 +902,10 @@ function handleMessage(msg) {
     case 'exchange_updated':
       toast(msg.message || 'Обмен обновлён', 'info');
       send({ action: 'exchange_offers' });
+      break;
+
+    case 'bank_balance':
+      state.bankBalance = msg.balance || 0;
       break;
 
     case 'error':
@@ -940,12 +934,10 @@ function loadCurrentTab(tab) {
   tab = tab || document.querySelector('.tab-btn.active')?.dataset.tab || 'market';
   switch(tab) {
     case 'market':     send({ action: 'market_list' });      break;
-    case 'duplicates': send({ action: 'duplicates_list' });  break;
+    case 'duplicates': send({ action: 'inventory_list' });  break;
     case 'exchange':
       send({ action: 'exchange_offers' });
-      send({ action: 'duplicates_list' });
-      send({ action: 'my_heroes_list' });
-      send({ action: 'my_boxes_list' });
+      send({ action: 'inventory_list' });
       break;
     case 'my-lots':    send({ action: 'my_lots' });          break;
     case 'history':    send({ action: 'get_history' });      break;
@@ -1291,7 +1283,7 @@ function openSellDupModal(heroId, heroName, rarity, maxQty) {
 /* ── Generic Sell Modal (from my-lots tab) ─────────────── */
 function openSellModal() {
   if (!state.duplicates.length) {
-    send({ action: 'duplicates_list' });
+    send({ action: 'inventory_list' });
     toast('Загружаем дубликаты…', 'info');
     return;
   }
@@ -1492,4 +1484,4 @@ function toast(msg, type='info') {
 document.addEventListener('DOMContentLoaded', init);
 </script>
 </body>
-</html>  
+</html> 
