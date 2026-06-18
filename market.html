@@ -708,7 +708,7 @@
     let lockCountdownTimer = null;
 
     /* ═══════════════════════════════════════════════════════════
-       INIT (автоматическое создание пустого обмена)
+       INIT (автоматическое создание пустого обмена с ожиданием WS)
     ═══════════════════════════════════════════════════════════ */
     function init() {
         const params = new URLSearchParams(window.location.search);
@@ -741,17 +741,22 @@
 
         document.getElementById('btn-bank').addEventListener('click', showBankModal);
 
-        // Если передан partnerId — сразу создаём пустой обмен, не проверяя инвентарь
+        // Если передан partnerId — ждём открытия WebSocket и создаём пустой обмен
         if (partnerId && partnerId !== userId) {
-            setTimeout(() => {
-                send({
-                    action: 'exchange_offer',
-                    partner_id: partnerId,
-                    give: [],
-                    want: [],
-                    coin_give: 0
-                });
-            }, 1000);
+            const trySendExchange = () => {
+                if (ws && ws.readyState === WebSocket.OPEN) {
+                    send({
+                        action: 'exchange_offer',
+                        partner_id: partnerId,
+                        give: [],
+                        want: [],
+                        coin_give: 0
+                    });
+                } else {
+                    setTimeout(trySendExchange, 300);
+                }
+            };
+            setTimeout(trySendExchange, 800);
         }
     }
 
