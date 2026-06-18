@@ -554,15 +554,12 @@
 </head>
 <body>
 <div id="app">
-    <!-- Header -->
     <div id="header">
         <div id="conn-dot"></div>
         <div id="header-title">🏰 Рынок ArenaM</div>
         <button class="zone-btn sm" id="btn-bank" style="margin-right:8px">🏦</button>
         <div id="user-coins">… 💸</div>
     </div>
-
-    <!-- Tabs -->
     <div id="tabs">
         <button class="tab-btn active" data-tab="market"><span class="tab-icon">🏪</span>Рынок</button>
         <button class="tab-btn" data-tab="duplicates"><span class="tab-icon">🎒</span>Дублик.</button>
@@ -570,15 +567,9 @@
         <button class="tab-btn" data-tab="my-lots"><span class="tab-icon">📦</span>Мои лоты</button>
         <button class="tab-btn" data-tab="history"><span class="tab-icon">📜</span>История</button>
     </div>
-
-    <!-- Content -->
     <div id="content">
-        <!-- ════ TAB: MARKET ════ -->
         <div class="tab-panel active" id="tab-market">
-            <div class="section-head">
-                <h2>🏪 Лоты на продажу</h2>
-                <span class="count-badge" id="market-count">0</span>
-            </div>
+            <div class="section-head"><h2>🏪 Лоты на продажу</h2><span class="count-badge" id="market-count">0</span></div>
             <div class="filter-bar" id="market-filter">
                 <span class="filter-chip active" data-filter="all">Все</span>
                 <span class="filter-chip r-common"     data-filter="Обычный">⚪ Обычный</span>
@@ -594,133 +585,62 @@
                 <span class="filter-chip" data-sort="price_desc">↓ Цена</span>
                 <span class="filter-chip" data-sort="newest">Новые</span>
             </div>
-            <div class="cards-grid" id="market-list">
-                <div class="loading-wrap"><div class="spinner"></div><p>Загрузка лотов…</p></div>
-            </div>
+            <div class="cards-grid" id="market-list"><div class="loading-wrap"><div class="spinner"></div><p>Загрузка лотов…</p></div></div>
         </div>
-
-        <!-- ════ TAB: DUPLICATES ════ -->
         <div class="tab-panel" id="tab-duplicates">
-            <div class="section-head">
-                <h2>🎒 Дубликаты</h2>
-                <span class="count-badge" id="dup-count">0</span>
-            </div>
-            <div class="util-notice">
-                Дубликаты появляются, когда из бокса выпадает герой, который у вас уже есть.
-                Вы можете <strong>утилизировать</strong> их за монеты или <strong>выставить на продажу</strong>.
-            </div>
-            <div id="dup-list">
-                <div class="loading-wrap"><div class="spinner"></div><p>Загрузка…</p></div>
-            </div>
+            <div class="section-head"><h2>🎒 Дубликаты</h2><span class="count-badge" id="dup-count">0</span></div>
+            <div class="util-notice">Дубликаты появляются, когда из бокса выпадает герой, который у вас уже есть. Вы можете <strong>утилизировать</strong> их за монеты или <strong>выставить на продажу</strong>.</div>
+            <div id="dup-list"><div class="loading-wrap"><div class="spinner"></div><p>Загрузка…</p></div></div>
         </div>
-
-        <!-- ════ TAB: EXCHANGE ════ -->
         <div class="tab-panel" id="tab-exchange">
-            <div class="section-head">
-                <h2>🤝 Обмен</h2>
-            </div>
-            <button class="zone-btn lg" id="btn-new-offer" style="margin-bottom:16px;">
-                ➕ Создать предложение обмена
-            </button>
-            <div class="exchange-section">
-                <h3>Входящие предложения</h3>
-                <div id="offers-incoming"></div>
-            </div>
+            <div class="section-head"><h2>🤝 Обмен</h2></div>
+            <button class="zone-btn lg" id="btn-new-offer" style="margin-bottom:16px;">➕ Создать предложение обмена</button>
+            <div class="exchange-section"><h3>Входящие предложения</h3><div id="offers-incoming"></div></div>
             <div class="divider"></div>
-            <div class="exchange-section">
-                <h3>Мои предложения</h3>
-                <div id="offers-outgoing"></div>
-            </div>
+            <div class="exchange-section"><h3>Мои предложения</h3><div id="offers-outgoing"></div></div>
         </div>
-
-        <!-- ════ TAB: MY LOTS ════ -->
         <div class="tab-panel" id="tab-my-lots">
-            <div class="section-head">
-                <h2>📦 Мои лоты</h2>
-                <span class="count-badge" id="my-lots-count">0</span>
-            </div>
-            <button class="zone-btn lg info" id="btn-sell" style="margin-bottom:14px;">
-                🏷️ Выставить предмет на продажу
-            </button>
-            <div id="my-lots-list">
-                <div class="loading-wrap"><div class="spinner"></div><p>Загрузка…</p></div>
-            </div>
+            <div class="section-head"><h2>📦 Мои лоты</h2><span class="count-badge" id="my-lots-count">0</span></div>
+            <button class="zone-btn lg info" id="btn-sell" style="margin-bottom:14px;">🏷️ Выставить предмет на продажу</button>
+            <div id="my-lots-list"><div class="loading-wrap"><div class="spinner"></div><p>Загрузка…</p></div></div>
         </div>
-
-        <!-- ════ TAB: HISTORY ════ -->
         <div class="tab-panel" id="tab-history">
-            <div class="section-head">
-                <h2>📜 История операций</h2>
-            </div>
-            <div id="history-list">
-                <div class="loading-wrap"><div class="spinner"></div><p>Загрузка…</p></div>
-            </div>
+            <div class="section-head"><h2>📜 История операций</h2></div>
+            <div id="history-list"><div class="loading-wrap"><div class="spinner"></div><p>Загрузка…</p></div></div>
         </div>
-
-    </div><!-- /content -->
-</div><!-- /app -->
-
-<!-- Toast -->
-<div id="toast-wrap"></div>
-
-<!-- Modal -->
-<div id="modal-overlay">
-    <div id="modal-box"></div>
+    </div>
 </div>
+<div id="toast-wrap"></div>
+<div id="modal-overlay"><div id="modal-box"></div></div>
 
 <script>
     /* ═══════════════════════════════════════════════════════════
        CONSTANTS & STATE
     ═══════════════════════════════════════════════════════════ */
-    const RARITY_ICON = {
-        'Обычный':      '⚪', 'Редкий':       '🔵',
-        'Эпический':    '🟣', 'Легендарный':  '🟡',
-        'Божественный': '🔴',
-    };
-    const TYPE_ICON = { duplicate: '🦸', hero: '🗡️', box: '🎁' };
+    const RARITY_ICON = { 'Обычный':'⚪','Редкий':'🔵','Эпический':'🟣','Легендарный':'🟡','Божественный':'🔴' };
+    const TYPE_ICON = { duplicate:'🦸', hero:'🗡️', box:'🎁' };
     const HIST_ICON = { sell:'💰', buy:'🛍️', exchange:'🔄', utilize:'♻️', cancel:'❌' };
-    const UTIL_PRICES = {
-        'Обычный':50,'Редкий':150,'Эпический':400,'Легендарный':1000,'Божественный':2500
-    };
+    const UTIL_PRICES = { 'Обычный':50,'Редкий':150,'Эпический':400,'Легендарный':1000,'Божественный':2500 };
 
-    let ws = null;
-    let pingInterval = null;
-    let reconnectTimer = null;
-    let userId = null;
-    let userCoins = 0;
-
+    let ws = null, pingInterval = null, reconnectTimer = null, userId = null, userCoins = 0;
     let state = {
-        marketLots:   [],
-        duplicates:   [],
-        myLots:       [],
-        history:      [],
-        offersIn:     [],
-        offersOut:    [],
-        marketFilter: 'all',
-        marketSort:   'price_asc',
-        userHeroes:   [],
-        userBoxes:    [],
-        bankBalance: 0,
-        currentExchangeId: null,
-        lastRoomData: null
+        marketLots:[], duplicates:[], myLots:[], history:[], offersIn:[], offersOut:[],
+        marketFilter:'all', marketSort:'price_asc', userHeroes:[], userBoxes:[],
+        bankBalance:0, currentExchangeId:null, lastRoomData:null
     };
-
     let lockCountdownTimer = null;
 
     /* ═══════════════════════════════════════════════════════════
-       INIT
+       INIT (автоматическое создание пустого обмена)
     ═══════════════════════════════════════════════════════════ */
     function init() {
         const params = new URLSearchParams(window.location.search);
-
-        // Получаем userId из Telegram initData (надёжный источник)
         if (window.Telegram?.WebApp?.initDataUnsafe?.user?.id) {
             userId = window.Telegram.WebApp.initDataUnsafe.user.id;
         } else {
             userId = parseInt(params.get('user_id') || '0');
         }
 
-        // partner_id через start_param
         let partnerId = 0;
         if (window.Telegram?.WebApp?.initDataUnsafe?.start_param) {
             const sp = window.Telegram.WebApp.initDataUnsafe.start_param;
@@ -734,245 +654,77 @@
             window.Telegram.WebApp.expand();
         }
 
-        setupTabs();
-        setupModal();
-        setupFilters();
-        connectWS();
-
+        setupTabs(); setupModal(); setupFilters(); connectWS();
         document.getElementById('btn-bank').addEventListener('click', showBankModal);
 
+        // Если передан partnerId — сразу создаём пустой обмен, не проверяя инвентарь
         if (partnerId && partnerId !== userId) {
             setTimeout(() => {
-                if (state.duplicates.length > 0 || state.userHeroes.length > 0 || state.userBoxes.length > 0) {
-                    openNewOfferModal(partnerId);
-                } else {
-                    toast('У вас нет предметов для обмена', 'error');
-                }
-            }, 800);
+                send({
+                    action: 'exchange_offer',
+                    partner_id: partnerId,
+                    give: [],
+                    want: [],
+                    coin_give: 0
+                });
+            }, 1000);
         }
-    }
-
-    /* ═══════════════════════════════════════════════════════════
-       TABS
-    ═══════════════════════════════════════════════════════════ */
-    function setupTabs() {
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-                document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-                btn.classList.add('active');
-                const tabId = `tab-${btn.dataset.tab}`;
-                document.getElementById(tabId)?.classList.add('active');
-                loadCurrentTab(btn.dataset.tab);
-            });
-        });
-    }
-
-    function loadCurrentTab(tab) {
-        tab = tab || document.querySelector('.tab-btn.active')?.dataset.tab || 'market';
-        switch(tab) {
-            case 'market':     send({ action: 'market_list' });      break;
-            case 'duplicates': send({ action: 'inventory_list' });  break;
-            case 'exchange':
-                send({ action: 'exchange_offers' });
-                send({ action: 'inventory_list' });
-                break;
-            case 'my-lots':    send({ action: 'my_lots' });          break;
-            case 'history':    send({ action: 'get_history' });      break;
-        }
-        send({ action: 'user_state' });
-        send({ action: 'bank_balance' });
-    }
-
-    /* ═══════════════════════════════════════════════════════════
-       FILTERS
-    ═══════════════════════════════════════════════════════════ */
-    function setupFilters() {
-        document.getElementById('market-filter').addEventListener('click', e => {
-            const chip = e.target.closest('[data-filter]');
-            if (!chip) return;
-            document.querySelectorAll('[data-filter]').forEach(c => c.classList.remove('active'));
-            chip.classList.add('active');
-            state.marketFilter = chip.dataset.filter;
-            renderMarket();
-        });
-        document.querySelector('.sort-row').addEventListener('click', e => {
-            const chip = e.target.closest('[data-sort]');
-            if (!chip) return;
-            document.querySelectorAll('[data-sort]').forEach(c => c.classList.remove('active'));
-            chip.classList.add('active');
-            state.marketSort = chip.dataset.sort;
-            renderMarket();
-        });
     }
 
     /* ═══════════════════════════════════════════════════════════
        WebSocket
     ═══════════════════════════════════════════════════════════ */
-    function getWSUrl() {
-        return 'wss://vvvty.onrender.com/ws/market?user_id=' + userId + '&mode=market';
-    }
-
+    function getWSUrl() { return 'wss://vvvty.onrender.com/ws/market?user_id=' + userId + '&mode=market'; }
     function connectWS() {
         if (ws) { try { ws.close(); } catch(e){} }
         setConnDot(false);
-
         ws = new WebSocket(getWSUrl());
-
         ws.onopen = () => {
-            setConnDot(true);
-            clearTimeout(reconnectTimer);
-            const initData = window.Telegram?.WebApp?.initData || '';
-            ws.send(JSON.stringify({ action: 'auth', init_data: initData, user_id: userId }));
-            startPing();
-            loadCurrentTab();
-            if (state.currentExchangeId) {
-                send({ action: 'get_exchange_room', exchange_id: state.currentExchangeId });
-            }
+            setConnDot(true); clearTimeout(reconnectTimer);
+            ws.send(JSON.stringify({ action:'auth', init_data: window.Telegram?.WebApp?.initData || '', user_id: userId }));
+            startPing(); loadCurrentTab();
+            if (state.currentExchangeId) send({ action:'get_exchange_room', exchange_id: state.currentExchangeId });
         };
-
-        ws.onmessage = (ev) => {
-            try { handleMessage(JSON.parse(ev.data)); }
-            catch(e) { console.error('WS parse error', e); }
-        };
-
+        ws.onmessage = (ev) => { try { handleMessage(JSON.parse(ev.data)); } catch(e) {} };
         ws.onerror = () => {};
-        ws.onclose = () => {
-            setConnDot(false);
-            stopPing();
-            scheduleReconnect();
-        };
+        ws.onclose = () => { setConnDot(false); stopPing(); scheduleReconnect(); };
     }
-
-    function scheduleReconnect() {
-        clearTimeout(reconnectTimer);
-        reconnectTimer = setTimeout(connectWS, 4000);
-    }
-
-    function startPing() {
-        stopPing();
-        pingInterval = setInterval(() => {
-            if (ws?.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ action: 'ping' }));
-        }, 30000);
-    }
+    function scheduleReconnect() { clearTimeout(reconnectTimer); reconnectTimer = setTimeout(connectWS, 4000); }
+    function startPing() { stopPing(); pingInterval = setInterval(() => { if (ws?.readyState===WebSocket.OPEN) ws.send(JSON.stringify({action:'ping'})); }, 30000); }
     function stopPing() { clearInterval(pingInterval); }
-
-    function send(obj) {
-        if (ws?.readyState === WebSocket.OPEN) ws.send(JSON.stringify(obj));
-        else toast('Нет соединения', 'error');
-    }
-
-    function setConnDot(ok) {
-        const d = document.getElementById('conn-dot');
-        d.classList.toggle('connected', ok);
-    }
+    function send(obj) { if (ws?.readyState===WebSocket.OPEN) ws.send(JSON.stringify(obj)); else toast('Нет соединения','error'); }
+    function setConnDot(ok) { document.getElementById('conn-dot').classList.toggle('connected', ok); }
 
     /* ═══════════════════════════════════════════════════════════
        MESSAGE HANDLER
     ═══════════════════════════════════════════════════════════ */
     function handleMessage(msg) {
         switch(msg.type) {
-            case 'pong': break;
-
-            case 'user_state':
-                userCoins = msg.coins || 0;
-                document.getElementById('user-coins').textContent = `${userCoins} 💸`;
-                break;
-
-            case 'market_list':
-                state.marketLots = msg.lots || [];
-                renderMarket();
-                break;
-
-            case 'inventory_list':
-                state.duplicates = msg.duplicates || [];
-                state.userHeroes = msg.heroes || [];
-                state.userBoxes = msg.boxes || [];
-                renderDuplicates();
-                break;
-
-            case 'my_lots':
-                state.myLots = msg.lots || [];
-                renderMyLots();
-                break;
-
-            case 'history':
-                state.history = msg.records || [];
-                renderHistory();
-                break;
-
-            case 'exchange_offers':
-                state.offersIn  = msg.incoming || [];
-                state.offersOut = msg.outgoing || [];
-                renderExchange();
-                break;
-
-            case 'exchange_room_updated':
-                state.lastRoomData = msg;
-                if (msg.exchange_id === state.currentExchangeId) {
-                    renderExchangeRoom(msg);
-                }
-                break;
-
-            case 'lot_created':
-                toast(`✅ Лот выставлен: ${msg.hero_name} ×${msg.quantity}`, 'success');
-                closeModal();
-                send({ action: 'my_lots' });
-                send({ action: 'inventory_list' });
-                break;
-
-            case 'lot_cancelled':
-                toast('Лот снят с продажи', 'info');
-                send({ action: 'my_lots' });
-                send({ action: 'inventory_list' });
-                break;
-
+            case 'user_state': userCoins = msg.coins||0; document.getElementById('user-coins').textContent = `${userCoins} 💸`; break;
+            case 'market_list': state.marketLots = msg.lots||[]; renderMarket(); break;
+            case 'inventory_list': state.duplicates = msg.duplicates||[]; state.userHeroes = msg.heroes||[]; state.userBoxes = msg.boxes||[]; renderDuplicates(); break;
+            case 'my_lots': state.myLots = msg.lots||[]; renderMyLots(); break;
+            case 'history': state.history = msg.records||[]; renderHistory(); break;
+            case 'exchange_offers': state.offersIn = msg.incoming||[]; state.offersOut = msg.outgoing||[]; renderExchange(); break;
+            case 'exchange_room_updated': state.lastRoomData = msg; if (msg.exchange_id === state.currentExchangeId) renderExchangeRoom(msg); break;
+            case 'lot_created': toast(`✅ Лот выставлен: ${msg.hero_name} ×${msg.quantity}`, 'success'); closeModal(); send({action:'my_lots'}); send({action:'inventory_list'}); break;
+            case 'lot_cancelled': toast('Лот снят с продажи','info'); send({action:'my_lots'}); send({action:'inventory_list'}); break;
             case 'buy_result':
                 if (msg.ok) {
-                    const commissionText = msg.commission ? ` (вкл. комиссию ${msg.commission} 💸)` : '';
-                    toast(`🛍️ Куплено: ${msg.hero_name} ×${msg.quantity} за ${msg.price} 💸${commissionText}`, 'success');
+                    toast(`🛍️ Куплено: ${msg.hero_name} ×${msg.quantity} за ${msg.price} 💸`, 'success');
                     userCoins -= (msg.price + (msg.commission||0));
                     document.getElementById('user-coins').textContent = `${userCoins} 💸`;
-                    send({ action: 'market_list' });
-                    send({ action: 'inventory_list' });
-                    closeModal();
-                } else {
-                    toast(`❌ ${msg.error}`, 'error');
-                }
+                    send({action:'market_list'}); send({action:'inventory_list'}); closeModal();
+                } else toast(`❌ ${msg.error}`,'error');
                 break;
-
             case 'utilize_result':
-                if (msg.ok) {
-                    toast(`♻️ Утилизировано ×${msg.quantity}. Получено: ${msg.earned} 💸`, 'success');
-                    userCoins += msg.earned;
-                    document.getElementById('user-coins').textContent = `${userCoins} 💸`;
-                    send({ action: 'inventory_list' });
-                    closeModal();
-                } else {
-                    toast(`❌ ${msg.error}`, 'error');
-                }
+                if (msg.ok) { toast(`♻️ Утилизировано ×${msg.quantity}. Получено: ${msg.earned} 💸`, 'success'); userCoins += msg.earned; document.getElementById('user-coins').textContent = `${userCoins} 💸`; send({action:'inventory_list'}); closeModal(); }
+                else toast(`❌ ${msg.error}`,'error');
                 break;
-
-            case 'exchange_created':
-                toast('🤝 Предложение обмена отправлено!', 'success');
-                closeModal();
-                send({ action: 'exchange_offers' });
-                break;
-
-            case 'exchange_updated':
-                if (msg.message && msg.message.includes('обмен')) {
-                    toast(msg.message, 'info');
-                }
-                send({ action: 'exchange_offers' });
-                break;
-
-            case 'bank_balance':
-                state.bankBalance = msg.balance || 0;
-                break;
-
-            case 'error':
-                toast(msg.message || 'Ошибка', 'error');
-                break;
+            case 'exchange_created': toast('🤝 Предложение обмена отправлено!','success'); closeModal(); send({action:'exchange_offers'}); break;
+            case 'exchange_updated': if (msg.message?.includes('обмен')) toast(msg.message,'info'); send({action:'exchange_offers'}); break;
+            case 'bank_balance': state.bankBalance = msg.balance||0; break;
+            case 'error': toast(msg.message||'Ошибка','error'); break;
         }
     }
 
@@ -981,28 +733,17 @@
     ═══════════════════════════════════════════════════════════ */
     function renderMarket() {
         let lots = [...state.marketLots];
-
         if (state.marketFilter !== 'all') {
-            if (state.marketFilter === 'box') {
-                lots = lots.filter(l => l.item_type === 'box');
-            } else {
-                lots = lots.filter(l => l.rarity === state.marketFilter && l.item_type !== 'box');
-            }
+            lots = state.marketFilter === 'box' ? lots.filter(l => l.item_type === 'box') : lots.filter(l => l.rarity === state.marketFilter && l.item_type !== 'box');
         }
-
         switch(state.marketSort) {
-            case 'price_asc':  lots.sort((a,b) => a.price - b.price); break;
             case 'price_desc': lots.sort((a,b) => b.price - a.price); break;
-            case 'newest':     lots.sort((a,b) => b.id - a.id);       break;
+            case 'newest':     lots.sort((a,b) => b.id - a.id); break;
+            default: lots.sort((a,b) => a.price - b.price);
         }
-
         document.getElementById('market-count').textContent = lots.length;
         const el = document.getElementById('market-list');
-
-        if (!lots.length) {
-            el.innerHTML = `<div class="empty-state"><div class="empty-icon">🏪</div><p>Нет лотов по выбранному фильтру</p></div>`;
-            return;
-        }
+        if (!lots.length) { el.innerHTML = '<div class="empty-state"><div class="empty-icon">🏪</div><p>Нет лотов</p></div>'; return; }
 
         el.innerHTML = lots.map(lot => {
             const isMine = lot.seller_id === userId;
@@ -1015,11 +756,10 @@
                 const canBuy = userCoins >= lot.price;
                 actionBtn = `<button class="zone-btn sm" ${canBuy ? '' : 'disabled'} onclick="openBuyModal(${lot.id})">Купить</button>`;
             }
-            return `
-            <div class="lot-card ${rarityClass}">
+            return `<div class="lot-card ${rarityClass}">
                 <div class="lot-icon">${icon}</div>
                 <div class="lot-info">
-                    <div class="lot-name">${esc(lot.hero_name || lot.item_name || 'Предмет')}</div>
+                    <div class="lot-name">${esc(lot.hero_name || 'Предмет')}</div>
                     <div class="lot-sub">Продавец: ${esc(lot.seller_name || '…')}</div>
                     ${lot.rarity ? `<span class="lot-rarity ${rarityClass}">${RARITY_ICON[lot.rarity]||''} ${lot.rarity}</span>` : ''}
                 </div>
@@ -1039,16 +779,10 @@
         const dups = state.duplicates;
         document.getElementById('dup-count').textContent = dups.length;
         const el = document.getElementById('dup-list');
-
-        if (!dups.length) {
-            el.innerHTML = `<div class="empty-state"><div class="empty-icon">🎒</div><p>Дубликатов нет.<br>Открывайте боксы — если герой уже есть, получите дубликат.</p></div>`;
-            return;
-        }
-
+        if (!dups.length) { el.innerHTML = '<div class="empty-state"><div class="empty-icon">🎒</div><p>Дубликатов нет</p></div>'; return; }
         el.innerHTML = dups.map(d => {
             const price = UTIL_PRICES[d.rarity] || 50;
-            return `
-            <div class="dup-card r-${d.rarity} ${d.locked ? 'locked-card' : ''}">
+            return `<div class="dup-card r-${d.rarity} ${d.locked ? 'locked-card' : ''}">
                 <div class="lot-icon">${RARITY_ICON[d.rarity] || '⚫'}</div>
                 <div class="lot-info">
                     <div class="lot-name">${esc(d.hero_name)}</div>
@@ -1058,12 +792,8 @@
                 </div>
                 <div class="lot-right" style="gap:5px">
                     <div class="dup-qty-badge">×${d.quantity}</div>
-                    <button class="zone-btn sm" style="margin-top:22px"
-                        onclick="openUtilModal(${d.hero_id}, '${esc(d.hero_name)}', '${d.rarity}', ${d.quantity})"
-                        ${d.locked ? 'disabled' : ''}>♻️ Утил.</button>
-                    <button class="zone-btn sm info"
-                        onclick="openSellDupModal(${d.hero_id}, '${esc(d.hero_name)}', '${d.rarity}', ${d.quantity})"
-                        ${d.locked ? 'disabled' : ''}>🏷️ Продать</button>
+                    <button class="zone-btn sm" style="margin-top:22px" onclick="openUtilModal(${d.hero_id}, '${esc(d.hero_name)}', '${d.rarity}', ${d.quantity})" ${d.locked ? 'disabled' : ''}>♻️ Утил.</button>
+                    <button class="zone-btn sm info" onclick="openSellDupModal(${d.hero_id}, '${esc(d.hero_name)}', '${d.rarity}', ${d.quantity})" ${d.locked ? 'disabled' : ''}>🏷️ Продать</button>
                 </div>
             </div>`;
         }).join('');
@@ -1076,26 +806,16 @@
         renderOfferList('offers-incoming', state.offersIn, true);
         renderOfferList('offers-outgoing', state.offersOut, false);
     }
-
     function renderOfferList(elId, offers, isIncoming) {
         const el = document.getElementById(elId);
-        if (!offers.length) {
-            el.innerHTML = `<div class="empty-state" style="padding:20px 0"><div class="empty-icon" style="font-size:28px">📭</div><p>Нет предложений</p></div>`;
-            return;
-        }
+        if (!offers.length) { el.innerHTML = '<div class="empty-state" style="padding:20px 0"><div class="empty-icon" style="font-size:28px">📭</div><p>Нет предложений</p></div>'; return; }
         el.innerHTML = offers.map(o => {
             const statusLabel = { pending:'Ожидание', accepted:'Принято', completed:'Завершено', cancelled:'Отменено' }[o.status] || o.status;
             const partnerName = isIncoming ? esc(o.creator_name || '…') : esc(o.partner_name || '…');
-            return `
-            <div class="offer-card">
-                <div class="offer-header">
-                    <div class="offer-users">${isIncoming ? '👤 От: ' : '👤 Кому: '} <b>${partnerName}</b></div>
-                    <span class="offer-status ${o.status}">${statusLabel}</span>
-                </div>
+            return `<div class="offer-card">
+                <div class="offer-header"><div class="offer-users">${isIncoming ? '👤 От: ' : '👤 Кому: '} <b>${partnerName}</b></div><span class="offer-status ${o.status}">${statusLabel}</span></div>
                 <div class="offer-actions">
-                    ${o.status === 'pending' && isIncoming
-                        ? `<button class="zone-btn sm success" onclick="acceptOffer(${o.id})">✅ Принять</button>`
-                        : ''}
+                    ${o.status === 'pending' && isIncoming ? `<button class="zone-btn sm success" onclick="acceptOffer(${o.id})">✅ Принять</button>` : ''}
                     <button class="zone-btn sm" onclick="openExchangeRoom(${o.id})">🚪 Войти в комнату</button>
                 </div>
             </div>`;
@@ -1110,51 +830,31 @@
         send({ action: 'get_exchange_room', exchange_id: exchangeId });
         openModal(`<div class="modal-title">🤝 Комната обмена #${exchangeId} <button class="modal-close" onclick="closeModal()">✕</button></div><div id="exchange-room-content"><div class="loading-wrap"><div class="spinner"></div><p>Загрузка...</p></div></div>`);
     }
-
     function renderExchangeRoom(msg) {
         const content = document.getElementById('exchange-room-content');
         if (!content) return;
-
         const formatItem = (i) => {
             const icon = (i.rarity && RARITY_ICON[i.rarity]) ? RARITY_ICON[i.rarity] : (TYPE_ICON[i.item_type] || '📦');
             return `${icon} ${esc(i.name)} ×${i.quantity}`;
         };
-
         const myList = (msg.my_offer || []).map(formatItem).join(', ') || '—';
         const theirList = (msg.partner_offer || []).map(formatItem).join(', ') || '—';
-        const isLocked = msg.phase === 'locked';
-
         let actionsHtml = '';
         if (msg.phase === 'negotiation') {
-            actionsHtml = `
-                <button class="zone-btn sm info" onclick="editMyOffer(${msg.exchange_id})">✏️ Изменить мою часть</button>
+            actionsHtml = `<button class="zone-btn sm info" onclick="editMyOffer(${msg.exchange_id})">✏️ Изменить мою часть</button>
                 <button class="zone-btn lg success" onclick="setReady(${msg.exchange_id}, true)">✅ Готов к обмену</button>
                 <div class="util-notice">${msg.partner_ready ? '🟢 Партнёр готов — нажмите «Готов», чтобы заблокировать сделку.' : '⚪ Партнёр ещё не готов.'}</div>`;
         } else if (msg.phase === 'locked') {
             const remaining = msg.timer_expires ? Math.max(0, Math.round((new Date(msg.timer_expires) - Date.now()) / 1000)) : 0;
-            actionsHtml = `
-                <div class="util-notice" id="lock-countdown">🔒 Сделка заблокирована. Подтверждение доступно через <b id="lock-seconds">${remaining}</b> сек.</div>
+            actionsHtml = `<div class="util-notice" id="lock-countdown">🔒 Сделка заблокирована. Подтверждение доступно через <b id="lock-seconds">${remaining}</b> сек.</div>
                 <button class="zone-btn lg success" id="confirm-btn-room" onclick="confirmExchange(${msg.exchange_id})" ${remaining > 0 ? 'disabled' : ''}>🤝 Обменяться</button>
                 <button class="zone-btn sm danger" onclick="setReady(${msg.exchange_id}, false)">↩️ Отменить готовность</button>`;
             startLockCountdown(remaining);
         }
-
-        content.innerHTML = `
-            <div class="offer-card">
-                <div class="offer-header"><div>Вы отдаёте</div></div>
-                <div class="offer-items">${myList}</div>
-                <div class="confirm-row"><span>Ваши монеты</span><span class="val">${msg.my_coins || 0} 💸</span></div>
-            </div>
-            <div class="offer-card">
-                <div class="offer-header"><div>Вы получаете</div></div>
-                <div class="offer-items">${theirList}</div>
-                <div class="confirm-row"><span>Монеты партнёра</span><span class="val">${msg.partner_coins || 0} 💸</span></div>
-            </div>
-            <div class="offer-actions">${actionsHtml}
-                <button class="zone-btn danger sm" onclick="cancelExchange(${msg.exchange_id})">❌ Отменить сделку</button>
-            </div>`;
+        content.innerHTML = `<div class="offer-card"><div class="offer-header"><div>Вы отдаёте</div></div><div class="offer-items">${myList}</div><div class="confirm-row"><span>Ваши монеты</span><span class="val">${msg.my_coins || 0} 💸</span></div></div>
+            <div class="offer-card"><div class="offer-header"><div>Вы получаете</div></div><div class="offer-items">${theirList}</div><div class="confirm-row"><span>Монеты партнёра</span><span class="val">${msg.partner_coins || 0} 💸</span></div></div>
+            <div class="offer-actions">${actionsHtml}<button class="zone-btn danger sm" onclick="cancelExchange(${msg.exchange_id})">❌ Отменить сделку</button></div>`;
     }
-
     function startLockCountdown(seconds) {
         clearInterval(lockCountdownTimer);
         if (seconds <= 0) return;
@@ -1170,12 +870,9 @@
             }
         }, 1000);
     }
+    function setReady(exchangeId, ready) { send({ action: ready ? 'exchange_ready' : 'exchange_unready', exchange_id: exchangeId }); }
 
-    function setReady(exchangeId, ready) {
-        send({ action: ready ? 'exchange_ready' : 'exchange_unready', exchange_id: exchangeId });
-    }
-
-    /* ── Редактирование своего предложения (с монетами) ── */
+    /* ── Редактирование своего предложения ── */
     function editMyOffer(exchangeId) {
         send({ action: 'inventory_list' });
         setTimeout(() => {
@@ -1183,56 +880,30 @@
                 toast('Нет доступных предметов', 'error');
                 return;
             }
-
-            const dupOpts = state.duplicates.filter(d => !d.locked).map(d =>
-                `<option value="${d.hero_id}" data-type="duplicate">${RARITY_ICON[d.rarity]} ${d.hero_name} ×${d.quantity}</option>`
-            ).join('');
-            const heroOpts = (state.userHeroes || []).map(h =>
-                `<option value="${h.hero_id}" data-type="hero">${RARITY_ICON[h.rarity] || ''} ${h.name} Lv.${h.level} (${h.rarity})</option>`
-            ).join('');
-            const boxOpts = (state.userBoxes || []).map(b =>
-                `<option value="${b.box_id}" data-type="box">📦 Бокс #${b.box_id} ×${b.amount}</option>`
-            ).join('');
-
+            const dupOpts = state.duplicates.filter(d => !d.locked).map(d => `<option value="${d.hero_id}" data-type="duplicate">${RARITY_ICON[d.rarity]} ${d.hero_name} ×${d.quantity}</option>`).join('');
+            const heroOpts = (state.userHeroes || []).map(h => `<option value="${h.hero_id}" data-type="hero">${RARITY_ICON[h.rarity] || ''} ${h.name} Lv.${h.level} (${h.rarity})</option>`).join('');
+            const boxOpts = (state.userBoxes || []).map(b => `<option value="${b.box_id}" data-type="box">📦 Бокс #${b.box_id} ×${b.amount}</option>`).join('');
             const currentCoins = state.lastRoomData ? (state.lastRoomData.my_coins || 0) : 0;
-
-            openModal(`
-                <div class="modal-title">✏️ Изменить предложение <button class="modal-close" onclick="closeModal()">✕</button></div>
+            openModal(`<div class="modal-title">✏️ Изменить предложение <button class="modal-close" onclick="closeModal()">✕</button></div>
                 <div id="ex-items-container"></div>
                 <button class="zone-btn sm info" id="ex-add-item" style="margin-bottom:12px">➕ Добавить предмет</button>
-                <div class="field-group">
-                    <label class="field-label">Монеты (от вас) 💸</label>
-                    <input type="number" class="field-input" id="ex-coin-give" min="0" value="${currentCoins}" placeholder="0"/>
-                </div>
+                <div class="field-group"><label class="field-label">Монеты (от вас) 💸</label><input type="number" class="field-input" id="ex-coin-give" min="0" value="${currentCoins}" placeholder="0"/></div>
                 <div class="util-notice">Максимум 5 предметов. После сохранения таймер сбросится.</div>
-                <button class="zone-btn lg" id="ex-save">💾 Сохранить изменения</button>
-            `);
-
-            let itemCount = 0;
-            const maxItems = 5;
-
+                <button class="zone-btn lg" id="ex-save">💾 Сохранить изменения</button>`);
+            let itemCount = 0; const maxItems = 5;
             function addItemRow(prefill = null) {
                 if (itemCount >= maxItems) return;
                 const container = document.getElementById('ex-items-container');
                 const idx = ++itemCount;
-                const row = document.createElement('div');
-                row.className = 'field-group';
-                row.innerHTML = `
-                    <label class="field-label">Предмет ${idx}</label>
-                    <select class="field-input ex-item-type">
-                        <option value="duplicate">Дубликат</option>
-                        <option value="hero">Герой</option>
-                        <option value="box">Бокс</option>
-                    </select>
+                const row = document.createElement('div'); row.className = 'field-group';
+                row.innerHTML = `<label class="field-label">Предмет ${idx}</label>
+                    <select class="field-input ex-item-type"><option value="duplicate">Дубликат</option><option value="hero">Герой</option><option value="box">Бокс</option></select>
                     <select class="field-input ex-item-select" style="margin-top:4px"></select>
-                    <input type="number" class="field-input ex-item-qty" min="1" value="1" placeholder="Кол-во" style="margin-top:4px"/>
-                `;
+                    <input type="number" class="field-input ex-item-qty" min="1" value="1" placeholder="Кол-во" style="margin-top:4px"/>`;
                 container.appendChild(row);
-
                 const typeSelect = row.querySelector('.ex-item-type');
                 const itemSelect = row.querySelector('.ex-item-select');
                 const qtyInput = row.querySelector('.ex-item-qty');
-
                 function updateOptions() {
                     const type = typeSelect.value;
                     itemSelect.innerHTML = type === 'duplicate' ? dupOpts : (type === 'hero' ? heroOpts : boxOpts);
@@ -1243,54 +914,28 @@
                     }
                 }
                 typeSelect.addEventListener('change', updateOptions);
-                if (prefill) {
-                    typeSelect.value = prefill.item_type || 'duplicate';
-                }
+                if (prefill) { typeSelect.value = prefill.item_type || 'duplicate'; }
                 updateOptions();
-
                 if (idx > 1) {
-                    const delBtn = document.createElement('button');
-                    delBtn.className = 'zone-btn danger sm';
-                    delBtn.textContent = 'Удалить';
-                    delBtn.style.marginTop = '4px';
+                    const delBtn = document.createElement('button'); delBtn.className = 'zone-btn danger sm'; delBtn.textContent = 'Удалить'; delBtn.style.marginTop = '4px';
                     delBtn.onclick = () => { row.remove(); itemCount--; };
                     row.appendChild(delBtn);
                 }
             }
-
             const lastRoom = state.lastRoomData;
-            if (lastRoom && lastRoom.my_offer) {
-                lastRoom.my_offer.forEach(item => addItemRow(item));
-            } else {
-                addItemRow();
-            }
-
+            if (lastRoom && lastRoom.my_offer) { lastRoom.my_offer.forEach(item => addItemRow(item)); } else { addItemRow(); }
             document.getElementById('ex-add-item').onclick = () => addItemRow();
-
             document.getElementById('ex-save').onclick = () => {
                 const items = [];
                 document.querySelectorAll('#ex-items-container .field-group').forEach(row => {
                     const type = row.querySelector('.ex-item-type').value;
                     const itemId = parseInt(row.querySelector('.ex-item-select').value);
                     const qty = parseInt(row.querySelector('.ex-item-qty').value);
-                    if (itemId && qty > 0) {
-                        items.push({ item_type: type, item_id: itemId, quantity: qty });
-                    }
+                    if (itemId && qty > 0) items.push({ item_type: type, item_id: itemId, quantity: qty });
                 });
-
-                if (items.length === 0) {
-                    toast('Добавьте хотя бы один предмет', 'error');
-                    return;
-                }
-
+                if (items.length === 0) { toast('Добавьте хотя бы один предмет', 'error'); return; }
                 const coinGive = parseInt(document.getElementById('ex-coin-give').value) || 0;
-
-                send({
-                    action: 'exchange_modify',
-                    offer_id: exchangeId,
-                    give: items,
-                    coin_give: coinGive
-                });
+                send({ action: 'exchange_modify', offer_id: exchangeId, give: items, coin_give: coinGive });
                 closeModal();
                 toast('Предложение обновлено', 'success');
             };
@@ -1308,24 +953,12 @@
         const lots = state.myLots;
         document.getElementById('my-lots-count').textContent = lots.length;
         const el = document.getElementById('my-lots-list');
-
-        if (!lots.length) {
-            el.innerHTML = `<div class="empty-state"><div class="empty-icon">📦</div><p>Вы не выставляли лоты.<br>Нажмите «Выставить предмет», чтобы начать.</p></div>`;
-            return;
-        }
-
-        el.innerHTML = lots.map(l => `
-            <div class="my-lot-card">
-                <div class="lot-icon">${TYPE_ICON[l.item_type] || '📦'}</div>
-                <div class="lot-info">
-                    <div class="lot-name">${esc(l.hero_name || l.item_name)}</div>
-                    <div class="lot-sub">×${l.quantity} • ${l.price} 💸 • ${formatDate(l.created_at)}</div>
-                </div>
-                <div class="lot-right">
-                    <span class="my-lot-status ${l.active ? 'active' : 'expired'}">${l.active ? 'Активен' : 'Истёк'}</span>
-                    ${l.active ? `<button class="zone-btn sm danger" onclick="cancelLot(${l.id})">Снять</button>` : ''}
-                </div>
-            </div>`).join('');
+        if (!lots.length) { el.innerHTML = '<div class="empty-state"><div class="empty-icon">📦</div><p>Вы не выставляли лоты</p></div>'; return; }
+        el.innerHTML = lots.map(l => `<div class="my-lot-card">
+            <div class="lot-icon">${TYPE_ICON[l.item_type] || '📦'}</div>
+            <div class="lot-info"><div class="lot-name">${esc(l.hero_name || l.item_name)}</div><div class="lot-sub">×${l.quantity} • ${l.price} 💸 • ${formatDate(l.created_at)}</div></div>
+            <div class="lot-right"><span class="my-lot-status ${l.active ? 'active' : 'expired'}">${l.active ? 'Активен' : 'Истёк'}</span>${l.active ? `<button class="zone-btn sm danger" onclick="cancelLot(${l.id})">Снять</button>` : ''}</div>
+        </div>`).join('');
     }
 
     /* ═══════════════════════════════════════════════════════════
@@ -1334,26 +967,17 @@
     function renderHistory() {
         const recs = state.history;
         const el = document.getElementById('history-list');
-
-        if (!recs.length) {
-            el.innerHTML = `<div class="empty-state"><div class="empty-icon">📜</div><p>История операций пуста</p></div>`;
-            return;
-        }
-
+        if (!recs.length) { el.innerHTML = '<div class="empty-state"><div class="empty-icon">📜</div><p>История пуста</p></div>'; return; }
         const TYPE_LABEL = { sell:'Продажа', buy:'Покупка', exchange:'Обмен', utilize:'Утилизация', cancel:'Отмена' };
         el.innerHTML = recs.map(r => {
             const plus = r.amount > 0;
             let details = '';
             if (r.target_name) details += `Контрагент: ${esc(r.target_name)} `;
             if (r.type === 'buy' && r.amount < 0) details += `(вкл. комиссию)`;
-            return `
-            <div class="history-item">
+            return `<div class="history-item">
                 <div class="history-icon">${HIST_ICON[r.type] || '📝'}</div>
-                <div class="history-text">
-                    <div class="history-title">${TYPE_LABEL[r.type] || r.type}: ${esc(r.item_name || r.item_type)}</div>
-                    <div class="history-sub">×${r.quantity} • ${formatDate(r.created_at)}${details ? ' • ' + details : ''}</div>
-                </div>
-                ${r.amount ? `<div class="history-amount ${plus ? 'plus' : 'minus'}">${plus ? '+' : ''}${r.amount} 💸</div>` : ''}
+                <div class="history-text"><div class="history-title">${TYPE_LABEL[r.type] || r.type}: ${esc(r.item_name || r.item_type)}</div><div class="history-sub">×${r.quantity} • ${formatDate(r.created_at)}${details ? ' • ' + details : ''}</div></div>
+                ${r.amount ? `<div class="history-amount ${plus ? 'plus' : 'minus'}">${plus?'+':''}${r.amount} 💸</div>` : ''}
             </div>`;
         }).join('');
     }
@@ -1362,94 +986,51 @@
        MODAL
     ═══════════════════════════════════════════════════════════ */
     function setupModal() {
-        document.getElementById('modal-overlay').addEventListener('click', e => {
-            if (e.target === document.getElementById('modal-overlay')) closeModal();
-        });
+        document.getElementById('modal-overlay').addEventListener('click', e => { if (e.target === document.getElementById('modal-overlay')) closeModal(); });
         document.getElementById('btn-new-offer').addEventListener('click', () => openNewOfferModal());
         document.getElementById('btn-sell').addEventListener('click', openSellModal);
     }
+    function openModal(html) { document.getElementById('modal-box').innerHTML = html; document.getElementById('modal-overlay').classList.add('open'); }
+    function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); state.currentExchangeId = null; clearInterval(lockCountdownTimer); }
 
-    function openModal(html) {
-        document.getElementById('modal-box').innerHTML = html;
-        document.getElementById('modal-overlay').classList.add('open');
-    }
-    function closeModal() {
-        document.getElementById('modal-overlay').classList.remove('open');
-        state.currentExchangeId = null;
-        clearInterval(lockCountdownTimer);
-    }
-
-    /* ── Buy Modal ─────────────────────────────────────────── */
+    /* ── Buy/Util/Sell/NewOffer modals ── */
     function openBuyModal(lotId) {
         const lot = state.marketLots.find(l => l.id === lotId);
         if (!lot) return;
-        openModal(`
-            <div class="modal-title">
-                🛍️ Купить
-                <button class="modal-close" onclick="closeModal()">✕</button>
-            </div>
+        openModal(`<div class="modal-title">🛍️ Купить<button class="modal-close" onclick="closeModal()">✕</button></div>
             <div class="confirm-row"><span>${esc(lot.hero_name || lot.item_name)}</span><span class="val">${lot.rarity||''}</span></div>
             <div class="confirm-row"><span>Количество</span><span class="val">×${lot.quantity}</span></div>
             <div class="confirm-row"><span>Стоимость</span><span class="val">${lot.price} 💸</span></div>
             <div class="confirm-row"><span>Ваши монеты</span><span class="val">${userCoins} 💸</span></div>
             ${userCoins < lot.price ? '<div style="color:var(--danger);font-size:12px;margin-bottom:10px;">❌ Недостаточно монет</div>' : ''}
-            <button class="zone-btn lg" ${userCoins < lot.price ? 'disabled' : ''}
-                onclick="executeBuy(${lotId})">✅ Подтвердить покупку</button>
-        `);
+            <button class="zone-btn lg" ${userCoins < lot.price ? 'disabled' : ''} onclick="executeBuy(${lotId})">✅ Подтвердить покупку</button>`);
     }
-    function executeBuy(lotId) {
-        send({ action: 'buy_lot', lot_id: lotId });
-        document.getElementById('modal-box').querySelector('button.zone-btn.lg').disabled = true;
-    }
-
-    /* ── Utilize Modal ─────────────────────────────────────── */
+    function executeBuy(lotId) { send({ action: 'buy_lot', lot_id: lotId }); document.getElementById('modal-box').querySelector('button.zone-btn.lg').disabled = true; }
     function openUtilModal(heroId, heroName, rarity, maxQty) {
         const priceEach = UTIL_PRICES[rarity] || 50;
         let qty = 1;
         function render() {
             const total = qty * priceEach;
-            return `
-                <div class="modal-title">
-                    ♻️ Утилизация
-                    <button class="modal-close" onclick="closeModal()">✕</button>
-                </div>
+            return `<div class="modal-title">♻️ Утилизация<button class="modal-close" onclick="closeModal()">✕</button></div>
                 <div class="confirm-row"><span>${RARITY_ICON[rarity]} ${esc(heroName)}</span><span class="val">${rarity}</span></div>
                 <div class="confirm-row"><span>Цена за шт.</span><span class="val">${priceEach} 💸</span></div>
-                <div class="field-group">
-                    <label class="field-label">Количество (макс. ${maxQty})</label>
-                    <div class="qty-row">
-                        <button class="qty-btn" id="qty-minus">−</button>
-                        <div class="qty-display" id="qty-val">${qty}</div>
-                        <button class="qty-btn" id="qty-plus">+</button>
-                    </div>
-                </div>
+                <div class="field-group"><label class="field-label">Количество (макс. ${maxQty})</label><div class="qty-row"><button class="qty-btn" id="qty-minus">−</button><div class="qty-display" id="qty-val">${qty}</div><button class="qty-btn" id="qty-plus">+</button></div></div>
                 <div class="confirm-row"><span>Вы получите</span><span class="val" id="util-total">${total} 💸</span></div>
-                <button class="zone-btn lg success" id="util-confirm-btn">✅ Утилизировать за ${total} 💸</button>
-            `;
+                <button class="zone-btn lg success" id="util-confirm-btn">✅ Утилизировать за ${total} 💸</button>`;
         }
         openModal(render());
-        function updateQty() {
-            document.getElementById('qty-val').textContent = qty;
-            const total = qty * priceEach;
-            document.getElementById('util-total').textContent = `${total} 💸`;
-            document.getElementById('util-confirm-btn').textContent = `✅ Утилизировать за ${total} 💸`;
-        }
+        function updateQty() { document.getElementById('qty-val').textContent = qty; const total = qty * priceEach; document.getElementById('util-total').textContent = `${total} 💸`; document.getElementById('util-confirm-btn').textContent = `✅ Утилизировать за ${total} 💸`; }
         document.getElementById('qty-minus').onclick = () => { if(qty > 1) { qty--; updateQty(); } };
         document.getElementById('qty-plus').onclick  = () => { if(qty < maxQty) { qty++; updateQty(); } };
-        document.getElementById('util-confirm-btn').onclick = () => {
-            send({ action: 'duplicate_utilize', hero_id: heroId, quantity: qty });
-            document.getElementById('util-confirm-btn').disabled = true;
-        };
+        document.getElementById('util-confirm-btn').onclick = () => { send({ action: 'duplicate_utilize', hero_id: heroId, quantity: qty }); document.getElementById('util-confirm-btn').disabled = true; };
     }
 
-    /* ── Универсальное окно продажи ── */
     function openSellModal() {
         if (!state.duplicates.length && !state.userHeroes.length && !state.userBoxes.length) {
             send({ action: 'inventory_list' });
             toast('Загружаем предметы…', 'info');
             return;
         }
-
         const dupOpts = state.duplicates.filter(d => !d.locked).map(d =>
             `<option value="${d.hero_id}" data-type="duplicate" data-max="${d.quantity}">${RARITY_ICON[d.rarity]} ${d.hero_name} ×${d.quantity} (${d.rarity})</option>`
         ).join('');
@@ -1460,49 +1041,20 @@
             `<option value="${b.box_id}" data-type="box" data-max="${b.amount}">📦 Бокс #${b.box_id} ×${b.amount}</option>`
         ).join('');
         const durationPrices = { '24':0, '72':15, '168':20, '336':30, '720':35 };
-        openModal(`
-            <div class="modal-title">🏷️ Выставить на продажу <button class="modal-close" onclick="closeModal()">✕</button></div>
-            <div class="field-group">
-                <label class="field-label">Тип предмета</label>
-                <select class="field-input" id="sell-type">
-                    <option value="duplicate">Дубликат</option>
-                    <option value="hero">Герой</option>
-                    <option value="box">Бокс</option>
-                </select>
-            </div>
-            <div class="field-group">
-                <label class="field-label">Предмет</label>
-                <select class="field-input" id="sell-item"></select>
-            </div>
-            <div class="field-group" id="sell-qty-block">
-                <label class="field-label">Количество</label>
-                <input type="number" class="field-input" id="sell-qty" min="1" value="1"/>
-            </div>
-            <div class="field-group">
-                <label class="field-label">Цена за всё (💸)</label>
-                <input type="number" class="field-input" id="sell-price" min="1" max="999999" value="100"/>
-            </div>
-            <div class="field-group">
-                <label class="field-label">Длительность</label>
-                <select class="field-input" id="sell-duration">
-                    <option value="24">24 часа (бесплатно)</option>
-                    <option value="72">3 дня (15 💸)</option>
-                    <option value="168">7 дней (20 💸)</option>
-                    <option value="336">14 дней (30 💸)</option>
-                    <option value="720">30 дней (35 💸)</option>
-                </select>
-            </div>
+        openModal(`<div class="modal-title">🏷️ Выставить на продажу <button class="modal-close" onclick="closeModal()">✕</button></div>
+            <div class="field-group"><label class="field-label">Тип предмета</label><select class="field-input" id="sell-type"><option value="duplicate">Дубликат</option><option value="hero">Герой</option><option value="box">Бокс</option></select></div>
+            <div class="field-group"><label class="field-label">Предмет</label><select class="field-input" id="sell-item"></select></div>
+            <div class="field-group" id="sell-qty-block"><label class="field-label">Количество</label><input type="number" class="field-input" id="sell-qty" min="1" value="1"/></div>
+            <div class="field-group"><label class="field-label">Цена за всё (💸)</label><input type="number" class="field-input" id="sell-price" min="1" max="999999" value="100"/></div>
+            <div class="field-group"><label class="field-label">Длительность</label><select class="field-input" id="sell-duration"><option value="24">24 часа (бесплатно)</option><option value="72">3 дня (15 💸)</option><option value="168">7 дней (20 💸)</option><option value="336">14 дней (30 💸)</option><option value="720">30 дней (35 💸)</option></select></div>
             <div class="util-notice" id="sell-fee-notice"></div>
-            <button class="zone-btn lg" id="sell-btn">✅ Выставить лот</button>
-        `);
-
+            <button class="zone-btn lg" id="sell-btn">✅ Выставить лот</button>`);
         const typeSelect = document.getElementById('sell-type');
         const itemSelect = document.getElementById('sell-item');
         const qtyBlock = document.getElementById('sell-qty-block');
         const qtyInput = document.getElementById('sell-qty');
         const durationSelect = document.getElementById('sell-duration');
         const feeNotice = document.getElementById('sell-fee-notice');
-
         function updateItems() {
             const type = typeSelect.value;
             itemSelect.innerHTML = type === 'duplicate' ? dupOpts : (type === 'hero' ? heroOpts : boxOpts);
@@ -1511,7 +1063,6 @@
         }
         typeSelect.addEventListener('change', updateItems);
         updateItems();
-
         function updateFeeNotice() {
             const hours = durationSelect.value;
             const price = durationPrices[hours] || 0;
@@ -1519,7 +1070,6 @@
         }
         durationSelect.addEventListener('change', updateFeeNotice);
         updateFeeNotice();
-
         document.getElementById('sell-btn').onclick = () => {
             const type = typeSelect.value;
             const selectedOption = itemSelect.selectedOptions[0];
@@ -1530,24 +1080,13 @@
             const price = parseInt(document.getElementById('sell-price').value);
             const hours = parseInt(durationSelect.value);
             const fee = durationPrices[hours] || 0;
-
             if (!itemId || !qty || qty < 1 || qty > maxQty) { toast(`Количество 1–${maxQty}`, 'error'); return; }
             if (!price || price < 1) { toast('Укажите цену', 'error'); return; }
-
-            send({
-                action: 'create_lot',
-                item_type: type,
-                item_id: itemId,
-                quantity: qty,
-                price: price,
-                duration_hours: hours,
-                placement_fee: fee
-            });
+            send({ action: 'create_lot', item_type: type, item_id: itemId, quantity: qty, price: price, duration_hours: hours, placement_fee: fee });
             document.getElementById('sell-btn').disabled = true;
         };
     }
 
-    /* ── Вызов продажи конкретного дубликата ── */
     function openSellDupModal(heroId, heroName, rarity, maxQty) {
         openSellModal();
         setTimeout(() => {
@@ -1563,7 +1102,6 @@
         }, 100);
     }
 
-    /* ── НОВЫЙ ОБМЕН С МОНЕТАМИ ── */
     function openNewOfferModal(partnerId = null) {
         const dupOpts = state.duplicates.filter(d => !d.locked).map(d =>
             `<option value="${d.hero_id}" data-type="duplicate">${RARITY_ICON[d.rarity]} ${d.hero_name} ×${d.quantity}</option>`
@@ -1574,144 +1112,71 @@
         const boxOpts = (state.userBoxes || []).map(b =>
             `<option value="${b.box_id}" data-type="box">📦 Бокс #${b.box_id} ×${b.amount}</option>`
         ).join('');
-
-        openModal(`
-            <div class="modal-title">🤝 Создать обмен <button class="modal-close" onclick="closeModal()">✕</button></div>
-            <div class="field-group">
-                <label class="field-label">Партнёр (Telegram ID или @username)</label>
-                <input type="text" class="field-input" id="ex-partner" placeholder="ID или @username" value="${partnerId||''}"/>
-            </div>
+        openModal(`<div class="modal-title">🤝 Создать обмен <button class="modal-close" onclick="closeModal()">✕</button></div>
+            <div class="field-group"><label class="field-label">Партнёр (Telegram ID или @username)</label><input type="text" class="field-input" id="ex-partner" placeholder="ID или @username" value="${partnerId||''}"/></div>
             <div id="ex-items-container"></div>
             <button class="zone-btn sm info" id="ex-add-item" style="margin-bottom:12px">➕ Добавить предмет</button>
-            <div class="field-group">
-                <label class="field-label">Монеты (от вас) 💸</label>
-                <input type="number" class="field-input" id="ex-coin-give" min="0" value="0" placeholder="0"/>
-            </div>
+            <div class="field-group"><label class="field-label">Монеты (от вас) 💸</label><input type="number" class="field-input" id="ex-coin-give" min="0" value="0" placeholder="0"/></div>
             <div class="util-notice">Максимум 5 предметов. После отправки партнёр сможет добавить свои.</div>
-            <button class="zone-btn lg" id="ex-submit">✅ Отправить предложение</button>
-        `);
-
-        let itemCount = 0;
-        const maxItems = 5;
-
+            <button class="zone-btn lg" id="ex-submit">✅ Отправить предложение</button>`);
+        let itemCount = 0; const maxItems = 5;
         function addItemRow() {
             if (itemCount >= maxItems) return;
             const container = document.getElementById('ex-items-container');
             const idx = ++itemCount;
-            const row = document.createElement('div');
-            row.className = 'field-group';
-            row.innerHTML = `
-                <label class="field-label">Предмет ${idx}</label>
-                <select class="field-input ex-item-type">
-                    <option value="duplicate">Дубликат</option>
-                    <option value="hero">Герой</option>
-                    <option value="box">Бокс</option>
-                </select>
+            const row = document.createElement('div'); row.className = 'field-group';
+            row.innerHTML = `<label class="field-label">Предмет ${idx}</label>
+                <select class="field-input ex-item-type"><option value="duplicate">Дубликат</option><option value="hero">Герой</option><option value="box">Бокс</option></select>
                 <select class="field-input ex-item-select" style="margin-top:4px"></select>
-                <input type="number" class="field-input ex-item-qty" min="1" value="1" placeholder="Кол-во" style="margin-top:4px"/>
-            `;
+                <input type="number" class="field-input ex-item-qty" min="1" value="1" placeholder="Кол-во" style="margin-top:4px"/>`;
             container.appendChild(row);
-
             const typeSelect = row.querySelector('.ex-item-type');
             const itemSelect = row.querySelector('.ex-item-select');
-
-            function updateOptions() {
-                const type = typeSelect.value;
-                itemSelect.innerHTML = type === 'duplicate' ? dupOpts : (type === 'hero' ? heroOpts : boxOpts);
-            }
+            function updateOptions() { const type = typeSelect.value; itemSelect.innerHTML = type === 'duplicate' ? dupOpts : (type === 'hero' ? heroOpts : boxOpts); }
             typeSelect.addEventListener('change', updateOptions);
             updateOptions();
-
             if (idx > 1) {
-                const delBtn = document.createElement('button');
-                delBtn.className = 'zone-btn danger sm';
-                delBtn.textContent = 'Удалить';
-                delBtn.style.marginTop = '4px';
+                const delBtn = document.createElement('button'); delBtn.className = 'zone-btn danger sm'; delBtn.textContent = 'Удалить'; delBtn.style.marginTop = '4px';
                 delBtn.onclick = () => { row.remove(); itemCount--; };
                 row.appendChild(delBtn);
             }
         }
-
         addItemRow();
-
         document.getElementById('ex-add-item').onclick = () => addItemRow();
-
         document.getElementById('ex-submit').onclick = () => {
             const partner = document.getElementById('ex-partner').value.trim();
             if (!partner) { toast('Введите партнёра', 'error'); return; }
-
             const items = [];
             document.querySelectorAll('#ex-items-container .field-group').forEach(row => {
                 const type = row.querySelector('.ex-item-type').value;
                 const itemId = parseInt(row.querySelector('.ex-item-select').value);
                 const qty = parseInt(row.querySelector('.ex-item-qty').value);
-                if (itemId && qty > 0) {
-                    items.push({ item_type: type, item_id: itemId, quantity: qty });
-                }
+                if (itemId && qty > 0) items.push({ item_type: type, item_id: itemId, quantity: qty });
             });
-
             if (items.length === 0) { toast('Добавьте предметы', 'error'); return; }
-
             const coinGive = parseInt(document.getElementById('ex-coin-give').value) || 0;
-
             const btn = document.getElementById('ex-submit');
             btn.disabled = true;
-            send({
-                action: 'exchange_offer',
-                partner_id: partner,
-                give: items,
-                want: [],
-                coin_give: coinGive
-            });
+            send({ action: 'exchange_offer', partner_id: partner, give: items, want: [], coin_give: coinGive });
             setTimeout(() => { btn.disabled = false; }, 5000);
         };
     }
 
-    /* ═══════════════════════════════════════════════════════════
-       БАНК РЫНКА
-    ═══════════════════════════════════════════════════════════ */
     function showBankModal() {
         send({ action: 'bank_balance' });
-        openModal(`
-            <div class="modal-title">🏦 Банк Рынка ArenaM <button class="modal-close" onclick="closeModal()">✕</button></div>
-            <div style="text-align:center; margin-bottom:16px">
-                <div style="font-size:80px; margin-bottom:10px">🏦</div>
-                <div style="font-size:18px; font-weight:700; color:var(--gold)">Баланс банка</div>
-                <div style="font-size:28px; font-weight:800; color:var(--gold); margin-top:8px">${state.bankBalance} 💸</div>
-            </div>
-            <div class="util-notice">Собранная комиссия со всех сделок будет использована для будущих розыгрышей и ивентов.</div>
-        `);
+        openModal(`<div class="modal-title">🏦 Банк Рынка ArenaM <button class="modal-close" onclick="closeModal()">✕</button></div>
+            <div style="text-align:center; margin-bottom:16px"><div style="font-size:80px; margin-bottom:10px">🏦</div><div style="font-size:18px; font-weight:700; color:var(--gold)">Баланс банка</div><div style="font-size:28px; font-weight:800; color:var(--gold); margin-top:8px">${state.bankBalance} 💸</div></div>
+            <div class="util-notice">Собранная комиссия со всех сделок будет использована для будущих розыгрышей и ивентов.</div>`);
     }
 
     /* ═══════════════════════════════════════════════════════════
-       ACTIONS
+       ACTIONS & UTILS
     ═══════════════════════════════════════════════════════════ */
     function cancelLot(lotId)    { if(confirm('Снять лот с продажи?')) send({ action:'cancel_lot', lot_id:lotId }); }
     function acceptOffer(offerId) { send({ action:'exchange_accept',   offer_id:offerId }); }
-
-    /* ═══════════════════════════════════════════════════════════
-       UTILS
-    ═══════════════════════════════════════════════════════════ */
-    function esc(str) {
-        if (!str) return '';
-        return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-    }
-
-    function formatDate(ts) {
-        if (!ts) return '';
-        const d = new Date(typeof ts === 'number' ? ts * 1000 : ts);
-        if (isNaN(d)) return '';
-        return d.toLocaleDateString('ru-RU', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
-    }
-
-    function toast(msg, type='info') {
-        const wrap = document.getElementById('toast-wrap');
-        const el = document.createElement('div');
-        el.className = `toast ${type}`;
-        el.textContent = msg;
-        wrap.appendChild(el);
-        setTimeout(() => el.remove(), 3200);
-    }
+    function esc(str) { if (!str) return ''; return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+    function formatDate(ts) { if (!ts) return ''; const d = new Date(typeof ts === 'number' ? ts * 1000 : ts); if (isNaN(d)) return ''; return d.toLocaleDateString('ru-RU', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' }); }
+    function toast(msg, type='info') { const wrap = document.getElementById('toast-wrap'); const el = document.createElement('div'); el.className = `toast ${type}`; el.textContent = msg; wrap.appendChild(el); setTimeout(() => el.remove(), 3200); }
 
     /* ═══════════════════════════════════════════════════════════
        START
@@ -1719,4 +1184,4 @@
     document.addEventListener('DOMContentLoaded', init);
 </script>
 </body>
-</html> 
+    </html> 
