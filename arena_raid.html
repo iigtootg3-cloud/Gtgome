@@ -432,7 +432,6 @@
     <!-- BOSS PANEL -->
     <div id="boss-panel">
         <div class="boss-header">
-            <!-- Замените src на реальный URL изображения босса -->
             <img id="boss-img" src="" alt="Boss" onerror="this.style.display='none'">
             <div class="boss-info">
                 <div id="boss-name">—</div>
@@ -487,15 +486,15 @@
                 <div id="zone-section">
                     <div class="zone-label">⚔️ АТАКА</div>
                     <div class="zone-row" id="atk-row">
-                        <button class="zone-btn" onclick="selectZone('atk','TOP')">▲ Верх</button>
-                        <button class="zone-btn" onclick="selectZone('atk','MIDDLE')">■ Центр</button>
-                        <button class="zone-btn" onclick="selectZone('atk','BOTTOM')">▼ Низ</button>
+                        <button class="zone-btn" onclick="selectZone('atk','TOP', event)">▲ Верх</button>
+                        <button class="zone-btn" onclick="selectZone('atk','MIDDLE', event)">■ Центр</button>
+                        <button class="zone-btn" onclick="selectZone('atk','BOTTOM', event)">▼ Низ</button>
                     </div>
                     <div class="zone-label" style="margin-top:4px">🛡️ БЛОК</div>
                     <div class="zone-row" id="blk-row">
-                        <button class="zone-btn" onclick="selectZone('blk','TOP')">▲ Верх</button>
-                        <button class="zone-btn" onclick="selectZone('blk','MIDDLE')">■ Центр</button>
-                        <button class="zone-btn" onclick="selectZone('blk','BOTTOM')">▼ Низ</button>
+                        <button class="zone-btn" onclick="selectZone('blk','TOP', event)">▲ Верх</button>
+                        <button class="zone-btn" onclick="selectZone('blk','MIDDLE', event)">■ Центр</button>
+                        <button class="zone-btn" onclick="selectZone('blk','BOTTOM', event)">▼ Низ</button>
                     </div>
                 </div>
 
@@ -546,13 +545,6 @@ const BATTLE_ID  = params.get('battle_id') || '';
 const USER_ID    = params.get('user_id')   || '';
 const CHAT_ID    = params.get('chat_id')   || '0';
 const WS_URL_BASE = params.get('ws_url')   || 'wss://vvvty.onrender.com/ws';
-
-// Плейсхолдеры изображений боссов (замените на реальные URL)
-const BOSS_IMAGES = {
-    1: 'https://raw.githubusercontent.com/iigtootg3-cloud/Gtgome/main/IMG_20260601_041447_822.jpg',   // Бог Пустоты
-    2: 'https://raw.githubusercontent.com/iigtootg3-cloud/Gtgome/main/IMG_20260601_041452_465.jpg',   // Бог Луны
-    3: 'https://raw.githubusercontent.com/iigtootg3-cloud/Gtgome/main/IMG_20260601_041504_597.jpg',   // Бог Света
-};
 
 // ──────────────────────────────────────────────────────────
 // СОСТОЯНИЕ
@@ -652,7 +644,6 @@ function onRaidState(msg) {
 
     el('boss-name').textContent = boss.name;
 
-    // Картинка босса
     const imgSrc = msg.boss.image || '';
     const bossImg = el('boss-img');
     if (imgSrc) { bossImg.src = imgSrc; bossImg.style.display = ''; }
@@ -680,7 +671,7 @@ function onRaidState(msg) {
     if (msg.log) msg.log.forEach(l => addLog(l, classifyLog(l)));
 
     startTimerLoop();
-    if (raidFinished) onRaidOver({ killed: false }); // восстановление финала
+    if (raidFinished) onRaidOver({ killed: false });
 }
 
 // ──────────────────────────────────────────────────────────
@@ -693,17 +684,14 @@ function onRaidUpdate(msg) {
 
     if (msg.players) renderPlayers(msg.players);
     if (msg.leaderboard) renderLeaderboard(msg.leaderboard);
-    // Логи добавляем только если они есть (сервер уже не шлёт их атакующему)
     if (msg.log && msg.log.length > 0) {
         msg.log.forEach(l => { if (l) addLog(l, classifyLog(l)); });
     }
 
-    // Синхронизируем таймер способности если сервер прислал
     if (msg.next_ability_in !== undefined) {
         nextAbilityIn = msg.next_ability_in;
     }
 
-    // Floating damage number from attacker
     if (msg.attacker && msg.attacker.dmg) {
         spawnFloat(`-${fmt(msg.attacker.dmg)}`, '#ff5252', 'boss-hp-bar');
     }
@@ -720,7 +708,6 @@ function onAttackResult(msg) {
     updateBossHp(bossHp, bossMaxHp);
     updateMyCard();
 
-    // Логируем полную атаку (своя строка из сервера не приходит в attack_result — добавляем вручную)
     let atkLine = `⚔️ Вы: -${fmt(msg.dmg_to_boss)} HP боссу${msg.crit ? ' 💥КРИТ!' : ''}`;
     if (msg.dmg_to_player) atkLine += ` | Босс: -${fmt(msg.dmg_to_player)}${msg.blocked ? ' (блок)' : ''}`;
     addLog(atkLine, 'attack');
@@ -749,7 +736,7 @@ function onPlayerJoined(msg) {
 }
 
 // ──────────────────────────────────────────────────────────
-// PLAYER DEAD
+// PLAYER DEAD (исправлено: обновляем myAlive)
 // ──────────────────────────────────────────────────────────
 function onPlayerDead(msg) {
     myAlive = false;
@@ -782,12 +769,11 @@ function onBossAbility(msg) {
 
     if (msg.players) renderPlayers(msg.players);
     if (msg.log) msg.log.forEach(l => { if (l) addLog(l, 'ability'); });
-    // Синхронизируем таймер от сервера
     nextAbilityIn = msg.next_ability_in !== undefined ? msg.next_ability_in : 25;
 }
 
 // ──────────────────────────────────────────────────────────
-// RAID OVER
+// RAID OVER (исправлено: не затираем ID элементов)
 // ──────────────────────────────────────────────────────────
 function onRaidOver(msg) {
     raidFinished = true;
@@ -799,51 +785,44 @@ function onRaidOver(msg) {
     const lb = msg.leaderboard || [];
     const killed = msg.killed;
 
-    let html = '';
-    if (killed) {
-        html = `
-            <div id="overlay-icon">🏆</div>
-            <div id="overlay-title">${msg.boss_name || 'Босс'} ПОВЕРЖЕН!</div>
-            <div id="overlay-sub">Мир спасён!</div>
-        `;
-    } else {
-        html = `
-            <div id="overlay-icon">🌑</div>
-            <div id="overlay-title">Рейд провален</div>
-            <div id="overlay-sub">Мир поработил <b>${msg.boss_name || 'Босс'}</b></div>
-        `;
-    }
-
-    html += '<div style="width:100%;padding:0 16px;max-height:40vh;overflow-y:auto;">';
+    // Обновляем содержимое, не заменяя сам overlay
+    el('overlay-icon').textContent = killed ? '🏆' : '🌑';
+    el('overlay-title').textContent = killed ? `${msg.boss_name || 'Босс'} ПОВЕРЖЕН!` : 'Рейд провален';
+    el('overlay-sub').innerHTML = killed ? 'Мир спасён!' : `Мир поработил <b>${msg.boss_name || 'Босс'}</b>`;
+    
+    const extraDiv = document.createElement('div');
+    extraDiv.style.cssText = 'width:100%;padding:0 16px;max-height:40vh;overflow-y:auto;';
     lb.slice(0, 10).forEach((p, i) => {
         const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i+1}.`;
         const reward = p.reward || {};
         const lastHit = reward.last_hit ? ' 🗡️' : '';
-        html += `
+        extraDiv.innerHTML += `
             <div class="lb-full-item">
                 <div class="lb-full-rank">${medal}</div>
                 <div class="lb-full-name">${p.name}${lastHit}</div>
                 <div class="lb-full-info">${fmt(p.damage)} урона<br>+${reward.exp||0} опыта, +${reward.coins||0} 💰</div>
             </div>`;
     });
-    html += '</div>';
-
-    overlay.innerHTML = html;
+    // Удаляем старый список если был
+    const oldExtra = overlay.querySelector('.overlay-extra-list');
+    if (oldExtra) oldExtra.remove();
+    extraDiv.classList.add('overlay-extra-list');
+    overlay.appendChild(extraDiv);
 }
 
 // ──────────────────────────────────────────────────────────
 // ATTACK / RESPAWN ACTIONS
 // ──────────────────────────────────────────────────────────
-function selectZone(type, zone) {
+function selectZone(type, zone, evt) {
     if (!myAlive || raidFinished) return;
     if (type === 'atk') {
         atkZone = zone;
         document.querySelectorAll('#atk-row .zone-btn').forEach(b => b.classList.remove('atk-selected'));
-        event.currentTarget.classList.add('atk-selected');
+        evt.currentTarget.classList.add('atk-selected');
     } else {
         blkZone = zone;
         document.querySelectorAll('#blk-row .zone-btn').forEach(b => b.classList.remove('blk-selected'));
-        event.currentTarget.classList.add('blk-selected');
+        evt.currentTarget.classList.add('blk-selected');
     }
     updateAttackBtn();
 }
@@ -868,7 +847,6 @@ function sendAttack() {
         atk_zone: atkZone,
         blk_zone: blkZone,
     }));
-    // Оптимистично сбрасываем
     atkZone = null; blkZone = null;
     document.querySelectorAll('.zone-btn').forEach(b => {
         b.classList.remove('atk-selected', 'blk-selected');
@@ -940,7 +918,6 @@ function updateBossHp(hp, maxHp) {
     const pct = Math.max(0, Math.min(100, hp / maxHp * 100));
     el('boss-hp-bar').style.width = pct + '%';
     el('boss-hp-text').textContent = `${fmt(hp)}/${fmt(maxHp)}`;
-    // Цвет
     const color = pct > 50 ? '#7b2fff'
                 : pct > 25 ? '#ff9800'
                 : '#e94560';
@@ -1010,7 +987,6 @@ function addLog(text, cls) {
     div.className = 'log-line ' + (cls || '');
     div.textContent = text;
     list.appendChild(div);
-    // Авто-скролл
     if (list.children.length > 200) list.removeChild(list.children[0]);
     list.scrollTop = list.scrollHeight;
 }
@@ -1026,7 +1002,6 @@ function startTimerLoop() {
         el('ability-timer-val').textContent = fmtTime(nextAbilityIn);
         el('raid-timer-val').textContent = fmtTime(raidTimeLeft);
 
-        // Ping каждые 30 сек чтобы не разорвало соединение
         if (raidTimeLeft % 30 === 0 && ws && ws.readyState === WebSocket.OPEN) {
             ws.send(JSON.stringify({ action: 'raid_ping' }));
         }
@@ -1058,12 +1033,10 @@ function showAbilityFlash(icon, name, desc) {
 function showOverlay(icon, title, sub, showBtn) {
     const o = el('overlay');
     o.classList.remove('hidden');
-    o.innerHTML = `
-        <div id="overlay-icon">${icon}</div>
-        <div id="overlay-title">${title}</div>
-        <div id="overlay-sub">${sub}</div>
-        ${showBtn ? '<button id="overlay-btn" onclick="reconnect()" style="display:block">🔄 Переподключиться</button>' : ''}
-    `;
+    el('overlay-icon').textContent = icon;
+    el('overlay-title').textContent = title;
+    el('overlay-sub').innerHTML = sub;
+    el('overlay-btn').style.display = showBtn ? 'block' : 'none';
 }
 
 function hideOverlay() {
@@ -1093,7 +1066,6 @@ function spawnFloat(text, color, anchorId) {
 function showTab(tab) {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     event.currentTarget.classList.add('active');
-    // На маленьких экранах переключаем видимость
     const middle = el('middle');
     if (tab === 'battle') {
         el('left-col').style.display = 'flex';
@@ -1106,7 +1078,6 @@ function showTab(tab) {
     } else if (tab === 'log') {
         el('left-col').style.display = 'none';
         el('right-col').style.display = 'none';
-        // Показываем лог на полный экран
         el('log-panel').style.display = 'flex';
     }
 }
@@ -1133,7 +1104,6 @@ window.addEventListener('DOMContentLoaded', () => {
     connect();
 });
 
-// Telegram Web App закрытие
 window.addEventListener('beforeunload', () => {
     if (ws) try { ws.close(); } catch(e) {}
 });
