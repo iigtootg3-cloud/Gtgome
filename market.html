@@ -726,8 +726,8 @@
         let partnerId = 0;
         if (window.Telegram?.WebApp?.initDataUnsafe?.start_param) {
             const sp = window.Telegram.WebApp.initDataUnsafe.start_param;
-            const match = sp.match(/^exchange_(\d+)$/);
-            if (match) partnerId = parseInt(match[1], 10);
+            const match = sp.match(/^exchange_c(\d+)_p(\d+)$/);
+            if (match) partnerId = parseInt(match[2], 10);
         }
         if (!partnerId) partnerId = parseInt(params.get('partner_id') || '0');
 
@@ -746,6 +746,8 @@
         // Если передан partnerId — ждём открытия WebSocket и создаём пустой обмен
         if (partnerId && partnerId !== userId) {
             pendingExchangeCreate = { partnerId };
+            // Автоматически активируем вкладку обмена после загрузки
+            document.querySelector('.tab-btn[data-tab="exchange"]').click();
         }
     }
 
@@ -936,6 +938,13 @@
                 state.lastRoomData = msg;
                 if (msg.exchange_id === state.currentExchangeId) {
                     renderExchangeRoom(msg);
+                    // Закрываем комнату, если обмен завершён или отменён
+                    if (msg.status === 'completed' || msg.status === 'cancelled') {
+                        closeModal();
+                        const msgText = msg.status === 'completed' ? '🎉 Обмен успешно завершён!' : '❌ Обмен отменён';
+                        toast(msgText, 'success');
+                        state.currentExchangeId = null;
+                    }
                 }
                 break;
 
