@@ -702,10 +702,12 @@
         userBoxes:    [],
         bankBalance: 0,
         currentExchangeId: null,
-        lastRoomData: null
+        lastRoomData: null,
+        _pendingPartner: null    // для автоматического открытия комнаты
     };
 
     let lockCountdownTimer = null;
+    let pendingExchangeCreate = null;  // для ожидания открытия WS
 
     /* ═══════════════════════════════════════════════════════════
        INIT (автоматическое создание пустого обмена с ожиданием WS)
@@ -743,20 +745,7 @@
 
         // Если передан partnerId — ждём открытия WebSocket и создаём пустой обмен
         if (partnerId && partnerId !== userId) {
-            const trySendExchange = () => {
-                if (ws && ws.readyState === WebSocket.OPEN) {
-                    send({
-                        action: 'exchange_offer',
-                        partner_id: partnerId,
-                        give: [],
-                        want: [],
-                        coin_give: 0
-                    });
-                } else {
-                    setTimeout(trySendExchange, 300);
-                }
-            };
-            setTimeout(trySendExchange, 800);
+            pendingExchangeCreate = { partnerId };
         }
     }
 
@@ -837,6 +826,14 @@
             if (state.currentExchangeId) {
                 send({ action: 'get_exchange_room', exchange_id: state.currentExchangeId });
             }
+            // Если есть отложенное создание обмена
+            if (pendingExchangeCreate) {
+                const { partnerId } = pendingExchangeCreate;
+                pendingExchangeCreate = null;
+                state._pendingPartner = partnerId;
+                // Сначала запросим список обменов, чтобы проверить, нет ли уже существующего
+                send({ action: 'exchange_offers' });
+            }
         };
 
         ws.onmessage = (ev) => {
@@ -913,6 +910,26 @@
                 state.offersIn  = msg.incoming || [];
                 state.offersOut = msg.outgoing || [];
                 renderExchange();
+                // Проверяем, есть ли ожидающий партнёр
+                if (state._pendingPartner) {
+                    const partnerId = state._pendingPartner;
+                    state._pendingPartner = null;
+                    const existing = [...state.offersIn, ...state.offersOut].find(o =>
+                        o.creator_id === partnerId || o.partner_id === partnerId
+                    );
+                    if (existing) {
+                        openExchangeRoom(existing.id);
+                        toast('Обмен уже существует, переходим в комнату', 'info');
+                    } else {
+                        send({
+                            action: 'exchange_offer',
+                            partner_id: partnerId,
+                            give: [],
+                            want: [],
+                            coin_give: 0
+                        });
+                    }
+                }
                 break;
 
             case 'exchange_room_updated':
@@ -965,6 +982,11 @@
                 toast('🤝 Предложение обмена отправлено!', 'success');
                 closeModal();
                 send({ action: 'exchange_offers' });
+                // Если был запрос на создание обмена из внешней ссылки — сразу открываем комнату
+                if (state._pendingPartner) {
+                    openExchangeRoom(msg.exchange_id);
+                    state._pendingPartner = null;
+                }
                 break;
 
             case 'exchange_updated':
@@ -1595,7 +1617,7 @@
                 <label class="field-label">Монеты (от вас) 💸</label>
                 <input type="number" class="field-input" id="ex-coin-give" min="0" value="0" placeholder="0"/>
             </div>
-            <div class="util-notice">Максимум 5 предметов. Можно указать только монеты, без предметов.</div>
+            <div class="util-notice">Можно оставить всё пустым — обмен будет без предметов и монет.</div>
             <button class="zone-btn lg" id="ex-submit">✅ Отправить предложение</button>
         `);
 
@@ -1659,11 +1681,7 @@
             });
 
             const coinGive = parseInt(document.getElementById('ex-coin-give').value) || 0;
-            if (items.length === 0 && coinGive === 0) {
-                toast('Добавьте хотя бы один предмет или укажите сумму монет', 'error');
-                return;
-            }
-
+            // Разрешаем отправку пустого обмена
             const btn = document.getElementById('ex-submit');
             btn.disabled = true;
             send({
@@ -1729,4 +1747,4 @@
     document.addEventListener('DOMContentLoaded', init);
 </script>
 </body>
-</html> 
+    </html> 
