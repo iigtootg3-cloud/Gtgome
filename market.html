@@ -722,12 +722,23 @@
             userId = parseInt(params.get('user_id') || '0');
         }
 
-        // partner_id через start_param
+        // partner_id через start_param (формат exchange_c<creator_id>_p<partner_id>)
         let partnerId = 0;
         if (window.Telegram?.WebApp?.initDataUnsafe?.start_param) {
             const sp = window.Telegram.WebApp.initDataUnsafe.start_param;
             const match = sp.match(/^exchange_c(\d+)_p(\d+)$/);
-            if (match) partnerId = parseInt(match[2], 10);
+            if (match) {
+                const creatorId = parseInt(match[1], 10);
+                const otherId = parseInt(match[2], 10);
+                // Определяем, кто из них партнёр для текущего пользователя
+                if (userId === creatorId) {
+                    partnerId = otherId;
+                } else if (userId === otherId) {
+                    partnerId = creatorId;
+                } else {
+                    partnerId = otherId; // фоллбэк
+                }
+            }
         }
         if (!partnerId) partnerId = parseInt(params.get('partner_id') || '0');
 
@@ -746,8 +757,7 @@
         // Если передан partnerId — ждём открытия WebSocket и создаём пустой обмен
         if (partnerId && partnerId !== userId) {
             pendingExchangeCreate = { partnerId };
-            // Автоматически активируем вкладку обмена после загрузки
-            document.querySelector('.tab-btn[data-tab="exchange"]').click();
+            // Переключение на вкладку обмена произойдёт только после успешного подключения
         }
     }
 
@@ -828,12 +838,13 @@
             if (state.currentExchangeId) {
                 send({ action: 'get_exchange_room', exchange_id: state.currentExchangeId });
             }
-            // Если есть отложенное создание обмена
+            // Если есть отложенное создание обмена — выполняем только после установки соединения
             if (pendingExchangeCreate) {
                 const { partnerId } = pendingExchangeCreate;
                 pendingExchangeCreate = null;
                 state._pendingPartner = partnerId;
-                // Сначала запросим список обменов, чтобы проверить, нет ли уже существующего
+                // Переключаемся на вкладку обмена (без ложных тостов)
+                document.querySelector('.tab-btn[data-tab="exchange"]')?.click();
                 send({ action: 'exchange_offers' });
             }
         };
@@ -1756,4 +1767,4 @@
     document.addEventListener('DOMContentLoaded', init);
 </script>
 </body>
-</html> 
+</html>
