@@ -1328,7 +1328,7 @@
     }
 
     function lockExchange(exchangeId) { send({ action:'lock_exchange', exchange_id: exchangeId }); }
-    function confirmExchange(exchangeId) { send({ action:'confirm_exchange', exchange_id: exchangeId }); }
+    function confirmExchange(exchangeId) { send({ action:'exchange_confirm', offer_id: exchangeId }); }
     function cancelExchange(exchangeId) { send({ action:'cancel_exchange', exchange_id: exchangeId }); }
 
     /* ═══════════════════════════════════════════════════════════
@@ -1747,4 +1747,4 @@
     document.addEventListener('DOMContentLoaded', init);
 </script>
 </body>
-    </html> 
+</html> 
