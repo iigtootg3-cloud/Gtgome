@@ -1111,7 +1111,7 @@
     }
 
     /* ═══════════════════════════════════════════════════════════
-       КОМНАТА ОБМЕНА (двусторонняя готовность + таймер)
+       КОМНАТА ОБМЕНА (двусторонняя готовность + таймер + монеты)
     ═══════════════════════════════════════════════════════════ */
     function openExchangeRoom(exchangeId) {
         state.currentExchangeId = exchangeId;
@@ -1130,19 +1130,26 @@
 
         const myList = (msg.my_offer || []).map(formatItem).join(', ') || '—';
         const theirList = (msg.partner_offer || []).map(formatItem).join(', ') || '—';
-        const isLocked = msg.phase === 'locked';
 
         let actionsHtml = '';
         if (msg.phase === 'negotiation') {
+            const myReady = msg.my_ready;
             actionsHtml = `
                 <button class="zone-btn sm info" onclick="editMyOffer(${msg.exchange_id})">✏️ Изменить мою часть</button>
-                <button class="zone-btn lg success" onclick="setReady(${msg.exchange_id}, true)">✅ Готов к обмену</button>
+                ${myReady ?
+                    '<button class="zone-btn lg success" disabled>⏳ Вы готовы (ожидание партнёра)</button>' :
+                    `<button class="zone-btn lg success" onclick="setReady(${msg.exchange_id}, true)">✅ Готов к обмену</button>`
+                }
                 <div class="util-notice">${msg.partner_ready ? '🟢 Партнёр готов — нажмите «Готов», чтобы заблокировать сделку.' : '⚪ Партнёр ещё не готов.'}</div>`;
         } else if (msg.phase === 'locked') {
             const remaining = msg.timer_expires ? Math.max(0, Math.round((new Date(msg.timer_expires) - Date.now()) / 1000)) : 0;
+            const myConfirmed = msg.my_confirmed !== undefined ? msg.my_confirmed : (msg.my_ready ? true : false);
             actionsHtml = `
                 <div class="util-notice" id="lock-countdown">🔒 Сделка заблокирована. Подтверждение доступно через <b id="lock-seconds">${remaining}</b> сек.</div>
-                <button class="zone-btn lg success" id="confirm-btn-room" onclick="confirmExchange(${msg.exchange_id})" ${remaining > 0 ? 'disabled' : ''}>🤝 Обменяться</button>
+                ${myConfirmed ?
+                    '<button class="zone-btn lg success" disabled>⏳ Вы подтвердили (ожидание партнёра)</button>' :
+                    `<button class="zone-btn lg success" id="confirm-btn-room" onclick="confirmExchange(${msg.exchange_id})" ${remaining > 0 ? 'disabled' : ''}>🤝 Обменяться</button>`
+                }
                 <button class="zone-btn sm danger" onclick="setReady(${msg.exchange_id}, false)">↩️ Отменить готовность</button>`;
             startLockCountdown(remaining);
         }
@@ -1183,15 +1190,10 @@
         send({ action: ready ? 'exchange_ready' : 'exchange_unready', exchange_id: exchangeId });
     }
 
-    /* ── Редактирование своего предложения (с монетами) ── */
+    /* ── Редактирование своего предложения (с монетами, без обязательных предметов) ── */
     function editMyOffer(exchangeId) {
         send({ action: 'inventory_list' });
         setTimeout(() => {
-            if (!state.duplicates.length && !state.userHeroes.length && !state.userBoxes.length) {
-                toast('Нет доступных предметов', 'error');
-                return;
-            }
-
             const dupOpts = state.duplicates.filter(d => !d.locked).map(d =>
                 `<option value="${d.hero_id}" data-type="duplicate">${RARITY_ICON[d.rarity]} ${d.hero_name} ×${d.quantity}</option>`
             ).join('');
@@ -1212,7 +1214,7 @@
                     <label class="field-label">Монеты (от вас) 💸</label>
                     <input type="number" class="field-input" id="ex-coin-give" min="0" value="${currentCoins}" placeholder="0"/>
                 </div>
-                <div class="util-notice">Максимум 5 предметов. После сохранения таймер сбросится.</div>
+                <div class="util-notice">Можно указать только монеты, без предметов.</div>
                 <button class="zone-btn lg" id="ex-save">💾 Сохранить изменения</button>
             `);
 
@@ -1267,11 +1269,10 @@
             }
 
             const lastRoom = state.lastRoomData;
-            if (lastRoom && lastRoom.my_offer) {
+            if (lastRoom && lastRoom.my_offer && lastRoom.my_offer.length > 0) {
                 lastRoom.my_offer.forEach(item => addItemRow(item));
-            } else {
-                addItemRow();
             }
+            // не добавляем автоматически пустой ряд – можно сохранить только с монетами
 
             document.getElementById('ex-add-item').onclick = () => addItemRow();
 
@@ -1286,12 +1287,11 @@
                     }
                 });
 
-                if (items.length === 0) {
-                    toast('Добавьте хотя бы один предмет', 'error');
+                const coinGive = parseInt(document.getElementById('ex-coin-give').value) || 0;
+                if (items.length === 0 && coinGive === 0) {
+                    toast('Добавьте хотя бы один предмет или укажите сумму монет', 'error');
                     return;
                 }
-
-                const coinGive = parseInt(document.getElementById('ex-coin-give').value) || 0;
 
                 send({
                     action: 'exchange_modify',
@@ -1595,7 +1595,7 @@
                 <label class="field-label">Монеты (от вас) 💸</label>
                 <input type="number" class="field-input" id="ex-coin-give" min="0" value="0" placeholder="0"/>
             </div>
-            <div class="util-notice">Максимум 5 предметов. После отправки партнёр сможет добавить свои.</div>
+            <div class="util-notice">Максимум 5 предметов. Можно указать только монеты, без предметов.</div>
             <button class="zone-btn lg" id="ex-submit">✅ Отправить предложение</button>
         `);
 
@@ -1658,9 +1658,11 @@
                 }
             });
 
-            if (items.length === 0) { toast('Добавьте предметы', 'error'); return; }
-
             const coinGive = parseInt(document.getElementById('ex-coin-give').value) || 0;
+            if (items.length === 0 && coinGive === 0) {
+                toast('Добавьте хотя бы один предмет или укажите сумму монет', 'error');
+                return;
+            }
 
             const btn = document.getElementById('ex-submit');
             btn.disabled = true;
