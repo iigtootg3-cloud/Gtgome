@@ -669,6 +669,23 @@
 </div>
 
 <script>
+
+    function newRequestId() {
+        return (crypto.randomUUID && crypto.randomUUID()) || ('req_' + Date.now() + '_' + Math.random().toString(36).slice(2));
+    }
+    function dupAvailable(d) {
+        return d.available_quantity ?? d.available ?? Math.max(0, (d.quantity || 0) - (d.locked_quantity || 0));
+    }
+    function dupLocked(d) {
+        if (typeof d.locked === 'boolean') return d.locked;
+        return dupAvailable(d) <= 0;
+    }
+
+    const MUTATING_ACTIONS = new Set([
+        'buy_lot', 'cancel_lot', 'create_lot', 'exchange_offer', 'exchange_modify',
+        'exchange_accept', 'exchange_confirm', 'cancel_exchange', 'duplicate_utilize'
+    ]);
+
     /* ═══════════════════════════════════════════════════════════
        CONSTANTS & STATE
     ═══════════════════════════════════════════════════════════ */
@@ -819,7 +836,10 @@
        WebSocket
     ═══════════════════════════════════════════════════════════ */
     function getWSUrl() {
-        return 'wss://vvvty.onrender.com/ws/market?user_id=' + userId + '&mode=market';
+        const params = new URLSearchParams(window.location.search);
+        const wsBase = params.get('ws_url') || 'wss://vvvty.onrender.com/ws/market';
+        const sep = wsBase.includes('?') ? '&' : '?';
+        return `${wsBase}${sep}user_id=${userId}`;
     }
 
     function connectWS() {
@@ -876,6 +896,9 @@
     function stopPing() { clearInterval(pingInterval); }
 
     function send(obj) {
+        if (MUTATING_ACTIONS.has(obj.action) && !obj.request_id) {
+            obj = { ...obj, request_id: newRequestId() };
+        }
         if (ws?.readyState === WebSocket.OPEN) ws.send(JSON.stringify(obj));
         else toast('Нет соединения', 'error');
     }
@@ -1009,6 +1032,15 @@
                 }
                 break;
 
+
+            case 'exchange_modified':
+                toast('Предложение обновлено', 'success');
+                if (state.currentExchangeId) {
+                    send({ action: 'get_exchange_room', exchange_id: state.currentExchangeId });
+                }
+                send({ action: 'inventory_list' });
+                break;
+
             case 'exchange_updated':
                 if (msg.message && msg.message.includes('обмен')) {
                     toast(msg.message, 'info');
@@ -1097,23 +1129,31 @@
 
         el.innerHTML = dups.map(d => {
             const price = UTIL_PRICES[d.rarity] || 50;
+            const avail = dupAvailable(d);
+            const locked = dupLocked(d);
+            const qtyLabel = (d.quantity > avail && avail > 0)
+                ? `×${d.quantity} (${avail} св.)`
+                : `×${d.quantity}`;
+            const partialBadge = (avail > 0 && avail < d.quantity)
+                ? `<span class="lock-badge">🔒 ${d.quantity - avail} в обмене</span>`
+                : (locked ? '<span class="lock-badge">🔒 В обмене</span>' : '');
             return `
-            <div class="dup-card r-${d.rarity} ${d.locked ? 'locked-card' : ''}">
+            <div class="dup-card r-${d.rarity} ${locked ? 'locked-card' : ''}">
                 <div class="lot-icon">${RARITY_ICON[d.rarity] || '⚫'}</div>
                 <div class="lot-info">
                     <div class="lot-name">${esc(d.hero_name)}</div>
                     <span class="lot-rarity r-${d.rarity}">${d.rarity}</span>
-                    ${d.locked ? '<span class="lock-badge">🔒 В обмене</span>' : ''}
+                    ${partialBadge}
                     <div class="lot-sub">${price} 💸 / шт.</div>
                 </div>
                 <div class="lot-right" style="gap:5px">
-                    <div class="dup-qty-badge">×${d.quantity}</div>
+                    <div class="dup-qty-badge">${qtyLabel}</div>
                     <button class="zone-btn sm" style="margin-top:22px"
-                        onclick="openUtilModal(${d.hero_id}, '${esc(d.hero_name)}', '${d.rarity}', ${d.quantity})"
-                        ${d.locked ? 'disabled' : ''}>♻️ Утил.</button>
+                        onclick="openUtilModal(${d.hero_id}, '${esc(d.hero_name)}', '${d.rarity}', ${avail})"
+                        ${avail <= 0 ? 'disabled' : ''}>♻️ Утил.</button>
                     <button class="zone-btn sm info"
-                        onclick="openSellDupModal(${d.hero_id}, '${esc(d.hero_name)}', '${d.rarity}', ${d.quantity})"
-                        ${d.locked ? 'disabled' : ''}>🏷️ Продать</button>
+                        onclick="openSellDupModal(${d.hero_id}, '${esc(d.hero_name)}', '${d.rarity}', ${avail})"
+                        ${avail <= 0 ? 'disabled' : ''}>🏷️ Продать</button>
                 </div>
             </div>`;
         }).join('');
@@ -1236,8 +1276,8 @@
     function editMyOffer(exchangeId) {
         send({ action: 'inventory_list' });
         setTimeout(() => {
-            const dupOpts = state.duplicates.filter(d => !d.locked).map(d =>
-                `<option value="${d.hero_id}" data-type="duplicate">${RARITY_ICON[d.rarity]} ${d.hero_name} ×${d.quantity}</option>`
+            const dupOpts = state.duplicates.filter(d => dupAvailable(d) > 0).map(d =>
+                `<option value="${d.hero_id}" data-type="duplicate">${RARITY_ICON[d.rarity]} ${d.hero_name} ×${dupAvailable(d)}</option>`
             ).join('');
             const heroOpts = (state.userHeroes || []).map(h =>
                 `<option value="${h.hero_id}" data-type="hero">${RARITY_ICON[h.rarity] || ''} ${h.name} Lv.${h.level} (${h.rarity})</option>`
@@ -1342,7 +1382,6 @@
                     coin_give: coinGive
                 });
                 closeModal();
-                toast('Предложение обновлено', 'success');
             };
         }, 500);
     }
@@ -1425,7 +1464,6 @@
     }
     function closeModal() {
         document.getElementById('modal-overlay').classList.remove('open');
-        state.currentExchangeId = null;
         clearInterval(lockCountdownTimer);
     }
 
@@ -1500,8 +1538,8 @@
             return;
         }
 
-        const dupOpts = state.duplicates.filter(d => !d.locked).map(d =>
-            `<option value="${d.hero_id}" data-type="duplicate" data-max="${d.quantity}">${RARITY_ICON[d.rarity]} ${d.hero_name} ×${d.quantity} (${d.rarity})</option>`
+        const dupOpts = state.duplicates.filter(d => dupAvailable(d) > 0).map(d =>
+            `<option value="${d.hero_id}" data-type="duplicate" data-max="${dupAvailable(d)}">${RARITY_ICON[d.rarity]} ${d.hero_name} ×${dupAvailable(d)} (${d.rarity})</option>`
         ).join('');
         const heroOpts = (state.userHeroes || []).map(h =>
             `<option value="${h.hero_id}" data-type="hero" data-max="1">${RARITY_ICON[h.rarity] || ''} ${h.name} Lv.${h.level} (${h.rarity})</option>`
@@ -1615,8 +1653,8 @@
 
     /* ── НОВЫЙ ОБМЕН С МОНЕТАМИ ── */
     function openNewOfferModal(partnerId = null) {
-        const dupOpts = state.duplicates.filter(d => !d.locked).map(d =>
-            `<option value="${d.hero_id}" data-type="duplicate">${RARITY_ICON[d.rarity]} ${d.hero_name} ×${d.quantity}</option>`
+        const dupOpts = state.duplicates.filter(d => dupAvailable(d) > 0).map(d =>
+            `<option value="${d.hero_id}" data-type="duplicate">${RARITY_ICON[d.rarity]} ${d.hero_name} ×${dupAvailable(d)}</option>`
         ).join('');
         const heroOpts = (state.userHeroes || []).map(h =>
             `<option value="${h.hero_id}" data-type="hero">${RARITY_ICON[h.rarity] || ''} ${h.name} Lv.${h.level} (${h.rarity})</option>`
@@ -1768,3 +1806,7 @@
 </script>
 </body>
 </html>
+</user_query>
+<user_query>
+можешь дать исправленные файлы?
+</user_query>

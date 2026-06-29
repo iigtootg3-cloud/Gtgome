@@ -585,7 +585,7 @@ function connect() {
     ws = new WebSocket(buildWsUrl());
 
     ws.onopen = () => {
-        ws.send(JSON.stringify({ type: 'auth', user_id: USER_ID }));
+        ws.send(JSON.stringify({ initData: window.Telegram?.WebApp?.initData || '' }));
     };
 
     ws.onmessage = e => {
@@ -619,7 +619,19 @@ function handleMessage(msg) {
         case 'raid_attack_result': onAttackResult(msg); break;
         case 'player_joined':    onPlayerJoined(msg); break;
         case 'player_dead':      onPlayerDead(msg); break;
+
+        case 'attempt_expired':  onAttemptExpired(msg); break;
+
         case 'raid_respawn':     onRespawn(msg); break;
+
+        case 'player_respawn':
+            if (parseInt(msg.user_id, 10) === myId && msg.hp !== undefined) {
+                onRespawn(msg);
+            } else {
+                onPlayerRespawnBroadcast(msg);
+            }
+            break;
+
         case 'boss_ability':     onBossAbility(msg); break;
         case 'raid_over':        onRaidOver(msg); break;
         case 'raid_pong':        break;
@@ -743,6 +755,24 @@ function onPlayerDead(msg) {
     myHp = 0;
     updateMyCard();
     showDeadState(msg.respawn_in || 30);
+}
+
+
+// ──────────────────────────────────────────────────────────
+// ATTEMPT EXPIRED (20 min timeout / death with rejoin cooldown)
+// ──────────────────────────────────────────────────────────
+function onAttemptExpired(msg) {
+    myAlive = false;
+    myHp = 0;
+    updateMyCard();
+    const cdSec = msg.rejoin_cooldown > 0 ? Math.ceil(msg.rejoin_cooldown / 60) + ' мин' : '20 мин';
+    addLog(msg.message || `💀 Попытка завершена! Повторный вход через ${cdSec}`, 'death');
+    showDeadState(msg.rejoin_cooldown || 1200);
+}
+
+function onPlayerRespawnBroadcast(msg) {
+    addLog(`✨ ${msg.name} возродился!`, 'respawn');
+    if (msg.players) renderPlayers(msg.players);
 }
 
 // ──────────────────────────────────────────────────────────
@@ -1110,3 +1140,5 @@ window.addEventListener('beforeunload', () => {
 </script>
 </body>
 </html> 
+
+market.html
